@@ -16,7 +16,10 @@ services:
       APP_NAME: "Party Planner"
       APP_ENV: local
       APP_DEBUG: "true"
-      APP_URL: http://localhost:8000
+      APP_URL: http://56.228.69.61:8000
+      APP_KEY: ""
+      FRONTEND_URL: http://56.228.69.61:5173
+      TZ: Africa/Douala
       APP_LOCALE: en
       APP_FALLBACK_LOCALE: en
       APP_FAKER_LOCALE: en_US
@@ -72,10 +75,20 @@ services:
       MTN_API_URL: https://sandbox.momodeveloper.mtn.com
       MTN_ENVIRONMENT: sandbox
       MTN_SIMULATE: "true"
+      MTN_API_USER: ""
+      MTN_API_KEY: ""
+      MTN_SUBSCRIPTION_KEY: ""
+      MTN_CALLBACK_URL: ""
+      MTN_CURRENCY: XAF
+      MTN_HTTP_TIMEOUT: 30
+      MTN_HTTP_VERIFY_SSL: "false"
       # Airtel Money
       AIRTEL_ENABLED: "false"
       AIRTEL_API_URL: https://openapi.airtel.africa
       AIRTEL_ENVIRONMENT: sandbox
+      AIRTEL_CLIENT_ID: ""
+      AIRTEL_CLIENT_SECRET: ""
+      AIRTEL_CALLBACK_URL: ""
       # Firebase
       FIREBASE_CREDENTIALS: storage/app/firebase-credentials.json
     depends_on:

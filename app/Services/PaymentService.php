@@ -124,10 +124,14 @@ class PaymentService
             $externalId = Str::uuid()->toString();
 
             // Create payment request using momo-api
-            $paymentRequest = PaymentRequest::make($amount, $formattedPhone, $externalId)
-                ->setCurrency($currency)
-                ->setPayerMessage("Paiement Party Planner - {$subscription->event->title}")
-                ->setPayeeNote("Subscription #{$subscription->id}");
+            $paymentRequest = PaymentRequest::make(
+                $amount,
+                $formattedPhone,
+                $externalId,
+                $currency,
+                "Paiement Party Planner - {$subscription->event->title}",
+                "Subscription #{$subscription->id}"
+            );
 
             // Initiate payment via momo-api
             $paymentId = $collection->requestToPay($paymentRequest);
