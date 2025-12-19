@@ -1148,6 +1148,223 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationError'
 
+  # OTP (One-Time Password)
+  /auth/otp/send:
+    post:
+      tags: [Auth]
+      summary: Envoyer un code OTP
+      description: |
+        Envoie un code OTP a 6 chiffres pour la verification.
+
+        **Types d'OTP:**
+        - `registration` - Verification lors de l'inscription
+        - `login` - Authentification a deux facteurs (2FA)
+        - `password_reset` - Reinitialisation du mot de passe
+
+        **Canaux d'envoi:**
+        - `email` - Par email
+        - `sms` - Par SMS (Twilio)
+        - `whatsapp` - Par WhatsApp (Twilio)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, type, channel]
+              properties:
+                identifier:
+                  type: string
+                  description: Email ou numero de telephone
+                type:
+                  type: string
+                  enum: [registration, login, password_reset]
+                  description: Type d'OTP
+                channel:
+                  type: string
+                  enum: [email, sms, whatsapp]
+                  description: Canal d'envoi
+            examples:
+              email:
+                summary: Envoi par email
+                value:
+                  identifier: "user@example.com"
+                  type: "registration"
+                  channel: "email"
+              sms:
+                summary: Envoi par SMS
+                value:
+                  identifier: "+237670123456"
+                  type: "login"
+                  channel: "sms"
+      responses:
+        '200':
+          description: OTP envoye avec succes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  otp_id:
+                    type: integer
+                    description: ID de l'OTP pour le renvoi
+                  expires_in:
+                    type: integer
+                    description: Duree de validite en secondes
+              example:
+                message: "Un code de verification a ete envoye a votre adresse email."
+                otp_id: 123
+                expires_in: 600
+        '422':
+          description: Validation echouee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '429':
+          description: Trop de demandes (rate limit)
+
+  /auth/otp/verify:
+    post:
+      tags: [Auth]
+      summary: Verifier un code OTP
+      description: |
+        Verifie le code OTP saisi par l'utilisateur.
+
+        **Retour selon le type:**
+        - `registration` - Retourne un token de verification temporaire
+        - `login` - Retourne le token d'authentification et les infos utilisateur
+        - `password_reset` - Retourne un token pour reinitialiser le mot de passe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, code, type]
+              properties:
+                identifier:
+                  type: string
+                  description: Email ou numero de telephone
+                code:
+                  type: string
+                  pattern: '^\d{6}$'
+                  description: Code OTP a 6 chiffres
+                type:
+                  type: string
+                  enum: [registration, login, password_reset]
+            example:
+              identifier: "user@example.com"
+              code: "123456"
+              type: "login"
+      responses:
+        '200':
+          description: OTP verifie avec succes
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AuthResponse'
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                      message:
+                        type: string
+                      verified:
+                        type: boolean
+                      verification_token:
+                        type: string
+                      reset_token:
+                        type: string
+        '422':
+          description: Code invalide ou expire
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /auth/otp/resend:
+    post:
+      tags: [Auth]
+      summary: Renvoyer le code OTP
+      description: Renvoie un nouveau code OTP. Limite a 3 renvois par minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [otp_id]
+              properties:
+                otp_id:
+                  type: integer
+                  description: ID de l'OTP a renvoyer
+            example:
+              otp_id: 123
+      responses:
+        '200':
+          description: Nouveau code envoye
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  otp_id:
+                    type: integer
+                  expires_in:
+                    type: integer
+              example:
+                message: "Un nouveau code a ete envoye."
+                otp_id: 124
+                expires_in: 600
+        '422':
+          description: OTP non trouve ou deja verifie
+        '429':
+          description: Trop de demandes
+
+  /auth/otp/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reinitialiser le mot de passe apres OTP
+      description: Permet de definir un nouveau mot de passe apres verification OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, reset_token, password, password_confirmation]
+              properties:
+                identifier:
+                  type: string
+                reset_token:
+                  type: string
+                  description: Token recu apres verification OTP
+                password:
+                  type: string
+                  minLength: 8
+                password_confirmation:
+                  type: string
+            example:
+              identifier: "user@example.com"
+              reset_token: "abc123..."
+              password: "nouveau_mot_de_passe"
+              password_confirmation: "nouveau_mot_de_passe"
+      responses:
+        '200':
+          description: Mot de passe reinitialise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          description: Token invalide ou expire
+
   /user:
     get:
       tags: [Auth]

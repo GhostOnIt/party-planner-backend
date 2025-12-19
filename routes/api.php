@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -36,6 +37,14 @@ Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthenticatedSessionController::class, 'store']);
         Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
         Route::post('/reset-password', [NewPasswordController::class, 'store']);
+    });
+
+    // OTP routes (public)
+    Route::prefix('otp')->group(function () {
+        Route::post('/send', [OtpController::class, 'send'])->middleware('throttle:5,1');
+        Route::post('/verify', [OtpController::class, 'verify'])->middleware('throttle:10,1');
+        Route::post('/resend', [OtpController::class, 'resend'])->middleware('throttle:3,1');
+        Route::post('/reset-password', [OtpController::class, 'resetPassword']);
     });
 
     // Authenticated routes

@@ -46,6 +46,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'role',
         'is_active',
+        'otp_enabled',
+        'preferred_otp_channel',
         'password',
         'notification_preferences',
     ];
@@ -72,6 +74,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'role' => UserRole::class,
             'is_active' => 'boolean',
+            'otp_enabled' => 'boolean',
             'notification_preferences' => 'array',
         ];
     }
@@ -196,5 +199,29 @@ class User extends Authenticatable implements MustVerifyEmail
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get the OTPs for the user.
+     */
+    public function otps(): HasMany
+    {
+        return $this->hasMany(Otp::class);
+    }
+
+    /**
+     * Check if OTP is enabled for the user.
+     */
+    public function hasOtpEnabled(): bool
+    {
+        return $this->otp_enabled ?? false;
+    }
+
+    /**
+     * Get the preferred OTP channel.
+     */
+    public function getPreferredOtpChannel(): string
+    {
+        return $this->preferred_otp_channel ?? Otp::CHANNEL_EMAIL;
     }
 }
