@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Mail;
+
+use App\Models\Collaborator;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+
+class CollaborationInvitationMail extends Mailable implements ShouldQueue
+{
+    use Queueable, SerializesModels;
+
+    /**
+     * Create a new message instance.
+     */
+    public function __construct(
+        public Collaborator $collaborator
+    ) {}
+
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: "Invitation à collaborer sur \"{$this->collaborator->event->title}\"",
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        $roleLabel = \App\Enums\CollaboratorRole::tryFrom($this->collaborator->role)?->label() ?? $this->collaborator->role;
+        $frontendUrl = config('app.frontend_url', config('app.url'));
+        $eventId = $this->collaborator->event->id;
+
+        return new Content(
+            markdown: 'emails.collaboration-invitation',
+            with: [
+                'collaborator' => $this->collaborator,
+                'event' => $this->collaborator->event,
+                'inviter' => $this->collaborator->event->user,
+                'invitee' => $this->collaborator->user,
+                'roleLabel' => $roleLabel,
+                'acceptUrl' => "{$frontendUrl}/events/{$eventId}/collaborators/accept",
+                'declineUrl' => "{$frontendUrl}/events/{$eventId}/collaborators/decline",
+            ],
+        );
+    }
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
+    }
+}

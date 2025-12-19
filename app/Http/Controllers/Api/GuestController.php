@@ -1,0 +1,221 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Event;
+use App\Models\Guest;
+use App\Services\GuestService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class GuestController extends Controller
+{
+    public function __construct(
+        protected GuestService $guestService
+    ) {}
+    /**
+     * Display a listing of guests for an event.
+     */
+    public function index(Event $event): JsonResponse
+    {
+        $this->authorize('view', $event);
+
+        $guests = $event->guests()
+            ->orderBy('name')
+            ->paginate(20);
+
+        return response()->json($guests);
+    }
+
+    /**
+     * Store a newly created guest.
+     */
+    public function store(Request $request, Event $event): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'notes' => 'nullable|string',
+        ]);
+
+        $guest = $event->guests()->create($validated);
+
+        return response()->json($guest, 201);
+    }
+
+    /**
+     * Display the specified guest.
+     */
+    public function show(Event $event, Guest $guest): JsonResponse
+    {
+        $this->authorize('view', $event);
+
+        return response()->json($guest);
+    }
+
+    /**
+     * Update the specified guest.
+     */
+    public function update(Request $request, Event $event, Guest $guest): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'rsvp_status' => 'sometimes|required|in:pending,accepted,declined,maybe',
+            'notes' => 'nullable|string',
+        ]);
+
+        $guest->update($validated);
+
+        return response()->json($guest);
+    }
+
+    /**
+     * Remove the specified guest.
+     */
+    public function destroy(Event $event, Guest $guest): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        $guest->delete();
+
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Get guest statistics for an event.
+     */
+    public function statistics(Event $event): JsonResponse
+    {
+        $this->authorize('view', $event);
+
+        $stats = $this->guestService->getStatistics($event);
+        $canAddMore = $this->guestService->canAddGuest($event);
+        $remainingSlots = $this->guestService->getRemainingSlots($event);
+
+        return response()->json([
+            'statistics' => $stats,
+            'can_add_more' => $canAddMore,
+            'remaining_slots' => $remainingSlots,
+        ]);
+    }
+
+    /**
+     * Import guests from CSV/Excel file.
+     */
+    public function import(Request $request, Event $event): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120',
+            'skip_duplicates' => 'sometimes|boolean',
+            'delimiter' => ['sometimes', 'string', 'max:1', function ($attribute, $value, $fail) {
+                if (!in_array($value, [',', ';', "\t"])) {
+                    $fail('Le délimiteur doit être une virgule, un point-virgule ou une tabulation.');
+                }
+            }],
+        ]);
+
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $options = [
+            'skip_duplicates' => $validated['skip_duplicates'] ?? true,
+            'delimiter' => $validated['delimiter'] ?? ',',
+        ];
+
+        // Handle Excel files
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            $results = $this->guestService->importFromExcel($event, $file, $options);
+        } else {
+            $results = $this->guestService->importFromCsv($event, $file, $options);
+        }
+
+        $statusCode = empty($results['errors']) ? 200 : 207;
+
+        return response()->json([
+            'message' => "Import terminé: {$results['imported']} invité(s) importé(s), {$results['skipped']} ignoré(s).",
+            'data' => $results,
+        ], $statusCode);
+    }
+
+    /**
+     * Download import template.
+     */
+    public function downloadTemplate(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $format = $request->query('format', 'csv');
+
+        if ($format === 'csv') {
+            $content = "nom,email,telephone,notes,statut\nJean Dupont,jean@example.com,+33612345678,Ami de la famille,pending\nMarie Martin,marie@example.com,,Collègue,";
+
+            return response()->streamDownload(function () use ($content) {
+                echo $content;
+            }, 'template_invites.csv', [
+                'Content-Type' => 'text/csv',
+            ]);
+        }
+
+        // For Excel, return CSV with proper encoding
+        $content = "nom,email,telephone,notes,statut\nJean Dupont,jean@example.com,+33612345678,Ami de la famille,pending\nMarie Martin,marie@example.com,,Collègue,";
+
+        return response()->streamDownload(function () use ($content) {
+            echo "\xEF\xBB\xBF" . $content; // UTF-8 BOM for Excel
+        }, 'template_invites.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
+     * Preview import data before confirming.
+     */
+    public function previewImport(Request $request, Event $event): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120',
+            'delimiter' => ['sometimes', 'string', 'max:1', function ($attribute, $value, $fail) {
+                if (!in_array($value, [',', ';', "\t"])) {
+                    $fail('Le délimiteur doit être une virgule, un point-virgule ou une tabulation.');
+                }
+            }],
+        ]);
+
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $options = [
+            'delimiter' => $validated['delimiter'] ?? ',',
+        ];
+
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            $preview = $this->guestService->previewExcelImport($file, $options);
+        } else {
+            $preview = $this->guestService->previewCsvImport($file, $options);
+        }
+
+        // Check for duplicates
+        $existingEmails = $event->guests()->whereNotNull('email')->pluck('email')->toArray();
+        $existingNames = $event->guests()->pluck('name')->toArray();
+
+        foreach ($preview['rows'] as &$row) {
+            $row['is_duplicate'] = false;
+            if (!empty($row['email']) && in_array($row['email'], $existingEmails)) {
+                $row['is_duplicate'] = true;
+            } elseif (!empty($row['name']) && in_array($row['name'], $existingNames)) {
+                $row['is_duplicate'] = true;
+            }
+        }
+
+        return response()->json($preview);
+    }
+}

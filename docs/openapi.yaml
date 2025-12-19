@@ -1,0 +1,6714 @@
+openapi: 3.0.3
+info:
+  title: Party Planner API
+  description: API pour la gestion d'événements et de fêtes
+  version: 1.0.0
+  contact:
+    name: Party Planner Support
+    email: support@party-planner.com
+
+servers:
+  - url: http://localhost:8000/api
+    description: Serveur de développement
+  - url: https://api.party-planner.com/api
+    description: Serveur de production
+
+tags:
+  - name: Auth
+    description: Authentification et gestion des utilisateurs
+  - name: Profile
+    description: Gestion du profil utilisateur
+  - name: Events
+    description: Gestion des evenements
+  - name: Guests
+    description: Gestion des invites
+  - name: Tasks
+    description: Gestion des taches
+  - name: Budget
+    description: Gestion du budget
+  - name: Photos
+    description: Galerie de photos
+  - name: Collaborators
+    description: Gestion des collaborateurs
+  - name: Notifications
+    description: Notifications utilisateur
+  - name: Subscriptions
+    description: Abonnements et plans
+  - name: Payments
+    description: Paiements Mobile Money (MTN, Airtel)
+  - name: Webhooks
+    description: Endpoints de callback pour les providers de paiement (MTN, Airtel)
+  - name: Exports
+    description: Export de donnees (CSV, PDF, XLSX)
+  - name: Templates
+    description: Templates d'evenements
+  - name: Invitations
+    description: Invitations publiques (sans authentification)
+  - name: Admin
+    description: |
+      Administration (reserve aux administrateurs)
+
+      **Policies utilisees:**
+      - `AdminPolicy` - Controle d'acces aux fonctionnalites admin
+
+      **Request Classes:**
+      - `ListUsersRequest`, `UpdateUserRoleRequest`
+      - `ListEventsRequest`, `ListPaymentsRequest`, `ListSubscriptionsRequest`
+      - `ListActivityLogsRequest`
+      - `StoreTemplateRequest`, `UpdateTemplateRequest`
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: 1
+        name: "Jean Dupont"
+        email: "jean.dupont@example.com"
+        role: "user"
+        email_verified_at: "2024-01-15T10:30:00Z"
+        avatar_url: "https://example.com/avatars/1.jpg"
+        created_at: "2024-01-01T08:00:00Z"
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        type:
+          $ref: '#/components/schemas/EventType'
+        status:
+          $ref: '#/components/schemas/EventStatus'
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        expected_guests:
+          type: integer
+        budget:
+          type: number
+        theme:
+          type: string
+        user_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        id: 12
+        title: "Mariage de Jean et Marie"
+        type: "mariage"
+        status: "planning"
+        date: "2024-06-15"
+        time: "14:00"
+        location: "Chateau de Versailles, France"
+        description: "Une celebration magique pour notre union"
+        expected_guests: 150
+        budget: 25000
+        theme: "Romantique champetre"
+        user_id: 1
+        created_at: "2024-01-01T08:00:00Z"
+        updated_at: "2024-01-15T14:30:00Z"
+
+    Guest:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        rsvp_status:
+          $ref: '#/components/schemas/RsvpStatus'
+        plus_one:
+          type: boolean
+        plus_one_name:
+          type: string
+          nullable: true
+        dietary_restrictions:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        checked_in_at:
+          type: string
+          format: date-time
+          nullable: true
+        invitation_sent_at:
+          type: string
+          format: date-time
+          nullable: true
+        invitation_token:
+          type: string
+      example:
+        id: 456
+        name: "Marie Martin"
+        email: "marie.martin@example.com"
+        phone: "+237670123456"
+        rsvp_status: "accepted"
+        plus_one: true
+        plus_one_name: "Pierre Martin"
+        dietary_restrictions: "Vegetarien"
+        notes: "Table proche de la scene"
+        checked_in_at: null
+        invitation_sent_at: "2024-01-10T09:00:00Z"
+        invitation_token: "abc123def456"
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        assigned_to:
+          type: integer
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+      example:
+        id: 789
+        title: "Reserver le traiteur"
+        description: "Contacter 3 traiteurs et comparer les devis"
+        status: "in_progress"
+        priority: "high"
+        due_date: "2024-03-01"
+        assigned_to: 2
+        completed_at: null
+
+    BudgetItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          $ref: '#/components/schemas/BudgetCategory'
+        name:
+          type: string
+        estimated_cost:
+          type: number
+        actual_cost:
+          type: number
+          nullable: true
+        paid:
+          type: boolean
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      example:
+        id: 101
+        category: "catering"
+        name: "Traiteur Le Gourmet"
+        estimated_cost: 5000
+        actual_cost: 4800
+        paid: true
+        paid_at: "2024-02-15T10:00:00Z"
+        notes: "Menu vegetarien inclus"
+
+    Photo:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+        thumbnail_url:
+          type: string
+        type:
+          $ref: '#/components/schemas/PhotoType'
+        caption:
+          type: string
+          nullable: true
+        is_featured:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: 55
+        url: "https://storage.party-planner.com/photos/wedding-001.jpg"
+        thumbnail_url: "https://storage.party-planner.com/photos/thumbs/wedding-001.jpg"
+        type: "event_photo"
+        caption: "La ceremonie en plein air"
+        is_featured: true
+        created_at: "2024-06-15T16:30:00Z"
+
+    Collaborator:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          $ref: '#/components/schemas/User'
+        role:
+          $ref: '#/components/schemas/CollaboratorRole'
+        accepted_at:
+          type: string
+          format: date-time
+          nullable: true
+      example:
+        id: 78
+        user:
+          id: 15
+          name: "Sophie Bernard"
+          email: "sophie@example.com"
+          role: "user"
+        role: "editor"
+        accepted_at: "2024-01-20T11:00:00Z"
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        data:
+          type: object
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: "550e8400-e29b-41d4-a716-446655440000"
+        type: "App\\Notifications\\GuestRsvpReceived"
+        data:
+          event_id: 12
+          event_title: "Mariage de Jean et Marie"
+          guest_name: "Pierre Duval"
+          rsvp_status: "accepted"
+          message: "Pierre Duval a accepte votre invitation"
+        read_at: null
+        created_at: "2024-01-25T14:30:00Z"
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        plan:
+          $ref: '#/components/schemas/PlanType'
+        status:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        guest_limit:
+          type: integer
+        collaborator_limit:
+          type: integer
+          nullable: true
+      example:
+        id: 88
+        plan: "pro"
+        status: "active"
+        starts_at: "2024-01-15T00:00:00Z"
+        ends_at: "2025-01-15T00:00:00Z"
+        guest_limit: 500
+        collaborator_limit: 10
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+        method:
+          $ref: '#/components/schemas/PaymentMethod'
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        reference:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: 123
+        amount: 15000
+        method: "mtn_mobile_money"
+        status: "completed"
+        reference: "MTN-2024011512345"
+        created_at: "2024-01-15T14:30:00Z"
+
+    EventType:
+      type: string
+      enum: [mariage, anniversaire, baby_shower, soiree, brunch, autre]
+
+    EventStatus:
+      type: string
+      enum: [draft, planning, confirmed, completed, cancelled]
+
+    RsvpStatus:
+      type: string
+      enum: [pending, accepted, declined, maybe]
+
+    TaskStatus:
+      type: string
+      enum: [todo, in_progress, completed, cancelled]
+
+    TaskPriority:
+      type: string
+      enum: [low, medium, high]
+
+    BudgetCategory:
+      type: string
+      enum: [location, catering, decoration, entertainment, photography, transportation, other]
+
+    CollaboratorRole:
+      type: string
+      enum: [owner, editor, viewer]
+
+    PaymentMethod:
+      type: string
+      enum: [mtn_mobile_money, airtel_money]
+
+    PaymentStatus:
+      type: string
+      enum: [pending, completed, failed, refunded]
+
+    PlanType:
+      type: string
+      enum: [starter, pro]
+
+    PhotoType:
+      type: string
+      enum: [moodboard, event_photo]
+
+    UserRole:
+      type: string
+      enum: [admin, user]
+
+    EventTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+        event_type:
+          $ref: '#/components/schemas/EventType'
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        default_tasks:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              priority:
+                $ref: '#/components/schemas/TaskPriority'
+        default_budget_categories:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              category:
+                $ref: '#/components/schemas/BudgetCategory'
+              estimated_cost:
+                type: number
+        suggested_themes:
+          type: array
+          items:
+            type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        id: 1
+        event_type: "mariage"
+        name: "Mariage Classique"
+        description: "Template pour un mariage traditionnel avec reception"
+        default_tasks:
+          - title: "Choisir le lieu de reception"
+            description: "Visiter au moins 3 lieux potentiels"
+            priority: "high"
+          - title: "Selectionner le traiteur"
+            description: "Demander des devis et organiser des degustations"
+            priority: "high"
+          - title: "Commander les faire-part"
+            description: null
+            priority: "medium"
+        default_budget_categories:
+          - name: "Salle de reception"
+            category: "location"
+            estimated_cost: 5000
+          - name: "Traiteur et repas"
+            category: "catering"
+            estimated_cost: 8000
+          - name: "Photographe"
+            category: "photography"
+            estimated_cost: 2000
+        suggested_themes:
+          - "Romantique champetre"
+          - "Elegant moderne"
+          - "Vintage boheme"
+        is_active: true
+        created_at: "2024-01-01T00:00:00Z"
+        updated_at: "2024-01-15T10:00:00Z"
+
+    AdminActivityLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        admin_id:
+          type: integer
+        action:
+          type: string
+          enum: [login, create, update, delete, view, update_role, toggle_active]
+        model_type:
+          type: string
+          nullable: true
+          description: Fully qualified model class name (e.g., App\Models\User)
+        model_id:
+          type: integer
+          nullable: true
+        description:
+          type: string
+        old_values:
+          type: object
+          nullable: true
+        new_values:
+          type: object
+          nullable: true
+        ip_address:
+          type: string
+          nullable: true
+        user_agent:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        admin:
+          $ref: '#/components/schemas/User'
+      example:
+        id: 1250
+        admin_id: 1
+        action: "update_role"
+        model_type: "App\\Models\\User"
+        model_id: 25
+        description: "Changement de role pour l'utilisateur Pierre Lefebvre"
+        old_values:
+          role: "user"
+        new_values:
+          role: "admin"
+        ip_address: "192.168.1.100"
+        user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        created_at: "2024-03-15T14:30:00Z"
+        admin:
+          id: 1
+          name: "Super Admin"
+          email: "admin@party-planner.com"
+
+    AdminActivityStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        today:
+          type: integer
+        this_week:
+          type: integer
+        this_month:
+          type: integer
+        by_action:
+          type: object
+          additionalProperties:
+            type: integer
+        by_model_type:
+          type: object
+          additionalProperties:
+            type: integer
+        by_admin:
+          type: array
+          items:
+            type: object
+            properties:
+              admin_id:
+                type: integer
+              admin_name:
+                type: string
+              count:
+                type: integer
+      example:
+        total: 3456
+        today: 23
+        this_week: 145
+        this_month: 567
+        by_action:
+          login: 1200
+          create: 890
+          update: 756
+          delete: 234
+          view: 376
+        by_model_type:
+          "App\\Models\\User": 890
+          "App\\Models\\Event": 1200
+          "App\\Models\\Payment": 456
+          "App\\Models\\Subscription": 310
+        by_admin:
+          - admin_id: 1
+            admin_name: "Super Admin"
+            count: 2100
+          - admin_id: 3
+            admin_name: "Marie Admin"
+            count: 1356
+
+    AdminStats:
+      type: object
+      properties:
+        users:
+          type: object
+          properties:
+            total:
+              type: integer
+            new_this_month:
+              type: integer
+            growth_percentage:
+              type: number
+        events:
+          type: object
+          properties:
+            total:
+              type: integer
+            active:
+              type: integer
+            completed:
+              type: integer
+            by_type:
+              type: object
+        revenue:
+          type: object
+          properties:
+            total:
+              type: number
+            this_month:
+              type: number
+            last_month:
+              type: number
+            growth_percentage:
+              type: number
+        subscriptions:
+          type: object
+          properties:
+            total_active:
+              type: integer
+            by_plan:
+              type: object
+              properties:
+                starter:
+                  type: integer
+                pro:
+                  type: integer
+      example:
+        users:
+          total: 1250
+          new_this_month: 87
+          growth_percentage: 12.5
+        events:
+          total: 3420
+          active: 890
+          completed: 2530
+          by_type:
+            mariage: 1200
+            anniversaire: 980
+            baby_shower: 450
+            soiree: 520
+            brunch: 180
+            autre: 90
+        revenue:
+          total: 15750000
+          this_month: 1250000
+          last_month: 1100000
+          growth_percentage: 13.6
+        subscriptions:
+          total_active: 420
+          by_plan:
+            starter: 280
+            pro: 140
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      example:
+        message: "Les donnees fournies sont invalides."
+        errors:
+          email:
+            - "L'adresse email est deja utilisee."
+          password:
+            - "Le mot de passe doit contenir au moins 8 caracteres."
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+      example:
+        message: "The given data was invalid."
+        errors:
+          title:
+            - "Le champ titre est requis."
+          date:
+            - "Le champ date doit etre une date valide."
+
+    UnauthorizedError:
+      type: object
+      properties:
+        message:
+          type: string
+      example:
+        message: "Unauthenticated."
+
+    ForbiddenError:
+      type: object
+      properties:
+        message:
+          type: string
+      example:
+        message: "Cette action n'est pas autorisee."
+
+    NotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+      example:
+        message: "Ressource non trouvee."
+
+    ServerError:
+      type: object
+      properties:
+        message:
+          type: string
+      example:
+        message: "Une erreur interne s'est produite."
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+      example:
+        message: "Connexion reussie"
+        user:
+          id: 1
+          name: "Jean Dupont"
+          email: "jean@example.com"
+          role: "user"
+          email_verified_at: "2024-01-15T10:30:00Z"
+          avatar_url: "https://example.com/avatars/1.jpg"
+          created_at: "2024-01-01T08:00:00Z"
+        token: "1|abc123def456ghi789"
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        from:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        to:
+          type: integer
+        total:
+          type: integer
+      example:
+        current_page: 1
+        from: 1
+        last_page: 5
+        per_page: 15
+        to: 15
+        total: 75
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      example:
+        success: true
+        message: "Operation reussie"
+
+    # WebSocket Event Schemas
+    WebSocketPaymentEvent:
+      type: object
+      description: Evenement WebSocket pour les mises a jour de paiement
+      properties:
+        payment_id:
+          type: integer
+        status:
+          type: string
+        previous_status:
+          type: string
+        is_completed:
+          type: boolean
+        is_failed:
+          type: boolean
+        transaction_reference:
+          type: string
+        amount:
+          type: number
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        payment_id: 123
+        status: "completed"
+        previous_status: "pending"
+        is_completed: true
+        is_failed: false
+        transaction_reference: "MTN-123456789"
+        amount: 15000
+        updated_at: "2024-01-15T14:30:00Z"
+
+    WebSocketGuestEvent:
+      type: object
+      description: Evenement WebSocket pour les mises a jour RSVP
+      properties:
+        guest_id:
+          type: integer
+        event_id:
+          type: integer
+        name:
+          type: string
+        rsvp_status:
+          type: string
+        previous_status:
+          type: string
+        plus_one:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        guest_id: 456
+        event_id: 12
+        name: "Marie Martin"
+        rsvp_status: "accepted"
+        previous_status: "pending"
+        plus_one: true
+        updated_at: "2024-01-15T14:30:00Z"
+
+    WebSocketTaskEvent:
+      type: object
+      description: Evenement WebSocket pour les mises a jour de taches
+      properties:
+        task_id:
+          type: integer
+        event_id:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+        previous_status:
+          type: string
+        priority:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        task_id: 789
+        event_id: 12
+        title: "Reserver le traiteur"
+        status: "completed"
+        previous_status: "in_progress"
+        priority: "high"
+        updated_at: "2024-01-15T14:30:00Z"
+
+paths:
+  # Authentication
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Inscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                password_confirmation:
+                  type: string
+      responses:
+        '201':
+          description: Inscription réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Connexion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Déconnexion
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Déconnexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Mot de passe oublié
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Email envoyé
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Réinitialiser le mot de passe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, email, password, password_confirmation]
+              properties:
+                token:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Mot de passe réinitialisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /auth/email/verification-notification:
+    post:
+      tags: [Auth]
+      summary: Renvoyer l'email de verification
+      description: Envoie un nouvel email de verification a l'utilisateur connecte
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Email de verification envoye
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Un nouveau lien de verification a ete envoye."
+        '429':
+          description: Trop de tentatives (limite 6 par minute)
+
+  /auth/verify-email/{id}/{hash}:
+    get:
+      tags: [Auth]
+      summary: Verifier l'email
+      description: Verifie l'adresse email via le lien envoye par email
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID de l'utilisateur
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Hash de verification
+      responses:
+        '200':
+          description: Email verifie avec succes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Email verifie avec succes."
+        '403':
+          description: Lien de verification invalide ou expire
+
+  /auth/password:
+    put:
+      tags: [Auth]
+      summary: Modifier le mot de passe
+      description: Permet a l'utilisateur connecte de changer son mot de passe
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password:
+                  type: string
+                  description: Mot de passe actuel
+                password:
+                  type: string
+                  minLength: 8
+                  description: Nouveau mot de passe
+                password_confirmation:
+                  type: string
+                  description: Confirmation du nouveau mot de passe
+            example:
+              current_password: "ancien_mot_de_passe"
+              password: "nouveau_mot_de_passe_123"
+              password_confirmation: "nouveau_mot_de_passe_123"
+      responses:
+        '200':
+          description: Mot de passe modifie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '422':
+          description: Mot de passe actuel incorrect ou validation echouee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /user:
+    get:
+      tags: [Auth]
+      summary: Utilisateur courant
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # User Profile
+  /user/profile:
+    get:
+      tags: [Profile]
+      summary: Voir le profil
+      description: Retourne le profil de l'utilisateur connecte
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      email:
+                        type: string
+                        format: email
+                      phone:
+                        type: string
+                        nullable: true
+                      avatar:
+                        type: string
+                        nullable: true
+                      avatar_url:
+                        type: string
+                        nullable: true
+                      role:
+                        type: string
+                        enum: [user, admin]
+                      email_verified_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      created_at:
+                        type: string
+                        format: date-time
+              example:
+                user:
+                  id: 1
+                  name: "Jean Dupont"
+                  email: "jean@example.com"
+                  phone: "670123456"
+                  avatar: "avatars/abc123.jpg"
+                  avatar_url: "http://localhost:8000/storage/avatars/abc123.jpg"
+                  role: "user"
+                  email_verified_at: "2024-01-15T10:30:00Z"
+                  created_at: "2024-01-10T08:00:00Z"
+
+    post:
+      tags: [Profile]
+      summary: Modifier le profil
+      description: Met a jour le profil de l'utilisateur connecte (supporte multipart/form-data pour l'upload d'avatar)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                phone:
+                  type: string
+                  maxLength: 20
+                avatar:
+                  type: string
+                  format: binary
+                  description: Image (max 2MB)
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                phone:
+                  type: string
+            example:
+              name: "Jean Dupont"
+              phone: "670123456"
+      responses:
+        '200':
+          description: Profil mis a jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    type: object
+              example:
+                message: "Profil mis a jour avec succes."
+                user:
+                  id: 1
+                  name: "Jean Dupont"
+                  email: "jean@example.com"
+                  phone: "670123456"
+                  avatar: "avatars/abc123.jpg"
+                  avatar_url: "http://localhost:8000/storage/avatars/abc123.jpg"
+                  role: "user"
+                  email_verified_at: "2024-01-15T10:30:00Z"
+                  created_at: "2024-01-10T08:00:00Z"
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /user/profile/avatar:
+    delete:
+      tags: [Profile]
+      summary: Supprimer l'avatar
+      description: Supprime l'avatar de l'utilisateur connecte
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Avatar supprime
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Avatar supprime avec succes."
+
+  # User Invitations (invitations à collaborer reçues)
+  /user/invitations:
+    get:
+      tags: [Collaborators]
+      summary: Mes invitations a collaborer
+      description: Liste des invitations a collaborer recues par l'utilisateur connecte (en attente d'acceptation)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des invitations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invitations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        event_id:
+                          type: integer
+                        role:
+                          type: string
+                          enum: [viewer, editor, admin]
+                        created_at:
+                          type: string
+                          format: date-time
+                        event:
+                          $ref: '#/components/schemas/Event'
+              example:
+                invitations:
+                  - id: 12
+                    event_id: 5
+                    role: "editor"
+                    created_at: "2024-01-15T10:30:00Z"
+                    event:
+                      id: 5
+                      title: "Mariage de Jean et Marie"
+                      date: "2024-06-15"
+
+  /user/invitations/{id}/accept:
+    post:
+      tags: [Collaborators]
+      summary: Accepter une invitation
+      description: Accepte une invitation a collaborer par son ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de l'invitation (collaborator)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invitation acceptee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  collaborator:
+                    type: object
+              example:
+                message: "Invitation acceptee."
+                collaborator:
+                  id: 12
+                  event_id: 5
+                  role: "editor"
+                  accepted_at: "2024-01-16T14:00:00Z"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          description: Invitation deja acceptee
+          content:
+            application/json:
+              example:
+                message: "Invitation deja acceptee."
+
+  /user/invitations/{id}/reject:
+    post:
+      tags: [Collaborators]
+      summary: Refuser une invitation
+      description: Refuse une invitation a collaborer par son ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de l'invitation (collaborator)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invitation refusee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Invitation refusee."
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          description: Impossible de refuser une invitation deja acceptee
+          content:
+            application/json:
+              example:
+                message: "Impossible de refuser une invitation deja acceptee."
+
+  # User Collaborations (événements où je collabore)
+  /user/collaborations:
+    get:
+      tags: [Collaborators]
+      summary: Mes collaborations
+      description: Liste des evenements ou l'utilisateur est collaborateur (pas proprietaire)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des collaborations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collaborations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        event_id:
+                          type: integer
+                        role:
+                          type: string
+                          enum: [viewer, editor, admin]
+                        accepted_at:
+                          type: string
+                          format: date-time
+                        event:
+                          $ref: '#/components/schemas/Event'
+              example:
+                collaborations:
+                  - id: 12
+                    event_id: 5
+                    role: "editor"
+                    accepted_at: "2024-01-16T14:00:00Z"
+                    event:
+                      id: 5
+                      title: "Mariage de Jean et Marie"
+                      date: "2024-06-15"
+                      status: "planning"
+
+  /user/collaborations/{eventId}:
+    delete:
+      tags: [Collaborators]
+      summary: Quitter une collaboration
+      description: Quitte un evenement ou l'utilisateur est collaborateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID de l'evenement
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Collaboration quittee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Vous avez quitte l'evenement."
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          description: Impossible de quitter cet evenement
+          content:
+            application/json:
+              example:
+                message: "Impossible de quitter cet evenement."
+
+  # Events
+  /events:
+    get:
+      tags: [Events]
+      summary: Lister les événements
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/EventStatus'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/EventType'
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Liste des événements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+              example:
+                data:
+                  - id: 12
+                    title: "Mariage de Jean et Marie"
+                    type: "mariage"
+                    status: "planning"
+                    date: "2024-06-15"
+                    time: "14:00"
+                    location: "Chateau de Versailles"
+                    expected_guests: 150
+                    budget: 25000
+                    user_id: 1
+                  - id: 15
+                    title: "Anniversaire de Sophie"
+                    type: "anniversaire"
+                    status: "confirmed"
+                    date: "2024-03-20"
+                    time: "19:00"
+                    location: "Restaurant Le Gourmet"
+                    expected_guests: 30
+                    budget: 2500
+                    user_id: 1
+                meta:
+                  current_page: 1
+                  from: 1
+                  last_page: 3
+                  per_page: 15
+                  to: 15
+                  total: 42
+        '401':
+          description: Non authentifie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+
+    post:
+      tags: [Events]
+      summary: Créer un événement
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, type, date]
+              properties:
+                title:
+                  type: string
+                type:
+                  $ref: '#/components/schemas/EventType'
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                location:
+                  type: string
+                description:
+                  type: string
+                expected_guests:
+                  type: integer
+                budget:
+                  type: number
+                theme:
+                  type: string
+      responses:
+        '201':
+          description: Événement créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+              example:
+                id: 45
+                title: "Brunch d'entreprise"
+                type: "brunch"
+                status: "draft"
+                date: "2024-04-15"
+                time: "10:00"
+                location: "Hotel Royal"
+                description: "Brunch annuel de l'equipe"
+                expected_guests: 50
+                budget: 3000
+                theme: null
+                user_id: 1
+                created_at: "2024-01-20T09:00:00Z"
+                updated_at: "2024-01-20T09:00:00Z"
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                message: "Les donnees fournies sont invalides."
+                errors:
+                  title:
+                    - "Le champ titre est requis."
+                  date:
+                    - "La date doit etre une date future."
+
+  /events/{id}:
+    get:
+      tags: [Events]
+      summary: Voir un événement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Événement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+    put:
+      tags: [Events]
+      summary: Modifier un événement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '200':
+          description: Événement modifié
+
+    delete:
+      tags: [Events]
+      summary: Supprimer un événement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Événement supprimé
+
+  /events/{id}/public:
+    get:
+      tags: [Events]
+      summary: Voir un evenement (public)
+      description: Retourne les informations publiques d'un evenement (sans authentification)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Informations publiques de l'evenement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  type:
+                    $ref: '#/components/schemas/EventType'
+                  date:
+                    type: string
+                    format: date
+                  time:
+                    type: string
+                  location:
+                    type: string
+                  description:
+                    type: string
+              example:
+                id: 12
+                title: "Mariage de Jean et Marie"
+                type: "mariage"
+                date: "2024-06-15"
+                time: "14:00"
+                location: "Chateau de Versailles"
+                description: "Une celebration magique"
+        '404':
+          description: Evenement non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  # Guests
+  /events/{eventId}/guests:
+    get:
+      tags: [Guests]
+      summary: Lister les invités
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des invités
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Guest'
+                  stats:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      by_status:
+                        type: object
+              example:
+                data:
+                  - id: 101
+                    name: "Marie Martin"
+                    email: "marie@example.com"
+                    phone: "+237670123456"
+                    rsvp_status: "accepted"
+                    plus_one: true
+                    plus_one_name: "Pierre Martin"
+                    dietary_restrictions: "Vegetarien"
+                    checked_in_at: null
+                    invitation_sent_at: "2024-01-10T09:00:00Z"
+                  - id: 102
+                    name: "Paul Durand"
+                    email: "paul@example.com"
+                    phone: "+237699887766"
+                    rsvp_status: "pending"
+                    plus_one: false
+                    plus_one_name: null
+                    dietary_restrictions: null
+                    checked_in_at: null
+                    invitation_sent_at: null
+                stats:
+                  total: 45
+                  by_status:
+                    accepted: 30
+                    pending: 10
+                    declined: 3
+                    maybe: 2
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Evenement non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+    post:
+      tags: [Guests]
+      summary: Créer un invité
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+                plus_one:
+                  type: boolean
+                dietary_restrictions:
+                  type: string
+            example:
+              name: "Sophie Lemaire"
+              email: "sophie.lemaire@example.com"
+              phone: "+237680123456"
+              plus_one: true
+              dietary_restrictions: "Sans gluten"
+      responses:
+        '201':
+          description: Invité créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guest'
+              example:
+                id: 150
+                name: "Sophie Lemaire"
+                email: "sophie.lemaire@example.com"
+                phone: "+237680123456"
+                rsvp_status: "pending"
+                plus_one: true
+                plus_one_name: null
+                dietary_restrictions: "Sans gluten"
+                invitation_sent_at: null
+                checked_in_at: null
+                invitation_token: "tok_xyz789"
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                message: "Les donnees fournies sont invalides."
+                errors:
+                  name:
+                    - "Le champ nom est requis."
+                  email:
+                    - "L'adresse email n'est pas valide."
+
+  /events/{eventId}/guests/statistics:
+    get:
+      tags: [Guests]
+      summary: Statistiques des invités
+      description: Retourne les statistiques des invités pour un événement (par statut RSVP, invitations, check-in, etc.)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statistiques des invités
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statistics:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        description: Nombre total d'invités
+                      by_status:
+                        type: object
+                        properties:
+                          accepted:
+                            type: integer
+                          declined:
+                            type: integer
+                          pending:
+                            type: integer
+                          maybe:
+                            type: integer
+                      invitations:
+                        type: object
+                        properties:
+                          sent:
+                            type: integer
+                          not_sent:
+                            type: integer
+                      check_in:
+                        type: object
+                        properties:
+                          checked_in:
+                            type: integer
+                          not_checked_in:
+                            type: integer
+                      with_email:
+                        type: integer
+                      without_email:
+                        type: integer
+                  can_add_more:
+                    type: boolean
+                    description: Indique si l'utilisateur peut ajouter plus d'invités (selon son plan)
+                  remaining_slots:
+                    type: integer
+                    description: Nombre d'invités restants autorisés
+              example:
+                statistics:
+                  total: 120
+                  by_status:
+                    accepted: 85
+                    pending: 25
+                    declined: 8
+                    maybe: 2
+                  invitations:
+                    sent: 95
+                    not_sent: 25
+                  check_in:
+                    checked_in: 0
+                    not_checked_in: 120
+                  with_email: 100
+                  without_email: 20
+                can_add_more: true
+                remaining_slots: 30
+        '403':
+          description: Accès non autorisé à cet événement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/guests/{guestId}:
+    get:
+      tags: [Guests]
+      summary: Voir un invite
+      description: Retourne les details d'un invite specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: guestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details de l'invite
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guest'
+        '404':
+          description: Invite non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+    put:
+      tags: [Guests]
+      summary: Modifier un invite
+      description: Met a jour les informations d'un invite
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: guestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+                rsvp_status:
+                  $ref: '#/components/schemas/RsvpStatus'
+                plus_one:
+                  type: boolean
+                plus_one_name:
+                  type: string
+                dietary_restrictions:
+                  type: string
+                notes:
+                  type: string
+                table_number:
+                  type: string
+            example:
+              name: "Marie Martin"
+              rsvp_status: "accepted"
+              plus_one: true
+              plus_one_name: "Pierre Martin"
+              dietary_restrictions: "Vegetarien"
+      responses:
+        '200':
+          description: Invite mis a jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guest'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    delete:
+      tags: [Guests]
+      summary: Supprimer un invite
+      description: Supprime definitivement un invite de l'evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: guestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Invite supprime
+        '404':
+          description: Invite non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  # Tasks
+  /events/{eventId}/tasks:
+    get:
+      tags: [Tasks]
+      summary: Lister les tâches
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des tâches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+              example:
+                - id: 1
+                  title: "Reserver le traiteur"
+                  description: "Contacter 3 traiteurs et comparer les devis"
+                  status: "completed"
+                  priority: "high"
+                  due_date: "2024-03-01"
+                  assigned_to: 2
+                  completed_at: "2024-02-28T15:00:00Z"
+                - id: 2
+                  title: "Commander les fleurs"
+                  description: "Roses blanches et pivoines"
+                  status: "in_progress"
+                  priority: "medium"
+                  due_date: "2024-04-15"
+                  assigned_to: 1
+                  completed_at: null
+                - id: 3
+                  title: "Envoyer les faire-part"
+                  description: null
+                  status: "todo"
+                  priority: "high"
+                  due_date: "2024-02-15"
+                  assigned_to: null
+                  completed_at: null
+
+    post:
+      tags: [Tasks]
+      summary: Créer une tâche
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                priority:
+                  $ref: '#/components/schemas/TaskPriority'
+                due_date:
+                  type: string
+                  format: date
+                assigned_to:
+                  type: integer
+      responses:
+        '201':
+          description: Tâche créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+
+  /events/{eventId}/tasks/{taskId}:
+    get:
+      tags: [Tasks]
+      summary: Voir une tache
+      description: Retourne les details d'une tache specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details de la tache
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Tache non trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+    put:
+      tags: [Tasks]
+      summary: Modifier une tache
+      description: Met a jour une tache existante
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                status:
+                  $ref: '#/components/schemas/TaskStatus'
+                priority:
+                  $ref: '#/components/schemas/TaskPriority'
+                due_date:
+                  type: string
+                  format: date
+                assigned_to:
+                  type: integer
+            example:
+              title: "Commander les fleurs - URGENT"
+              status: "completed"
+              priority: "high"
+      responses:
+        '200':
+          description: Tache mise a jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    delete:
+      tags: [Tasks]
+      summary: Supprimer une tache
+      description: Supprime definitivement une tache
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Tache supprimee
+        '404':
+          description: Tache non trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  # Budget
+  /events/{eventId}/budget:
+    get:
+      tags: [Budget]
+      summary: Voir le budget
+      description: Retourne tous les elements du budget avec statistiques et repartition par categorie
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: category
+          in: query
+          description: Filtrer par categorie
+          schema:
+            $ref: '#/components/schemas/BudgetCategory'
+        - name: paid
+          in: query
+          description: Filtrer par statut de paiement
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Budget complet avec statistiques
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BudgetItem'
+                  stats:
+                    type: object
+                    properties:
+                      total_estimated:
+                        type: number
+                      total_actual:
+                        type: number
+                      total_paid:
+                        type: number
+                      total_remaining:
+                        type: number
+                      items_count:
+                        type: integer
+                      paid_count:
+                        type: integer
+                  by_category:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        estimated:
+                          type: number
+                        actual:
+                          type: number
+                        count:
+                          type: integer
+              example:
+                items:
+                  - id: 101
+                    category: "catering"
+                    name: "Traiteur Le Gourmet"
+                    estimated_cost: 5000
+                    actual_cost: 4800
+                    paid: true
+                    paid_at: "2024-02-15T10:00:00Z"
+                  - id: 102
+                    category: "decoration"
+                    name: "Fleurs et centre de table"
+                    estimated_cost: 1500
+                    actual_cost: null
+                    paid: false
+                    paid_at: null
+                stats:
+                  total_estimated: 15000
+                  total_actual: 12500
+                  total_paid: 8500
+                  total_remaining: 4000
+                  items_count: 12
+                  paid_count: 5
+                by_category:
+                  catering:
+                    estimated: 5000
+                    actual: 4800
+                    count: 1
+                  decoration:
+                    estimated: 1500
+                    actual: 0
+                    count: 1
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/budget/statistics:
+    get:
+      tags: [Budget]
+      summary: Statistiques du budget
+      description: Retourne uniquement les statistiques et repartition par categorie (sans les items)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statistiques du budget
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stats:
+                    type: object
+                    properties:
+                      total_estimated:
+                        type: number
+                      total_actual:
+                        type: number
+                      total_paid:
+                        type: number
+                      total_remaining:
+                        type: number
+                      items_count:
+                        type: integer
+                      paid_count:
+                        type: integer
+                  by_category:
+                    type: object
+              example:
+                stats:
+                  total_estimated: 25000
+                  total_actual: 18500
+                  total_paid: 12000
+                  total_remaining: 6500
+                  items_count: 15
+                  paid_count: 8
+                by_category:
+                  location:
+                    estimated: 5000
+                    actual: 5000
+                    count: 1
+                  catering:
+                    estimated: 8000
+                    actual: 7500
+                    count: 2
+                  decoration:
+                    estimated: 3000
+                    actual: 2500
+                    count: 4
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/budget/items:
+    post:
+      tags: [Budget]
+      summary: Creer un element de budget
+      description: Ajoute un nouvel element au budget de l'evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, name]
+              properties:
+                category:
+                  $ref: '#/components/schemas/BudgetCategory'
+                name:
+                  type: string
+                  maxLength: 255
+                estimated_cost:
+                  type: number
+                  minimum: 0
+                actual_cost:
+                  type: number
+                  minimum: 0
+                notes:
+                  type: string
+            example:
+              category: "catering"
+              name: "Traiteur Le Gourmet"
+              estimated_cost: 5000
+              actual_cost: null
+              notes: "Menu vegetarien inclus"
+      responses:
+        '201':
+          description: Element cree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetItem'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /events/{eventId}/budget/items/{itemId}:
+    get:
+      tags: [Budget]
+      summary: Voir un element de budget
+      description: Retourne les details d'un element de budget specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details de l'element
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetItem'
+        '404':
+          description: Element non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+    put:
+      tags: [Budget]
+      summary: Modifier un element de budget
+      description: Met a jour un element de budget existant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  $ref: '#/components/schemas/BudgetCategory'
+                name:
+                  type: string
+                  maxLength: 255
+                estimated_cost:
+                  type: number
+                  minimum: 0
+                actual_cost:
+                  type: number
+                  minimum: 0
+                notes:
+                  type: string
+            example:
+              name: "Traiteur Le Gourmet - Menu Premium"
+              actual_cost: 5500
+              notes: "Menu vegetarien + options sans gluten"
+      responses:
+        '200':
+          description: Element mis a jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetItem'
+        '404':
+          description: Element non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    delete:
+      tags: [Budget]
+      summary: Supprimer un element de budget
+      description: Supprime definitivement un element du budget
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Element supprime
+        '403':
+          description: Non autorise a gerer le budget
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '404':
+          description: Element non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /events/{eventId}/budget/items/{itemId}/mark-paid:
+    post:
+      tags: [Budget]
+      summary: Marquer comme paye
+      description: Marque un element de budget comme paye avec une date de paiement optionnelle
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payment_date:
+                  type: string
+                  format: date-time
+                  description: Date de paiement (defaut = maintenant)
+            example:
+              payment_date: "2024-02-15T10:00:00Z"
+      responses:
+        '200':
+          description: Element marque comme paye
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetItem'
+              example:
+                id: 101
+                category: "catering"
+                name: "Traiteur Le Gourmet"
+                estimated_cost: 5000
+                actual_cost: 5000
+                paid: true
+                paid_at: "2024-02-15T10:00:00Z"
+                notes: null
+        '403':
+          description: Non autorise a gerer le budget
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/budget/items/{itemId}/mark-unpaid:
+    post:
+      tags: [Budget]
+      summary: Marquer comme non paye
+      description: Annule le statut paye d'un element de budget
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Element marque comme non paye
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetItem'
+              example:
+                id: 101
+                category: "catering"
+                name: "Traiteur Le Gourmet"
+                estimated_cost: 5000
+                actual_cost: 5000
+                paid: false
+                paid_at: null
+                notes: null
+        '403':
+          description: Non autorise a gerer le budget
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/budget/bulk-update:
+    post:
+      tags: [Budget]
+      summary: Mise a jour en masse
+      description: Permet de marquer plusieurs elements comme payes, non payes ou de les supprimer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items, action]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: integer
+                  description: Liste des IDs des elements a modifier
+                action:
+                  type: string
+                  enum: [mark_paid, mark_unpaid, delete]
+                  description: Action a effectuer sur les elements
+            example:
+              items: [101, 102, 103]
+              action: "mark_paid"
+      responses:
+        '200':
+          description: Elements mis a jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+              example:
+                message: "3 items updated"
+                count: 3
+        '403':
+          description: Non autorise a gerer le budget
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                message: "Les donnees fournies sont invalides."
+                errors:
+                  action:
+                    - "L'action selectionnee est invalide."
+                  items:
+                    - "Le champ items est requis."
+
+  # Photos
+  /events/{eventId}/photos:
+    get:
+      tags: [Photos]
+      summary: Lister les photos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des photos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  photos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Photo'
+                  stats:
+                    type: object
+
+    post:
+      tags: [Photos]
+      summary: Uploader une photo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                type:
+                  $ref: '#/components/schemas/PhotoType'
+                caption:
+                  type: string
+      responses:
+        '201':
+          description: Photo uploadée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+
+  /events/{eventId}/photos/statistics:
+    get:
+      tags: [Photos]
+      summary: Statistiques des photos
+      description: Retourne les statistiques des photos pour un evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statistiques des photos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  by_type:
+                    type: object
+                  featured_count:
+                    type: integer
+                  storage_used:
+                    type: integer
+                    description: Espace utilise en octets
+              example:
+                total: 45
+                by_type:
+                  event_photo: 30
+                  profile_photo: 5
+                  decoration: 10
+                featured_count: 3
+                storage_used: 125829120
+
+  /events/{eventId}/photos/{photoId}:
+    get:
+      tags: [Photos]
+      summary: Voir une photo
+      description: Retourne les details d'une photo specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details de la photo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        '404':
+          description: Photo non trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+    put:
+      tags: [Photos]
+      summary: Modifier une photo
+      description: Met a jour les metadonnees d'une photo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/PhotoType'
+                caption:
+                  type: string
+            example:
+              type: "event_photo"
+              caption: "La ceremonie en plein air"
+      responses:
+        '200':
+          description: Photo mise a jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+
+    delete:
+      tags: [Photos]
+      summary: Supprimer une photo
+      description: Supprime definitivement une photo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Photo supprimee
+        '404':
+          description: Photo non trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /events/{eventId}/photos/{photoId}/toggle-featured:
+    post:
+      tags: [Photos]
+      summary: Basculer le statut featured
+      description: Active ou desactive le statut featured d'une photo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statut featured modifie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+
+  /events/{eventId}/photos/{photoId}/set-featured:
+    post:
+      tags: [Photos]
+      summary: Definir comme photo principale
+      description: Definit cette photo comme photo principale (les autres perdent ce statut)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Photo definie comme principale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+
+  /events/{eventId}/photos/bulk-delete:
+    post:
+      tags: [Photos]
+      summary: Supprimer plusieurs photos
+      description: Supprime plusieurs photos en une seule requete
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photo_ids]
+              properties:
+                photo_ids:
+                  type: array
+                  items:
+                    type: integer
+            example:
+              photo_ids: [1, 2, 3, 5]
+      responses:
+        '200':
+          description: Photos supprimees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+              example:
+                message: "4 photos supprimees"
+                count: 4
+
+  /events/{eventId}/photos/bulk-update-type:
+    post:
+      tags: [Photos]
+      summary: Modifier le type de plusieurs photos
+      description: Change le type de plusieurs photos en une seule requete
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photo_ids, type]
+              properties:
+                photo_ids:
+                  type: array
+                  items:
+                    type: integer
+                type:
+                  $ref: '#/components/schemas/PhotoType'
+            example:
+              photo_ids: [1, 2, 3]
+              type: "decoration"
+      responses:
+        '200':
+          description: Types mis a jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+              example:
+                message: "3 photos mises a jour"
+                count: 3
+
+  # Collaborators
+  /events/{eventId}/collaborators:
+    get:
+      tags: [Collaborators]
+      summary: Lister les collaborateurs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des collaborateurs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collaborators:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Collaborator'
+                  stats:
+                    type: object
+
+    post:
+      tags: [Collaborators]
+      summary: Inviter un collaborateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, role]
+              properties:
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  enum: [editor, viewer]
+      responses:
+        '201':
+          description: Invitation envoyée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collaborator'
+
+  /events/{eventId}/collaborators/statistics:
+    get:
+      tags: [Collaborators]
+      summary: Statistiques des collaborateurs
+      description: Retourne les statistiques des collaborateurs pour un evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statistiques des collaborateurs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  by_role:
+                    type: object
+                    properties:
+                      owner:
+                        type: integer
+                      editor:
+                        type: integer
+                      viewer:
+                        type: integer
+                  pending_invitations:
+                    type: integer
+              example:
+                total: 5
+                by_role:
+                  owner: 1
+                  editor: 3
+                  viewer: 1
+                pending_invitations: 2
+
+  /events/{eventId}/collaborators/{userId}:
+    put:
+      tags: [Collaborators]
+      summary: Modifier le role d'un collaborateur
+      description: Change le role d'un collaborateur existant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [editor, viewer]
+            example:
+              role: "editor"
+      responses:
+        '200':
+          description: Role mis a jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collaborator'
+        '403':
+          description: Non autorise a modifier ce collaborateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+    delete:
+      tags: [Collaborators]
+      summary: Retirer un collaborateur
+      description: Supprime un collaborateur de l'evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Collaborateur retire
+        '403':
+          description: Non autorise a retirer ce collaborateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/collaborators/{userId}/resend:
+    post:
+      tags: [Collaborators]
+      summary: Renvoyer l'invitation
+      description: Renvoie l'email d'invitation a un collaborateur en attente
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invitation renvoyee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Invitation renvoyee avec succes"
+
+  /events/{eventId}/collaborators/accept:
+    post:
+      tags: [Collaborators]
+      summary: Accepter une invitation
+      description: Accepte une invitation a collaborer sur un evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invitation acceptee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collaborator'
+
+  /events/{eventId}/collaborators/decline:
+    post:
+      tags: [Collaborators]
+      summary: Decliner une invitation
+      description: Decline une invitation a collaborer sur un evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invitation declinee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Invitation declinee"
+
+  /events/{eventId}/collaborators/leave:
+    post:
+      tags: [Collaborators]
+      summary: Quitter la collaboration
+      description: Quitte volontairement une collaboration sur un evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Collaboration quittee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Vous avez quitte cette collaboration"
+
+  /collaborations:
+    get:
+      tags: [Collaborators]
+      summary: Mes collaborations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des collaborations
+
+  /collaborations/pending:
+    get:
+      tags: [Collaborators]
+      summary: Invitations en attente
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des invitations
+
+  # Notifications
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Lister les notifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  unread_count:
+                    type: integer
+
+  /notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Nombre de notifications non lues
+      description: Retourne le nombre de notifications non lues
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Nombre de non lues
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+              example:
+                count: 5
+
+  /notifications/recent:
+    get:
+      tags: [Notifications]
+      summary: Notifications recentes
+      description: Retourne les notifications les plus recentes (limite)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: Notifications recentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+
+  /notifications/{notificationId}/read:
+    put:
+      tags: [Notifications]
+      summary: Marquer une notification comme lue
+      description: Marque une notification specifique comme lue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notification marquee comme lue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+
+  /notifications/read-all:
+    put:
+      tags: [Notifications]
+      summary: Marquer toutes comme lues
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Notifications marquées
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+              example:
+                message: "Toutes les notifications ont ete marquees comme lues"
+                count: 12
+
+  /notifications/{notificationId}:
+    delete:
+      tags: [Notifications]
+      summary: Supprimer une notification
+      description: Supprime une notification specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Notification supprimee
+
+  /notifications/bulk-delete:
+    post:
+      tags: [Notifications]
+      summary: Supprimer plusieurs notifications
+      description: Supprime plusieurs notifications en une seule requete
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [notification_ids]
+              properties:
+                notification_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+            example:
+              notification_ids: ["550e8400-e29b-41d4-a716-446655440000", "550e8400-e29b-41d4-a716-446655440001"]
+      responses:
+        '200':
+          description: Notifications supprimees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+              example:
+                message: "2 notifications supprimees"
+                count: 2
+
+  /notifications/clear-read:
+    delete:
+      tags: [Notifications]
+      summary: Supprimer les notifications lues
+      description: Supprime toutes les notifications qui ont ete lues
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Notifications lues supprimees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+              example:
+                message: "8 notifications lues supprimees"
+                count: 8
+
+  /notifications/settings:
+    get:
+      tags: [Notifications]
+      summary: Preferences de notification
+      description: Retourne les preferences de notification de l'utilisateur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Preferences de notification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email_notifications:
+                    type: boolean
+                  push_notifications:
+                    type: boolean
+                  sms_notifications:
+                    type: boolean
+                  notification_types:
+                    type: object
+              example:
+                email_notifications: true
+                push_notifications: true
+                sms_notifications: false
+                notification_types:
+                  guest_rsvp: true
+                  task_reminder: true
+                  payment_status: true
+                  collaboration_invite: true
+
+    put:
+      tags: [Notifications]
+      summary: Modifier les preferences
+      description: Met a jour les preferences de notification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email_notifications:
+                  type: boolean
+                push_notifications:
+                  type: boolean
+                sms_notifications:
+                  type: boolean
+                notification_types:
+                  type: object
+            example:
+              email_notifications: true
+              push_notifications: false
+              sms_notifications: false
+      responses:
+        '200':
+          description: Preferences mises a jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Preferences mises a jour"
+
+  /user/device-tokens:
+    post:
+      tags: [Notifications]
+      summary: Enregistrer un token de device
+      description: Enregistre un token pour les notifications push
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, platform]
+              properties:
+                token:
+                  type: string
+                  description: Token FCM ou APNs
+                platform:
+                  type: string
+                  enum: [android, ios, web]
+            example:
+              token: "dGVzdC10b2tlbi0xMjM0NTY3ODkw"
+              platform: "android"
+      responses:
+        '201':
+          description: Token enregistre
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Token enregistre avec succes"
+
+  # Subscriptions
+  /events/{eventId}/subscription:
+    get:
+      tags: [Subscriptions]
+      summary: Voir l'abonnement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Abonnement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+                  limits:
+                    type: object
+
+    post:
+      tags: [Subscriptions]
+      summary: S'abonner
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan, payment_method, phone_number]
+              properties:
+                plan:
+                  $ref: '#/components/schemas/PlanType'
+                payment_method:
+                  $ref: '#/components/schemas/PaymentMethod'
+                phone_number:
+                  type: string
+      responses:
+        '201':
+          description: Abonnement créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /events/{eventId}/subscription/upgrade:
+    post:
+      tags: [Subscriptions]
+      summary: Upgrader l'abonnement
+      description: Passe a un plan superieur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan, payment_method, phone_number]
+              properties:
+                plan:
+                  $ref: '#/components/schemas/PlanType'
+                payment_method:
+                  $ref: '#/components/schemas/PaymentMethod'
+                phone_number:
+                  type: string
+            example:
+              plan: "pro"
+              payment_method: "mtn_mobile_money"
+              phone_number: "670123456"
+      responses:
+        '200':
+          description: Abonnement mis a niveau
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /events/{eventId}/subscription/cancel:
+    post:
+      tags: [Subscriptions]
+      summary: Annuler l'abonnement
+      description: Annule l'abonnement actuel (actif jusqu'a expiration)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Abonnement annule
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  ends_at:
+                    type: string
+                    format: date-time
+              example:
+                message: "Abonnement annule. Actif jusqu'au 2024-12-31."
+                ends_at: "2024-12-31T23:59:59Z"
+
+  /events/{eventId}/subscription/renew:
+    post:
+      tags: [Subscriptions]
+      summary: Renouveler l'abonnement
+      description: Renouvelle un abonnement expire ou annule
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [payment_method, phone_number]
+              properties:
+                payment_method:
+                  $ref: '#/components/schemas/PaymentMethod'
+                phone_number:
+                  type: string
+            example:
+              payment_method: "mtn_mobile_money"
+              phone_number: "670123456"
+      responses:
+        '200':
+          description: Abonnement renouvele
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /events/{eventId}/subscription/calculate-price:
+    get:
+      tags: [Subscriptions]
+      summary: Calculer le prix
+      description: Calcule le prix pour un plan specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: plan
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/PlanType'
+      responses:
+        '200':
+          description: Prix calcule
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan:
+                    type: string
+                  price:
+                    type: number
+                  currency:
+                    type: string
+                  features:
+                    type: array
+                    items:
+                      type: string
+              example:
+                plan: "pro"
+                price: 25000
+                currency: "XAF"
+                features:
+                  - "500 invites max"
+                  - "10 collaborateurs"
+                  - "Export PDF/Excel"
+                  - "Support prioritaire"
+
+  /events/{eventId}/subscription/check-limits:
+    get:
+      tags: [Subscriptions]
+      summary: Verifier les limites
+      description: Verifie l'utilisation actuelle par rapport aux limites du plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Limites et utilisation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  guests:
+                    type: object
+                    properties:
+                      used:
+                        type: integer
+                      limit:
+                        type: integer
+                      can_add:
+                        type: boolean
+                  collaborators:
+                    type: object
+                    properties:
+                      used:
+                        type: integer
+                      limit:
+                        type: integer
+                      can_add:
+                        type: boolean
+              example:
+                guests:
+                  used: 45
+                  limit: 100
+                  can_add: true
+                collaborators:
+                  used: 3
+                  limit: 5
+                  can_add: true
+
+  /subscriptions:
+    get:
+      tags: [Subscriptions]
+      summary: Tous mes abonnements
+      description: Liste tous les abonnements de l'utilisateur connecte
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des abonnements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subscription'
+              example:
+                data:
+                  - id: 1
+                    plan: "pro"
+                    status: "active"
+                    event_id: 12
+                    starts_at: "2024-01-01T00:00:00Z"
+                    ends_at: "2025-01-01T00:00:00Z"
+                  - id: 2
+                    plan: "starter"
+                    status: "expired"
+                    event_id: 8
+                    starts_at: "2023-06-01T00:00:00Z"
+                    ends_at: "2024-06-01T00:00:00Z"
+
+  # Dashboard
+  /events/{eventId}/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Dashboard de l'evenement
+      description: Retourne les donnees du tableau de bord pour un evenement specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Donnees du dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  event:
+                    $ref: '#/components/schemas/Event'
+                  guests_stats:
+                    type: object
+                  tasks_stats:
+                    type: object
+                  budget_stats:
+                    type: object
+                  upcoming_tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  recent_rsvps:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Guest'
+              example:
+                event:
+                  id: 12
+                  title: "Mariage de Jean et Marie"
+                  date: "2024-06-15"
+                guests_stats:
+                  total: 150
+                  accepted: 120
+                  pending: 20
+                  declined: 10
+                tasks_stats:
+                  total: 25
+                  completed: 18
+                  in_progress: 5
+                  todo: 2
+                budget_stats:
+                  total_estimated: 25000
+                  total_spent: 18500
+                  remaining: 6500
+                upcoming_tasks:
+                  - id: 1
+                    title: "Confirmer le traiteur"
+                    due_date: "2024-02-28"
+                recent_rsvps:
+                  - id: 101
+                    name: "Pierre Duval"
+                    rsvp_status: "accepted"
+
+  /dashboard/chart-data:
+    get:
+      tags: [Dashboard]
+      summary: Donnees pour graphiques utilisateur
+      description: Retourne les donnees pour les graphiques du tableau de bord utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year]
+            default: month
+      responses:
+        '200':
+          description: Donnees des graphiques
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events_by_month:
+                    type: array
+                    items:
+                      type: object
+                  guests_trend:
+                    type: array
+                    items:
+                      type: object
+                  budget_overview:
+                    type: object
+              example:
+                events_by_month:
+                  - month: "Jan"
+                    count: 2
+                  - month: "Feb"
+                    count: 3
+                guests_trend:
+                  - date: "2024-01-01"
+                    total: 45
+                  - date: "2024-01-15"
+                    total: 78
+                budget_overview:
+                  total_across_events: 75000
+                  spent: 45000
+                  remaining: 30000
+
+  /dashboard/user-stats:
+    get:
+      tags: [Dashboard]
+      summary: Statistiques utilisateur
+      description: Retourne les statistiques globales de l'utilisateur connecte
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_events:
+                    type: integer
+                  active_events:
+                    type: integer
+                  total_guests:
+                    type: integer
+                  total_collaborations:
+                    type: integer
+                  upcoming_events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+              example:
+                total_events: 8
+                active_events: 3
+                total_guests: 450
+                total_collaborations: 5
+                upcoming_events:
+                  - id: 12
+                    title: "Mariage de Jean et Marie"
+                    date: "2024-06-15"
+                  - id: 15
+                    title: "Anniversaire de Sophie"
+                    date: "2024-03-20"
+
+  /dashboard/urgent-tasks:
+    get:
+      tags: [Dashboard]
+      summary: Taches urgentes
+      description: |
+        Retourne les taches urgentes (echeance dans les 7 prochains jours)
+        pour tous les evenements de l'utilisateur, groupees par evenement.
+        Inclut les evenements dont l'utilisateur est proprietaire ou collaborateur.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Taches urgentes groupees par evenement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        event:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            title:
+                              type: string
+                            date:
+                              type: string
+                              format: date
+                        tasks:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              title:
+                                type: string
+                              description:
+                                type: string
+                                nullable: true
+                              priority:
+                                type: string
+                                enum: [low, medium, high]
+                              status:
+                                type: string
+                                enum: [todo, in_progress]
+                              due_date:
+                                type: string
+                                format: date
+                              is_overdue:
+                                type: boolean
+                              days_until_due:
+                                type: integer
+                                description: Nombre de jours avant echeance (negatif si en retard)
+                              assigned_user:
+                                type: object
+                                nullable: true
+                                properties:
+                                  id:
+                                    type: integer
+                                  name:
+                                    type: string
+                        count:
+                          type: integer
+                  summary:
+                    type: object
+                    properties:
+                      total_urgent:
+                        type: integer
+                        description: Nombre total de taches urgentes
+                      total_overdue:
+                        type: integer
+                        description: Nombre de taches en retard
+                      events_with_urgent_tasks:
+                        type: integer
+                        description: Nombre d'evenements avec des taches urgentes
+              example:
+                data:
+                  - event:
+                      id: 12
+                      title: "Mariage de Jean et Marie"
+                      date: "2024-06-15"
+                    tasks:
+                      - id: 45
+                        title: "Confirmer le traiteur"
+                        description: "Appeler le traiteur pour confirmer le menu"
+                        priority: "high"
+                        status: "todo"
+                        due_date: "2024-01-18"
+                        is_overdue: false
+                        days_until_due: 3
+                        assigned_user:
+                          id: 5
+                          name: "Marie Dupont"
+                      - id: 46
+                        title: "Envoyer les invitations"
+                        description: null
+                        priority: "medium"
+                        status: "in_progress"
+                        due_date: "2024-01-15"
+                        is_overdue: true
+                        days_until_due: -2
+                        assigned_user: null
+                    count: 2
+                  - event:
+                      id: 15
+                      title: "Anniversaire de Sophie"
+                      date: "2024-03-20"
+                    tasks:
+                      - id: 78
+                        title: "Commander le gateau"
+                        description: "Gateau au chocolat 3 etages"
+                        priority: "high"
+                        status: "todo"
+                        due_date: "2024-01-20"
+                        is_overdue: false
+                        days_until_due: 5
+                        assigned_user:
+                          id: 3
+                          name: "Jean Martin"
+                    count: 1
+                summary:
+                  total_urgent: 3
+                  total_overdue: 1
+                  events_with_urgent_tasks: 2
+
+  # Payments
+  /payments:
+    get:
+      tags: [Payments]
+      summary: Historique des paiements
+      description: Liste des paiements de l'utilisateur connecte
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des paiements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+              example:
+                data:
+                  - id: 123
+                    amount: 15000
+                    method: "mtn_mobile_money"
+                    status: "completed"
+                    reference: "MTN-2024011512345"
+                    created_at: "2024-01-15T14:30:00Z"
+                  - id: 124
+                    amount: 25000
+                    method: "airtel_money"
+                    status: "pending"
+                    reference: "AIRTEL-2024012067890"
+                    created_at: "2024-01-20T10:00:00Z"
+                  - id: 125
+                    amount: 15000
+                    method: "mtn_mobile_money"
+                    status: "failed"
+                    reference: "MTN-2024012198765"
+                    created_at: "2024-01-21T16:45:00Z"
+
+  /payments/initiate:
+    post:
+      tags: [Payments]
+      summary: Initier un paiement generique
+      description: |
+        Initie un paiement avec detection automatique du provider base sur le numero de telephone.
+        Le systeme determine automatiquement s'il s'agit d'un numero MTN ou Airtel.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, phone_number, event_id]
+              properties:
+                amount:
+                  type: number
+                  description: Montant en FCFA
+                phone_number:
+                  type: string
+                  description: Numero de telephone (format camerounais)
+                event_id:
+                  type: integer
+                  description: ID de l'evenement associe
+                plan:
+                  $ref: '#/components/schemas/PlanType'
+            example:
+              amount: 15000
+              phone_number: "670123456"
+              event_id: 1
+              plan: "standard"
+      responses:
+        '200':
+          description: Paiement initie avec succes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+              example:
+                payment:
+                  id: 123
+                  amount: 15000
+                  method: "mtn_mobile_money"
+                  status: "pending"
+                  reference: "PAY-2024011512345"
+                message: "Paiement initie. Veuillez confirmer sur votre telephone."
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /payments/mtn/initiate:
+    post:
+      tags: [Payments]
+      summary: Initier un paiement MTN Mobile Money
+      description: |
+        Initie un paiement via MTN Mobile Money.
+
+        **Policy:** `PaymentPolicy@initiate`
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subscription_id, phone]
+              properties:
+                subscription_id:
+                  type: integer
+                  description: ID de l'abonnement a payer
+                phone:
+                  type: string
+                  description: Numero de telephone MTN (format 6XXXXXXXX)
+            example:
+              subscription_id: 45
+              phone: "670123456"
+      responses:
+        '200':
+          description: Paiement initie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  payment:
+                    $ref: '#/components/schemas/Payment'
+                  reference:
+                    type: string
+                  message:
+                    type: string
+              example:
+                success: true
+                message: "Paiement initie. Veuillez valider sur votre telephone."
+                payment:
+                  id: 200
+                  amount: 15000
+                  method: "mtn_mobile_money"
+                  status: "pending"
+                  reference: "MTN-2024012312345"
+                  created_at: "2024-01-23T10:00:00Z"
+                reference: "MTN-2024012312345"
+        '403':
+          description: Non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                message: "Les donnees fournies sont invalides."
+                errors:
+                  phone:
+                    - "Le numero de telephone doit etre un numero MTN valide."
+                  subscription_id:
+                    - "L'abonnement selectionne est deja paye."
+
+  /payments/airtel/initiate:
+    post:
+      tags: [Payments]
+      summary: Initier un paiement Airtel Money
+      description: |
+        Initie un paiement via Airtel Money.
+
+        **Policy:** `PaymentPolicy@initiate`
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subscription_id, phone]
+              properties:
+                subscription_id:
+                  type: integer
+                  description: ID de l'abonnement a payer
+                phone:
+                  type: string
+                  description: Numero de telephone Airtel (format 6XXXXXXXX)
+            example:
+              subscription_id: 46
+              phone: "698765432"
+      responses:
+        '200':
+          description: Paiement initie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  payment:
+                    $ref: '#/components/schemas/Payment'
+                  reference:
+                    type: string
+                  message:
+                    type: string
+              example:
+                success: true
+                message: "Paiement initie. Veuillez valider sur votre telephone."
+                payment:
+                  id: 201
+                  amount: 25000
+                  method: "airtel_money"
+                  status: "pending"
+                  reference: "AIRTEL-2024012398765"
+                  created_at: "2024-01-23T11:00:00Z"
+                reference: "AIRTEL-2024012398765"
+        '403':
+          description: Non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                message: "Les donnees fournies sont invalides."
+                errors:
+                  phone:
+                    - "Le numero de telephone doit etre un numero Airtel valide."
+
+  /payments/{id}/status:
+    get:
+      tags: [Payments]
+      summary: Verifier le statut d'un paiement
+      description: |
+        Retourne le statut actuel d'un paiement.
+
+        **Policy:** `PaymentPolicy@checkStatus`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statut du paiement (Vue HTML)
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Non autorise
+
+  /payments/{id}/poll:
+    get:
+      tags: [Payments]
+      summary: Polling du statut de paiement (AJAX)
+      description: |
+        Retourne une vue partielle pour le polling AJAX du statut de paiement.
+
+        **Policy:** `PaymentPolicy@checkStatus`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Vue partielle du statut
+          content:
+            text/html:
+              schema:
+                type: string
+        '403':
+          description: Non autorise
+
+  /payments/{id}/retry:
+    post:
+      tags: [Payments]
+      summary: Reessayer un paiement echoue
+      description: |
+        Permet de reessayer un paiement qui a echoue.
+
+        **Policy:** `PaymentPolicy@retry`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '302':
+          description: Redirection vers la page de paiement
+        '403':
+          description: Non autorise (paiement non echoue ou non proprietaire)
+
+  # Webhooks (sans authentification - appeles par les providers)
+  /webhooks/mtn:
+    post:
+      tags: [Webhooks]
+      summary: Webhook MTN Mobile Money
+      description: |
+        Endpoint appele par MTN pour notifier le resultat d'un paiement.
+
+        **Signature:** Header `X-Callback-Signature` avec HMAC-SHA256
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                referenceId:
+                  type: string
+                status:
+                  type: string
+                  enum: [SUCCESSFUL, FAILED, PENDING]
+                financialTransactionId:
+                  type: string
+                amount:
+                  type: string
+                currency:
+                  type: string
+                reason:
+                  type: string
+            example:
+              referenceId: "MTN-2024012312345"
+              status: "SUCCESSFUL"
+              financialTransactionId: "FT123456789"
+              amount: "15000"
+              currency: "XAF"
+              reason: null
+      responses:
+        '200':
+          description: Webhook traite
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: "success"
+        '401':
+          description: Signature invalide
+          content:
+            application/json:
+              example:
+                error: "Invalid signature"
+        '500':
+          description: Erreur de traitement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+
+  /webhooks/airtel:
+    post:
+      tags: [Webhooks]
+      summary: Webhook Airtel Money
+      description: |
+        Endpoint appele par Airtel pour notifier le resultat d'un paiement.
+
+        **Signature:** Header `X-Airtel-Signature` avec HMAC-SHA256
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    status:
+                      type: string
+                      enum: [TS, TF, TP]
+                      description: TS=Success, TF=Failed, TP=Pending
+                    message:
+                      type: string
+            example:
+              transaction:
+                id: "AIRTEL-2024012398765"
+                status: "TS"
+                message: "Transaction reussie"
+      responses:
+        '200':
+          description: Webhook traite
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: "success"
+        '401':
+          description: Signature invalide
+          content:
+            application/json:
+              example:
+                error: "Invalid signature"
+        '500':
+          description: Erreur de traitement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+
+  # Exports
+  /events/{eventId}/exports/guests/csv:
+    get:
+      tags: [Exports]
+      summary: Export invités CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+  /events/{eventId}/exports/guests/pdf:
+    get:
+      tags: [Exports]
+      summary: Export invités PDF
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /events/{eventId}/exports/guests/xlsx:
+    get:
+      tags: [Exports]
+      summary: Export invites Excel
+      description: Exporte la liste des invites au format Excel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier Excel des invites
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="event-guests-2024-01-15.xlsx"'
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/exports/tasks/csv:
+    get:
+      tags: [Exports]
+      summary: Export taches CSV
+      description: Exporte la liste des taches au format CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier CSV des taches
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="event-tasks-2024-01-15.csv"'
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/exports/tasks/xlsx:
+    get:
+      tags: [Exports]
+      summary: Export taches Excel
+      description: Exporte la liste des taches au format Excel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier Excel des taches
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="event-tasks-2024-01-15.xlsx"'
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/exports/report/pdf:
+    get:
+      tags: [Exports]
+      summary: Rapport complet PDF
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /events/{eventId}/exports/budget/csv:
+    get:
+      tags: [Exports]
+      summary: Export budget CSV
+      description: Exporte tous les elements du budget au format CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier CSV du budget
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="event-budget-2024-01-15.csv"'
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/exports/budget/pdf:
+    get:
+      tags: [Exports]
+      summary: Export budget PDF
+      description: Exporte le budget complet avec statistiques au format PDF
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier PDF du budget
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="event-budget-2024-01-15.pdf"'
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /events/{eventId}/exports/budget/xlsx:
+    get:
+      tags: [Exports]
+      summary: Export budget Excel
+      description: Exporte le budget au format Excel (XLSX) avec mise en forme
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fichier Excel du budget
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: 'attachment; filename="event-budget-2024-01-15.xlsx"'
+        '403':
+          description: Acces non autorise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  # Templates
+  /templates:
+    get:
+      tags: [Templates]
+      summary: Lister les templates
+      description: Retourne tous les templates actifs disponibles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventTemplate'
+
+  /templates/{templateId}:
+    get:
+      tags: [Templates]
+      summary: Voir un template
+      description: Retourne les details d'un template specifique
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details du template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventTemplate'
+        '404':
+          description: Template non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /templates/type/{type}:
+    get:
+      tags: [Templates]
+      summary: Templates par type
+      description: Retourne les templates disponibles pour un type d'evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EventType'
+      responses:
+        '200':
+          description: Templates pour ce type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventTemplate'
+
+  /templates/{templateId}/preview:
+    get:
+      tags: [Templates]
+      summary: Previsualiser un template
+      description: Retourne un apercu de ce que le template va generer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Apercu du template
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  template:
+                    $ref: '#/components/schemas/EventTemplate'
+                  preview:
+                    type: object
+                    properties:
+                      tasks:
+                        type: array
+                        items:
+                          type: object
+                      budget_items:
+                        type: array
+                        items:
+                          type: object
+                      suggested_timeline:
+                        type: array
+                        items:
+                          type: object
+
+  /templates/themes/{type}:
+    get:
+      tags: [Templates]
+      summary: Themes suggeres par type
+      description: Retourne les themes suggeres pour un type d'evenement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EventType'
+      responses:
+        '200':
+          description: Themes suggeres
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  themes:
+                    type: array
+                    items:
+                      type: string
+              example:
+                themes:
+                  - "Romantique champetre"
+                  - "Elegant moderne"
+                  - "Vintage boheme"
+                  - "Tropical exotique"
+
+  /events/{eventId}/templates/{templateId}/apply:
+    post:
+      tags: [Templates]
+      summary: Appliquer un template
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: templateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Template appliqué
+
+  # Public Invitations
+  /invitations/{token}:
+    get:
+      tags: [Invitations]
+      summary: Voir une invitation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails de l'invitation
+
+  /invitations/{token}/respond:
+    post:
+      tags: [Invitations]
+      summary: Répondre à une invitation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [response]
+              properties:
+                response:
+                  $ref: '#/components/schemas/RsvpStatus'
+                plus_one_attending:
+                  type: boolean
+                plus_one_name:
+                  type: string
+                dietary_restrictions:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Réponse enregistrée
+
+  # Admin - Statistics
+  /admin/stats:
+    get:
+      tags: [Admin]
+      summary: Statistiques admin globales
+      description: Retourne les statistiques globales de la plateforme (utilisateurs, événements, revenus, abonnements)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stats:
+                    $ref: '#/components/schemas/AdminStats'
+              example:
+                stats:
+                  users:
+                    total: 1250
+                    new_this_month: 87
+                    growth_percentage: 12.5
+                  events:
+                    total: 3420
+                    active: 890
+                    completed: 2530
+                    by_type:
+                      mariage: 1200
+                      anniversaire: 980
+                      baby_shower: 450
+                      soiree: 520
+                      brunch: 180
+                      autre: 90
+                  revenue:
+                    total: 15750000
+                    this_month: 1250000
+                    last_month: 1100000
+                    growth_percentage: 13.6
+                  subscriptions:
+                    total_active: 420
+                    by_plan:
+                      starter: 280
+                      pro: 140
+        '403':
+          description: Accès réservé aux administrateurs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /admin/chart-data:
+    get:
+      tags: [Admin]
+      summary: Données graphiques admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year]
+            default: month
+      responses:
+        '200':
+          description: Données pour graphiques
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chart_data:
+                    type: object
+                  period:
+                    type: string
+              example:
+                chart_data:
+                  users:
+                    labels: ["Jan", "Feb", "Mar", "Apr"]
+                    data: [45, 52, 61, 87]
+                  events:
+                    labels: ["Jan", "Feb", "Mar", "Apr"]
+                    data: [120, 135, 148, 165]
+                  revenue:
+                    labels: ["Jan", "Feb", "Mar", "Apr"]
+                    data: [950000, 1050000, 1100000, 1250000]
+                period: "month"
+        '403':
+          description: Accès réservé aux administrateurs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  # Admin - Users
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: Lister tous les utilisateurs
+      description: |
+        Liste paginee des utilisateurs avec filtres et tri.
+
+        **Request Class:** `ListUsersRequest`
+
+        **Policy:** `AdminPolicy@manageUsers`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Recherche par nom ou email (max 255 caracteres)
+          schema:
+            type: string
+            maxLength: 255
+        - name: role
+          in: query
+          description: Filtrer par role utilisateur
+          schema:
+            $ref: '#/components/schemas/UserRole'
+        - name: sort_by
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [name, email, created_at, role]
+            default: created_at
+        - name: sort_dir
+          in: query
+          description: Direction du tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: per_page
+          in: query
+          description: Nombre d'elements par page (1-100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+      responses:
+        '200':
+          description: Liste paginée des utilisateurs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/User'
+                        - type: object
+                          properties:
+                            events_count:
+                              type: integer
+                            collaborations_count:
+                              type: integer
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+              example:
+                data:
+                  - id: 1
+                    name: "Jean Dupont"
+                    email: "jean@example.com"
+                    role: "admin"
+                    email_verified_at: "2024-01-01T10:00:00Z"
+                    created_at: "2024-01-01T08:00:00Z"
+                    events_count: 12
+                    collaborations_count: 5
+                  - id: 2
+                    name: "Marie Martin"
+                    email: "marie@example.com"
+                    role: "user"
+                    email_verified_at: "2024-01-05T14:00:00Z"
+                    created_at: "2024-01-05T12:00:00Z"
+                    events_count: 3
+                    collaborations_count: 2
+                meta:
+                  current_page: 1
+                  from: 1
+                  last_page: 84
+                  per_page: 15
+                  to: 15
+                  total: 1250
+        '403':
+          description: Accès réservé aux administrateurs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  /admin/users/{id}:
+    get:
+      tags: [Admin]
+      summary: Voir un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  stats:
+                    type: object
+                    properties:
+                      events_count:
+                        type: integer
+                      collaborations_count:
+                        type: integer
+                      payments_total:
+                        type: number
+                      last_login:
+                        type: string
+                        format: date-time
+              example:
+                user:
+                  id: 25
+                  name: "Pierre Lefebvre"
+                  email: "pierre@example.com"
+                  role: "user"
+                  email_verified_at: "2024-02-10T09:00:00Z"
+                  avatar_url: null
+                  created_at: "2024-02-10T08:30:00Z"
+                stats:
+                  events_count: 8
+                  collaborations_count: 3
+                  payments_total: 75000
+                  last_login: "2024-03-15T16:45:00Z"
+        '404':
+          description: Utilisateur non trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /admin/users/{id}/role:
+    put:
+      tags: [Admin]
+      summary: Modifier le role d'un utilisateur
+      description: |
+        Met a jour le role d'un utilisateur.
+
+        **Request Class:** `UpdateUserRoleRequest`
+
+        **Policy:** `AdminPolicy@updateUserRole`
+
+        **Restrictions:**
+        - Un admin ne peut pas modifier son propre role
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de l'utilisateur a modifier
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  $ref: '#/components/schemas/UserRole'
+                  description: Nouveau role (admin ou user)
+      responses:
+        '200':
+          description: Role mis a jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '403':
+          description: Non autorise (pas admin)
+        '422':
+          description: Validation echouee ou tentative de modifier son propre role
+
+  /admin/users/{userId}:
+    delete:
+      tags: [Admin]
+      summary: Supprimer un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Utilisateur supprimé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '422':
+          description: Impossible de supprimer son propre compte ou un autre admin
+
+  # Admin - Toggle User Active
+  /admin/users/{userId}/toggle-active:
+    post:
+      tags: [Admin]
+      summary: Activer/Desactiver un utilisateur
+      description: |
+        Active ou desactive un utilisateur.
+
+        **Policy:** `AdminPolicy@manageUsers`
+
+        **Conditions:**
+        - Un admin ne peut pas se desactiver lui-meme
+        - Les utilisateurs desactives ne peuvent plus se connecter
+        - Une activite sera enregistree dans les logs admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID de l'utilisateur
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statut de l'utilisateur modifie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Utilisateur desactive avec succes"
+                  user:
+                    $ref: '#/components/schemas/User'
+                  is_active:
+                    type: boolean
+        '403':
+          description: Acces refuse (admin requis)
+        '404':
+          description: Utilisateur non trouve
+        '422':
+          description: Impossible de modifier son propre statut
+
+  # Admin - Events
+  /admin/events:
+    get:
+      tags: [Admin]
+      summary: Lister tous les evenements
+      description: |
+        Liste paginee de tous les evenements de la plateforme.
+
+        **Request Class:** `ListEventsRequest`
+
+        **Policy:** `AdminPolicy@viewAllEvents`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Recherche par titre (max 255 caracteres)
+          schema:
+            type: string
+            maxLength: 255
+        - name: type
+          in: query
+          description: Filtrer par type d'evenement
+          schema:
+            $ref: '#/components/schemas/EventType'
+        - name: status
+          in: query
+          description: Filtrer par statut
+          schema:
+            $ref: '#/components/schemas/EventStatus'
+        - name: user_id
+          in: query
+          description: Filtrer par proprietaire
+          schema:
+            type: integer
+        - name: from
+          in: query
+          description: Date de debut (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          description: Date de fin (YYYY-MM-DD), doit etre >= from
+          schema:
+            type: string
+            format: date
+        - name: sort_by
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [title, date, created_at, status, type]
+            default: created_at
+        - name: sort_dir
+          in: query
+          description: Direction du tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: per_page
+          in: query
+          description: Nombre d'elements par page (1-100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+      responses:
+        '200':
+          description: Liste paginée des événements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Event'
+                        - type: object
+                          properties:
+                            user:
+                              $ref: '#/components/schemas/User'
+                            guests_count:
+                              type: integer
+                            tasks_count:
+                              type: integer
+                            budget_items_count:
+                              type: integer
+
+  # Admin - Payments
+  /admin/payments:
+    get:
+      tags: [Admin]
+      summary: Lister tous les paiements
+      description: |
+        Liste paginee de tous les paiements de la plateforme.
+
+        **Request Class:** `ListPaymentsRequest`
+
+        **Policy:** `AdminPolicy@viewAllPayments`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filtrer par statut de paiement
+          schema:
+            $ref: '#/components/schemas/PaymentStatus'
+        - name: method
+          in: query
+          description: Filtrer par methode de paiement
+          schema:
+            $ref: '#/components/schemas/PaymentMethod'
+        - name: user_id
+          in: query
+          description: Filtrer par utilisateur
+          schema:
+            type: integer
+        - name: subscription_id
+          in: query
+          description: Filtrer par abonnement
+          schema:
+            type: integer
+        - name: from
+          in: query
+          description: Date de debut (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          description: Date de fin (YYYY-MM-DD), doit etre >= from
+          schema:
+            type: string
+            format: date
+        - name: min_amount
+          in: query
+          description: Montant minimum (>= 0)
+          schema:
+            type: number
+            minimum: 0
+        - name: max_amount
+          in: query
+          description: Montant maximum (>= min_amount)
+          schema:
+            type: number
+            minimum: 0
+        - name: sort_by
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [amount, status, payment_method, created_at]
+            default: created_at
+        - name: sort_dir
+          in: query
+          description: Direction du tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: per_page
+          in: query
+          description: Nombre d'elements par page (1-100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+      responses:
+        '200':
+          description: Liste paginée des paiements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Payment'
+                        - type: object
+                          properties:
+                            user:
+                              $ref: '#/components/schemas/User'
+                            subscription:
+                              $ref: '#/components/schemas/Subscription'
+
+  # Admin - Refund Payment
+  /admin/payments/{payment}/refund:
+    post:
+      tags: [Admin]
+      summary: Rembourser un paiement
+      description: |
+        Rembourse un paiement complete.
+
+        **Policy:** `AdminPolicy@managePayments`
+
+        **Conditions:**
+        - Le paiement doit avoir le statut `completed`
+        - Une activite sera enregistree dans les logs admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: payment
+          in: path
+          required: true
+          description: ID du paiement
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Raison du remboursement
+                  example: "Demande de l'utilisateur"
+      responses:
+        '200':
+          description: Paiement rembourse avec succes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Paiement rembourse avec succes"
+                  payment:
+                    $ref: '#/components/schemas/Payment'
+        '400':
+          description: Le paiement ne peut pas etre rembourse (statut invalide)
+        '403':
+          description: Acces refuse (admin requis)
+        '404':
+          description: Paiement non trouve
+
+  # Admin - Subscriptions
+  /admin/subscriptions:
+    get:
+      tags: [Admin]
+      summary: Lister tous les abonnements
+      description: |
+        Liste paginee de tous les abonnements de la plateforme.
+
+        **Request Class:** `ListSubscriptionsRequest`
+
+        **Policy:** `AdminPolicy@viewAllSubscriptions`
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: plan
+          in: query
+          description: Filtrer par type de plan
+          schema:
+            $ref: '#/components/schemas/PlanType'
+        - name: status
+          in: query
+          description: Filtrer par statut de paiement
+          schema:
+            $ref: '#/components/schemas/PaymentStatus'
+        - name: user_id
+          in: query
+          description: Filtrer par utilisateur
+          schema:
+            type: integer
+        - name: event_id
+          in: query
+          description: Filtrer par evenement
+          schema:
+            type: integer
+        - name: expired
+          in: query
+          description: Filtrer par expiration
+          schema:
+            type: boolean
+        - name: from
+          in: query
+          description: Date de debut (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          description: Date de fin (YYYY-MM-DD), doit etre >= from
+          schema:
+            type: string
+            format: date
+        - name: sort_by
+          in: query
+          description: Champ de tri
+          schema:
+            type: string
+            enum: [plan_type, total_price, payment_status, created_at, expires_at]
+            default: created_at
+        - name: sort_dir
+          in: query
+          description: Direction du tri
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: per_page
+          in: query
+          description: Nombre d'elements par page (1-100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+      responses:
+        '200':
+          description: Liste paginée des abonnements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Subscription'
+                        - type: object
+                          properties:
+                            event:
+                              $ref: '#/components/schemas/Event'
+
+  # Admin - Cancel Subscription
+  /admin/subscriptions/{subscription}/cancel:
+    post:
+      tags: [Admin]
+      summary: Annuler un abonnement
+      description: |
+        Annule un abonnement actif.
+
+        **Policy:** `AdminPolicy@manageSubscriptions`
+
+        **Conditions:**
+        - L'abonnement doit etre actif
+        - L'utilisateur perdra l'acces aux fonctionnalites premium immediatement
+        - Une activite sera enregistree dans les logs admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: subscription
+          in: path
+          required: true
+          description: ID de l'abonnement
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Raison de l'annulation
+                  example: "Demande de l'utilisateur"
+      responses:
+        '200':
+          description: Abonnement annule avec succes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Abonnement annule avec succes"
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+        '400':
+          description: L'abonnement ne peut pas etre annule (deja annule ou expire)
+        '403':
+          description: Acces refuse (admin requis)
+        '404':
+          description: Abonnement non trouve
+
+  # Admin - Templates
+  /admin/templates:
+    get:
+      tags: [Admin]
+      summary: Lister tous les templates (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/EventType'
+        - name: active
+          in: query
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            default: created_at
+        - name: sort_dir
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Liste paginée des templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventTemplate'
+
+    post:
+      tags: [Admin]
+      summary: Créer un template
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_type, name]
+              properties:
+                event_type:
+                  $ref: '#/components/schemas/EventType'
+                name:
+                  type: string
+                description:
+                  type: string
+                default_tasks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      description:
+                        type: string
+                      priority:
+                        $ref: '#/components/schemas/TaskPriority'
+                default_budget_categories:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      category:
+                        $ref: '#/components/schemas/BudgetCategory'
+                      estimated_cost:
+                        type: number
+                suggested_themes:
+                  type: array
+                  items:
+                    type: string
+                is_active:
+                  type: boolean
+      responses:
+        '201':
+          description: Template créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  template:
+                    $ref: '#/components/schemas/EventTemplate'
+
+  /admin/templates/{id}:
+    put:
+      tags: [Admin]
+      summary: Modifier un template
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_type, name]
+              properties:
+                event_type:
+                  $ref: '#/components/schemas/EventType'
+                name:
+                  type: string
+                description:
+                  type: string
+                default_tasks:
+                  type: array
+                default_budget_categories:
+                  type: array
+                suggested_themes:
+                  type: array
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Template modifié
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  template:
+                    $ref: '#/components/schemas/EventTemplate'
+
+    delete:
+      tags: [Admin]
+      summary: Supprimer un template
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Template supprimé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /admin/templates/{id}/toggle-active:
+    post:
+      tags: [Admin]
+      summary: Activer/désactiver un template
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Statut modifié
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  is_active:
+                    type: boolean
+
+  # Admin - Activity Logs
+  /admin/activity-logs:
+    get:
+      tags: [Admin]
+      summary: Lister l'historique des actions admin
+      description: Retourne la liste paginée des actions effectuées par les administrateurs (changements de rôle, suppressions, modifications de templates, etc.)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: action
+          in: query
+          description: Filtrer par type d'action
+          schema:
+            type: string
+            enum: [login, create, update, delete, view, update_role, toggle_active]
+        - name: model_type
+          in: query
+          description: Filtrer par type de modèle (URL encoded, ex. App%5CModels%5CUser)
+          schema:
+            type: string
+        - name: admin_id
+          in: query
+          description: Filtrer par administrateur
+          schema:
+            type: integer
+        - name: from
+          in: query
+          description: Date de début (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          description: Date de fin (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: search
+          in: query
+          description: Recherche dans la description
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Liste paginée des logs d'activité
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminActivityLog'
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
+        '403':
+          description: Accès réservé aux administrateurs
+
+  /admin/activity-logs/stats:
+    get:
+      tags: [Admin]
+      summary: Statistiques des actions admin
+      description: Retourne des statistiques agrégées sur les actions des administrateurs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques des activités admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stats:
+                    $ref: '#/components/schemas/AdminActivityStats'
+              example:
+                stats:
+                  total: 1250
+                  today: 45
+                  this_week: 280
+                  this_month: 890
+                  by_action:
+                    create: 450
+                    update: 520
+                    delete: 180
+                    update_role: 100
+                  by_model_type:
+                    User: 350
+                    Event: 480
+                    Payment: 220
+                    Subscription: 200
+                  by_admin:
+                    - admin_id: 1
+                      admin_name: "Super Admin"
+                      count: 750
+                    - admin_id: 2
+                      admin_name: "Admin 2"
+                      count: 500
+        '403':
+          description: Acces reserve aux administrateurs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+  # Broadcasting Authentication
+  /broadcasting/auth:
+    post:
+      tags: [Auth]
+      summary: Authentification WebSocket
+      description: |
+        Endpoint d'authentification pour les canaux prives et de presence WebSocket.
+        Utilise par Laravel Echo pour autoriser la connexion aux canaux prives.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [socket_id, channel_name]
+              properties:
+                socket_id:
+                  type: string
+                  description: ID du socket fourni par le serveur WebSocket
+                channel_name:
+                  type: string
+                  description: Nom du canal a rejoindre (ex. private-events.12)
+      responses:
+        '200':
+          description: Autorisation accordee
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth:
+                    type: string
+                    description: Token d'autorisation signe
+              example:
+                auth: "278d425bdf160c739803:58df8b0c36e68287a8c1"
+        '403':
+          description: Acces refuse au canal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+
+# =============================================================================
+# WEBSOCKET / REAL-TIME DOCUMENTATION
+# =============================================================================
+# Cette section documente les evenements WebSocket diffuses par l'API.
+# Les clients doivent utiliser Laravel Echo ou une bibliotheque compatible
+# pour s'abonner aux canaux et recevoir les evenements en temps reel.
+#
+# Configuration client recommandee:
+# - Laravel Echo avec Pusher ou Reverb driver
+# - Authentification via Sanctum token
+#
+# Types de canaux:
+# - private-*: Canaux prives necessitant une authentification
+# - presence-*: Canaux de presence pour voir les utilisateurs connectes
+#
+# =============================================================================
+
+x-websocket-channels:
+  description: Documentation des canaux WebSocket disponibles
+
+  channels:
+    users.{userId}:
+      type: private
+      description: Canal prive pour les notifications utilisateur
+      authorization: L'utilisateur ne peut ecouter que son propre canal
+      events:
+        - notification.created
+        - payment.status.updated
+        - collaborator.invited
+
+    events.{eventId}:
+      type: private
+      description: Canal prive pour les mises a jour d'evenement
+      authorization: Proprietaire ou collaborateur de l'evenement
+      events:
+        - event.updated
+        - guest.rsvp.updated
+        - task.status.updated
+        - budget.item.created
+        - budget.item.updated
+        - budget.item.deleted
+        - collaborator.invited
+        - collaborator.accepted
+
+    events.{eventId}.guests:
+      type: private
+      description: Canal pour les mises a jour des invites
+      authorization: Proprietaire ou collaborateur de l'evenement
+      events:
+        - guest.rsvp.updated
+        - guest.checked_in
+
+    events.{eventId}.tasks:
+      type: private
+      description: Canal pour les mises a jour des taches
+      authorization: Proprietaire ou collaborateur de l'evenement
+      events:
+        - task.status.updated
+
+    events.{eventId}.budget:
+      type: private
+      description: Canal pour les mises a jour du budget
+      authorization: Proprietaire ou collaborateur de l'evenement
+      events:
+        - budget.item.created
+        - budget.item.updated
+        - budget.item.deleted
+
+    events.{eventId}.presence:
+      type: presence
+      description: Canal de presence pour la collaboration en temps reel
+      authorization: Proprietaire ou collaborateur de l'evenement
+      presence_data:
+        id: integer
+        name: string
+        avatar_url: string
+
+    payments.{paymentId}:
+      type: private
+      description: Canal pour le suivi du statut de paiement
+      authorization: Proprietaire du paiement uniquement
+      events:
+        - payment.status.updated
+
+    admin:
+      type: private
+      description: Canal admin pour les mises a jour systeme
+      authorization: Administrateurs uniquement
+      events:
+        - admin.activity.logged
+
+    admin.activity:
+      type: private
+      description: Canal pour les logs d'activite admin en temps reel
+      authorization: Administrateurs uniquement
+      events:
+        - admin.activity.logged
+
+x-websocket-events:
+  description: Documentation des evenements WebSocket
+
+  events:
+    payment.status.updated:
+      description: Emis quand le statut d'un paiement change
+      channels:
+        - payments.{paymentId}
+        - users.{userId}
+      payload:
+        $ref: '#/components/schemas/WebSocketPaymentEvent'
+
+    guest.rsvp.updated:
+      description: Emis quand un invite repond a une invitation
+      channels:
+        - events.{eventId}
+        - events.{eventId}.guests
+      payload:
+        $ref: '#/components/schemas/WebSocketGuestEvent'
+
+    guest.checked_in:
+      description: Emis quand un invite est enregistre a l'arrivee
+      channels:
+        - events.{eventId}
+        - events.{eventId}.guests
+      payload:
+        type: object
+        properties:
+          guest_id:
+            type: integer
+          name:
+            type: string
+          checked_in_at:
+            type: string
+
+    task.status.updated:
+      description: Emis quand le statut d'une tache change
+      channels:
+        - events.{eventId}
+        - events.{eventId}.tasks
+      payload:
+        $ref: '#/components/schemas/WebSocketTaskEvent'
+
+    event.updated:
+      description: Emis quand les details d'un evenement sont modifies
+      channels:
+        - events.{eventId}
+      payload:
+        type: object
+        properties:
+          event_id:
+            type: integer
+          title:
+            type: string
+          status:
+            type: string
+          changed_fields:
+            type: array
+            items:
+              type: string
+          updated_by:
+            type: object
+
+    budget.item.created:
+      description: Emis quand un element de budget est cree
+      channels:
+        - events.{eventId}
+        - events.{eventId}.budget
+      payload:
+        type: object
+        properties:
+          budget_item_id:
+            type: integer
+          action:
+            type: string
+            enum: [created]
+
+    budget.item.updated:
+      description: Emis quand un element de budget est modifie
+      channels:
+        - events.{eventId}
+        - events.{eventId}.budget
+      payload:
+        type: object
+        properties:
+          budget_item_id:
+            type: integer
+          action:
+            type: string
+            enum: [updated]
+
+    budget.item.deleted:
+      description: Emis quand un element de budget est supprime
+      channels:
+        - events.{eventId}
+        - events.{eventId}.budget
+      payload:
+        type: object
+        properties:
+          budget_item_id:
+            type: integer
+          action:
+            type: string
+            enum: [deleted]
+
+    collaborator.invited:
+      description: Emis quand un collaborateur est invite
+      channels:
+        - events.{eventId}
+        - users.{userId}
+      payload:
+        type: object
+        properties:
+          collaborator_id:
+            type: integer
+          event_title:
+            type: string
+          role:
+            type: string
+
+    collaborator.accepted:
+      description: Emis quand un collaborateur accepte l'invitation
+      channels:
+        - events.{eventId}
+      payload:
+        type: object
+        properties:
+          collaborator_id:
+            type: integer
+          user:
+            type: object
+
+    notification.created:
+      description: Emis quand une nouvelle notification est creee
+      channels:
+        - users.{userId}
+      payload:
+        type: object
+        properties:
+          id:
+            type: string
+          type:
+            type: string
+          title:
+            type: string
+          message:
+            type: string
+
+    admin.activity.logged:
+      description: Emis quand une action admin est enregistree
+      channels:
+        - admin
+        - admin.activity
+      payload:
+        type: object
+        properties:
+          id:
+            type: integer
+          action:
+            type: string
+          description:
+            type: string
+          admin:
+            type: object
+
+x-client-integration:
+  description: Guide d'integration client WebSocket
+
+  javascript_example: |
+    // Installation
+    // npm install laravel-echo pusher-js
+
+    // Configuration Laravel Echo
+    import Echo from 'laravel-echo';
+    import Pusher from 'pusher-js';
+
+    window.Pusher = Pusher;
+
+    const echo = new Echo({
+      broadcaster: 'reverb',  // ou 'pusher'
+      key: import.meta.env.VITE_REVERB_APP_KEY,
+      wsHost: import.meta.env.VITE_REVERB_HOST,
+      wsPort: import.meta.env.VITE_REVERB_PORT,
+      wssPort: import.meta.env.VITE_REVERB_PORT,
+      forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+      enabledTransports: ['ws', 'wss'],
+      authEndpoint: '/broadcasting/auth',
+      auth: {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      },
+    });
+
+    // Ecouter les mises a jour de paiement
+    echo.private(`payments.${paymentId}`)
+      .listen('.payment.status.updated', (e) => {
+        console.log('Payment status:', e.status);
+        if (e.is_completed) {
+          // Rediriger vers la page de succes
+        }
+      });
+
+    // Ecouter les mises a jour d'evenement
+    echo.private(`events.${eventId}`)
+      .listen('.guest.rsvp.updated', (e) => {
+        console.log('Guest RSVP:', e.name, e.rsvp_status);
+      })
+      .listen('.task.status.updated', (e) => {
+        console.log('Task updated:', e.title, e.status);
+      });
+
+    // Canal de presence pour la collaboration
+    echo.join(`events.${eventId}.presence`)
+      .here((users) => {
+        console.log('Users currently viewing:', users);
+      })
+      .joining((user) => {
+        console.log('User joined:', user.name);
+      })
+      .leaving((user) => {
+        console.log('User left:', user.name);
+      });
+
+    // Notifications utilisateur
+    echo.private(`users.${userId}`)
+      .listen('.notification.created', (e) => {
+        showNotification(e.title, e.message);
+      });
+
+  environment_variables: |
+    # Reverb (Laravel WebSocket Server)
+    BROADCAST_CONNECTION=reverb
+    REVERB_APP_ID=your-app-id
+    REVERB_APP_KEY=your-app-key
+    REVERB_APP_SECRET=your-app-secret
+    REVERB_HOST=127.0.0.1
+    REVERB_PORT=8080
+    REVERB_SCHEME=http
+
+    # OU Pusher
+    BROADCAST_CONNECTION=pusher
+    PUSHER_APP_ID=your-app-id
+    PUSHER_APP_KEY=your-app-key
+    PUSHER_APP_SECRET=your-app-secret
+    PUSHER_APP_CLUSTER=eu
+
+    # Frontend
+    VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+    VITE_REVERB_HOST="${REVERB_HOST}"
+    VITE_REVERB_PORT="${REVERB_PORT}"
+    VITE_REVERB_SCHEME="${REVERB_SCHEME}"

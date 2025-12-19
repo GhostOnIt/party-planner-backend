@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: party-planner-api
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./storage:/var/www/storage
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: "Party Planner"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      APP_LOCALE: en
+      APP_FALLBACK_LOCALE: en
+      APP_FAKER_LOCALE: en_US
+      APP_MAINTENANCE_DRIVER: file
+      BCRYPT_ROUNDS: 12
+      LOG_CHANNEL: stack
+      LOG_STACK: single
+      LOG_DEPRECATIONS_CHANNEL: "null"
+      LOG_LEVEL: debug
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: party-planner
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SESSION_DRIVER: database
+      SESSION_LIFETIME: 120
+      SESSION_ENCRYPT: "false"
+      SESSION_PATH: /
+      BROADCAST_CONNECTION: log
+      FILESYSTEM_DISK: local
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PASSWORD: "null"
+      REDIS_PORT: 6379
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_FROM_ADDRESS: "hello@example.com"
+      MAIL_FROM_NAME: "Party Planner"
+      # Party Planner Configuration
+      CURRENCY_CODE: XAF
+      CURRENCY_SYMBOL: FCFA
+      PLAN_STARTER_PRICE: 5000
+      PLAN_STARTER_GUESTS: 50
+      PLAN_STARTER_EXTRA_GUEST_PRICE: 50
+      PLAN_STARTER_MAX_COLLABORATORS: 2
+      PLAN_PRO_PRICE: 15000
+      PLAN_PRO_GUESTS: 200
+      PLAN_PRO_EXTRA_GUEST_PRICE: 30
+      FREE_TIER_MAX_GUESTS: 10
+      FREE_TIER_MAX_COLLABORATORS: 1
+      FREE_TIER_MAX_EVENTS: 1
+      FREE_TIER_MAX_PHOTOS: 5
+      PHOTO_MAX_SIZE: 5120
+      PHOTO_MAX_PER_UPLOAD: 10
+      CSV_MAX_SIZE: 2048
+      BUDGET_ALERT_THRESHOLD: 90
+      # MTN Mobile Money
+      MTN_ENABLED: "true"
+      MTN_API_URL: https://sandbox.momodeveloper.mtn.com
+      MTN_ENVIRONMENT: sandbox
+      MTN_SIMULATE: "true"
+      # Airtel Money
+      AIRTEL_ENABLED: "false"
+      AIRTEL_API_URL: https://openapi.airtel.africa
+      AIRTEL_ENVIRONMENT: sandbox
+      # Firebase
+      FIREBASE_CREDENTIALS: storage/app/firebase-credentials.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - party-planner-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: party-planner-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: party-planner
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d party-planner"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - party-planner-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: party-planner-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - party-planner-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: party-planner-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - party-planner-network
+
+networks:
+  party-planner-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:

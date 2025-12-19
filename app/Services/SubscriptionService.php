@@ -1,0 +1,324 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\PlanType;
+use App\Models\Event;
+use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Support\Collection;
+
+class SubscriptionService
+{
+    /**
+     * Calculate price for a subscription.
+     */
+    public function calculatePrice(string $planType, int $guestCount): array
+    {
+        $plan = PlanType::tryFrom($planType);
+
+        if (!$plan) {
+            throw new \InvalidArgumentException("Invalid plan type: {$planType}");
+        }
+
+        $basePrice = $plan->basePrice();
+        $includedGuests = $plan->includedGuests();
+        $pricePerExtraGuest = $plan->pricePerExtraGuest();
+
+        $extraGuests = max(0, $guestCount - $includedGuests);
+        $extraGuestsCost = $extraGuests * $pricePerExtraGuest;
+        $totalPrice = $basePrice + $extraGuestsCost;
+
+        return [
+            'plan_type' => $planType,
+            'base_price' => $basePrice,
+            'included_guests' => $includedGuests,
+            'guest_count' => $guestCount,
+            'extra_guests' => $extraGuests,
+            'price_per_extra_guest' => $pricePerExtraGuest,
+            'extra_guests_cost' => $extraGuestsCost,
+            'total_price' => $totalPrice,
+            'currency' => config('partyplanner.currency.code', 'XAF'),
+        ];
+    }
+
+    /**
+     * Create a subscription for an event.
+     */
+    public function create(Event $event, User $user, string $planType, int $guestCount): Subscription
+    {
+        $pricing = $this->calculatePrice($planType, $guestCount);
+        $plan = PlanType::tryFrom($planType);
+        $durationMonths = $plan ? $plan->durationInMonths() : 4;
+
+        return Subscription::create([
+            'user_id' => $user->id,
+            'event_id' => $event->id,
+            'plan_type' => $planType,
+            'base_price' => $pricing['base_price'],
+            'guest_count' => $guestCount,
+            'guest_price_per_unit' => $pricing['price_per_extra_guest'],
+            'total_price' => $pricing['total_price'],
+            'payment_status' => 'pending',
+            'expires_at' => now()->addMonths($durationMonths),
+        ]);
+    }
+
+    /**
+     * Update a subscription.
+     */
+    public function update(Subscription $subscription, string $planType, int $guestCount): Subscription
+    {
+        $pricing = $this->calculatePrice($planType, $guestCount);
+
+        $subscription->update([
+            'plan_type' => $planType,
+            'base_price' => $pricing['base_price'],
+            'guest_count' => $guestCount,
+            'guest_price_per_unit' => $pricing['price_per_extra_guest'],
+            'total_price' => $pricing['total_price'],
+        ]);
+
+        return $subscription->fresh();
+    }
+
+    /**
+     * Upgrade a subscription.
+     */
+    public function upgrade(Subscription $subscription, string $newPlanType, int $newGuestCount): Subscription
+    {
+        // Calculate price difference for proration (simplified)
+        $oldPricing = $this->calculatePrice($subscription->plan_type, $subscription->guest_count);
+        $newPricing = $this->calculatePrice($newPlanType, $newGuestCount);
+
+        $priceDifference = $newPricing['total_price'] - $oldPricing['total_price'];
+
+        // Only charge if upgrading to a more expensive plan
+        if ($priceDifference > 0) {
+            // Store upgrade info in metadata for payment
+            $subscription->update([
+                'plan_type' => $newPlanType,
+                'base_price' => $newPricing['base_price'],
+                'guest_count' => $newGuestCount,
+                'guest_price_per_unit' => $newPricing['price_per_extra_guest'],
+                'total_price' => $newPricing['total_price'],
+                'payment_status' => 'pending', // Requires additional payment
+            ]);
+        } else {
+            // Downgrade or same price - just update
+            $subscription->update([
+                'plan_type' => $newPlanType,
+                'base_price' => $newPricing['base_price'],
+                'guest_count' => $newGuestCount,
+                'guest_price_per_unit' => $newPricing['price_per_extra_guest'],
+                'total_price' => $newPricing['total_price'],
+            ]);
+        }
+
+        return $subscription->fresh();
+    }
+
+    /**
+     * Cancel a subscription.
+     */
+    public function cancel(Subscription $subscription): Subscription
+    {
+        $subscription->update([
+            'expires_at' => now(),
+        ]);
+
+        return $subscription->fresh();
+    }
+
+    /**
+     * Renew a subscription.
+     */
+    public function renew(Subscription $subscription): Subscription
+    {
+        $plan = PlanType::tryFrom($subscription->plan_type);
+        $durationMonths = $plan ? $plan->durationInMonths() : 4;
+
+        $subscription->update([
+            'expires_at' => now()->addMonths($durationMonths),
+            'payment_status' => 'pending',
+        ]);
+
+        return $subscription->fresh();
+    }
+
+    /**
+     * Check if user can use a specific feature.
+     */
+    public function canUseFeature(Subscription $subscription, string $feature): bool
+    {
+        $plan = PlanType::tryFrom($subscription->plan_type);
+
+        if (!$plan || !$subscription->isActive()) {
+            return false;
+        }
+
+        $features = $plan->features();
+
+        // Simple feature check - could be expanded with feature flags
+        return in_array($feature, $features);
+    }
+
+    /**
+     * Get maximum guests allowed for a subscription.
+     */
+    public function getMaxGuests(Subscription $subscription): int
+    {
+        return $subscription->guest_count;
+    }
+
+    /**
+     * Check if event can add more guests.
+     */
+    public function canAddGuests(Event $event, int $additionalGuests = 1): bool
+    {
+        $subscription = $event->subscription;
+
+        if (!$subscription || !$subscription->isActive()) {
+            // Free tier limit
+            $freeLimit = config('partyplanner.free_tier.max_guests', 10);
+            return $event->guests()->count() + $additionalGuests <= $freeLimit;
+        }
+
+        $currentGuests = $event->guests()->count();
+        $maxGuests = $subscription->guest_count;
+
+        return $currentGuests + $additionalGuests <= $maxGuests;
+    }
+
+    /**
+     * Get remaining guest slots.
+     */
+    public function getRemainingGuestSlots(Event $event): int
+    {
+        $subscription = $event->subscription;
+        $currentGuests = $event->guests()->count();
+
+        if (!$subscription || !$subscription->isActive()) {
+            $freeLimit = config('partyplanner.free_tier.max_guests', 10);
+            return max(0, $freeLimit - $currentGuests);
+        }
+
+        return max(0, $subscription->guest_count - $currentGuests);
+    }
+
+    /**
+     * Get plan comparison data.
+     */
+    public function getPlanComparison(): array
+    {
+        $plans = [];
+
+        foreach (PlanType::cases() as $plan) {
+            $plans[$plan->value] = [
+                'name' => $plan->label(),
+                'description' => $plan->description(),
+                'base_price' => $plan->basePrice(),
+                'included_guests' => $plan->includedGuests(),
+                'price_per_extra_guest' => $plan->pricePerExtraGuest(),
+                'max_collaborators' => $plan->maxCollaborators(),
+                'features' => $plan->features(),
+                'color' => $plan->color(),
+                'duration_months' => $plan->durationInMonths(),
+                'duration_label' => $plan->durationLabel(),
+            ];
+        }
+
+        return $plans;
+    }
+
+    /**
+     * Get user's subscriptions.
+     */
+    public function getUserSubscriptions(User $user): Collection
+    {
+        return $user->subscriptions()
+            ->with('event')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get active subscription for an event.
+     */
+    public function getActiveSubscription(Event $event): ?Subscription
+    {
+        return $event->subscription()
+            ->where('payment_status', 'paid')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->first();
+    }
+
+    /**
+     * Check plan limits.
+     */
+    public function checkPlanLimits(Event $event): array
+    {
+        $subscription = $event->subscription;
+        $limits = [];
+
+        // Use -1 to represent "unlimited" (JSON-safe alternative to PHP_INT_MAX)
+        $unlimited = -1;
+
+        if (!$subscription || !$subscription->isActive()) {
+            $freeTier = config('partyplanner.free_tier', []);
+            $limits = [
+                'max_guests' => $freeTier['max_guests'] ?? 10,
+                'max_collaborators' => $freeTier['max_collaborators'] ?? 1,
+                'max_photos' => $freeTier['max_photos'] ?? 5,
+                'current_guests' => $event->guests()->count(),
+                'current_collaborators' => $event->collaborators()->count(),
+                'current_photos' => $event->photos()->count(),
+                'plan' => 'free',
+            ];
+        } else {
+            $plan = PlanType::tryFrom($subscription->plan_type);
+            $maxPhotos = $plan === PlanType::PRO ? $unlimited : config('partyplanner.free_tier.max_photos', 50);
+            $maxCollaborators = $plan === PlanType::PRO ? $unlimited : ($plan?->maxCollaborators() ?? 2);
+
+            $limits = [
+                'max_guests' => $subscription->guest_count ?? 50,
+                'max_collaborators' => $maxCollaborators,
+                'max_photos' => $maxPhotos,
+                'current_guests' => $event->guests()->count(),
+                'current_collaborators' => $event->collaborators()->count(),
+                'current_photos' => $event->photos()->count(),
+                'plan' => $subscription->plan_type,
+            ];
+        }
+
+        $limits['guests_remaining'] = max(0, $limits['max_guests'] - $limits['current_guests']);
+        $limits['collaborators_remaining'] = $limits['max_collaborators'] === $unlimited
+            ? $unlimited
+            : max(0, $limits['max_collaborators'] - $limits['current_collaborators']);
+        $limits['photos_remaining'] = $limits['max_photos'] === $unlimited
+            ? $unlimited
+            : max(0, $limits['max_photos'] - $limits['current_photos']);
+
+        return $limits;
+    }
+
+    /**
+     * Get subscription statistics.
+     */
+    public function getStatistics(): array
+    {
+        $subscriptions = Subscription::all();
+
+        return [
+            'total' => $subscriptions->count(),
+            'active' => $subscriptions->filter(fn($s) => $s->isActive())->count(),
+            'pending' => $subscriptions->where('payment_status', 'pending')->count(),
+            'expired' => $subscriptions->filter(fn($s) => $s->isExpired())->count(),
+            'by_plan' => $subscriptions->groupBy('plan_type')->map->count()->toArray(),
+            'total_revenue' => $subscriptions->where('payment_status', 'paid')->sum('total_price'),
+        ];
+    }
+}

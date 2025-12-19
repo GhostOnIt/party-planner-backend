@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(php -l:*)",
+      "Bash(cat:*)",
+      "Bash(composer require:*)",
+      "WebSearch",
+      "Bash(php:*)",
+      "Bash(grep:*)",
+      "Bash(uuidgen:*)",
+      "Bash(powershell:*)",
+      "Bash(dir:*)",
+      "Bash(find:*)",
+      "Bash(bash test_mtn.sh:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git checkout:*)",
+      "Bash(composer self-update:*)",
+      "Bash(composer update:*)",
+      "Bash(composer dump-autoload:*)",
+      "Bash(composer install:*)"
+    ]
+  }
+}
