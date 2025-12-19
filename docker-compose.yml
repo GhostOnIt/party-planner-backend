@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -11,6 +9,7 @@ services:
     volumes:
       - .:/var/www
       - ./storage:/var/www/storage
+      - vendor:/var/www/vendor
     ports:
       - "8000:8000"
     environment:
@@ -133,3 +132,4 @@ networks:
 volumes:
   postgres-data:
   redis-data:
+  vendor:
