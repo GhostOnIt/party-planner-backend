@@ -50,7 +50,7 @@
     <script>
         window.onload = function() {
             const ui = SwaggerUIBundle({
-                url: "{{ url('/api/docs/openapi.yaml') }}",
+                url: "/api/docs/openapi.yaml",
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
