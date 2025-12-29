@@ -44,7 +44,19 @@ Route::get('/api/docs/openapi.yaml', function () {
         abort(404, 'OpenAPI specification not found');
     }
 
-    return response()->file($path, [
+    // Lire le contenu du fichier
+    $content = file_get_contents($path);
+
+    // Remplacer ${API_URL} par l'URL réelle de l'application
+    // Utiliser l'URL de la requête actuelle pour inclure automatiquement le port
+    $apiUrl = rtrim(request()->getSchemeAndHttpHost(), '/');
+    // Fallback sur config('app.url') si nécessaire
+    if (empty($apiUrl) || $apiUrl === 'http://' || $apiUrl === 'https://') {
+        $apiUrl = rtrim(config('app.url'), '/');
+    }
+    $content = str_replace('${API_URL}', $apiUrl, $content);
+
+    return response($content, 200, [
         'Content-Type' => 'application/x-yaml',
         'Access-Control-Allow-Origin' => '*',
     ]);
