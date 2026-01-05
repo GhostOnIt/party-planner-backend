@@ -66,7 +66,7 @@ Route::prefix('auth')->group(function () {
 */
 
 // Public invitation endpoints
-Route::get('/invitations/{token}', [InvitationController::class, 'show']);
+Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.show');
 Route::post('/invitations/{token}/respond', [InvitationController::class, 'respond']);
 
 // Public event details (limited)

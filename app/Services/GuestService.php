@@ -19,14 +19,17 @@ class GuestService
     /**
      * Create a new guest for an event.
      */
-    public function create(Event $event, array $data): Guest
+    public function create(Event $event, array $data, bool $sendInvitation = true): Guest
     {
-        return DB::transaction(function () use ($event, $data) {
+        return DB::transaction(function () use ($event, $data, $sendInvitation) {
             $guest = $event->guests()->create($data);
 
             // Create invitation with token
             $this->createInvitation($guest);
 
+            if($sendInvitation && !empty($guest->email)) {
+                $this->sendInvitation($guest);
+            }
             return $guest->fresh(['invitation']);
         });
     }
@@ -261,8 +264,11 @@ class GuestService
             $invitation->update(['custom_message' => $customMessage]);
         }
 
-        // Dispatch job to queue
-        SendInvitationJob::dispatch($guest);
+         if (config('app.env') === 'local' || config('app.env') === 'testing') {
+            SendInvitationJob::dispatchSync($guest);
+        } else {
+            SendInvitationJob::dispatch($guest);
+        }
     }
 
     /**
@@ -633,4 +639,9 @@ class GuestService
 
         return $preview;
     }
+
+
+
+
+  
 }

@@ -73,9 +73,13 @@ class GuestController extends Controller
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'notes' => 'nullable|string',
+            'send_invitation' => 'sometimes|boolean',
         ]);
 
-        $guest = $event->guests()->create($validated);
+        $sendInvitation = $request->boolean('send_invitation', true);
+        unset($validated['send_invitation']);
+
+        $guest = $this->guestService->create($event, $validated, $sendInvitation);
 
         return response()->json($guest, 201);
     }

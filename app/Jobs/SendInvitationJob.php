@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class SendInvitationJob implements ShouldQueue
 {
@@ -53,19 +54,40 @@ class SendInvitationJob implements ShouldQueue
         }
 
         try {
-            // Send the email
-            Mail::to($this->guest->email)
-                ->send(new InvitationMail($this->guest, $invitation));
+             try {
+                 $mailer = Mail::mailer();
+                
+                $result = Mail::to($this->guest->email)
+                    ->send(new InvitationMail($this->guest, $invitation));
+                
+                 if ($result === null || $result === 0) {
+                    throw new \Exception("Mail::send() returned null or 0, email may not have been sent");
+                }
+            } catch (TransportExceptionInterface $e) {
+                Log::error("SendInvitationJob: SMTP transport error - " . $e->getMessage(), [
+                    'guest_id' => $this->guest->id,
+                    'guest_email' => $this->guest->email,
+                    'error_code' => $e->getCode(),
+                    'previous_exception' => $e->getPrevious()?->getMessage(),
+                ]);
+                throw $e;  
+            } catch (\Exception $e) {
+                Log::error("SendInvitationJob: Exception during send - " . $e->getMessage(), [
+                    'guest_id' => $this->guest->id,
+                    'guest_email' => $this->guest->email,
+                    'exception_class' => get_class($e),
+                    'error_code' => $e->getCode(),
+                ]);
+                throw $e;
+            }
 
-            // Update guest and invitation
-            $this->guest->update(['invitation_sent_at' => now()]);
+             $this->guest->update(['invitation_sent_at' => now()]);
             $invitation->markAsSent();
 
             Log::info("SendInvitationJob: Invitation sent to {$this->guest->email} for event {$this->guest->event_id}");
         } catch (\Exception $e) {
             Log::error("SendInvitationJob: Failed to send invitation to {$this->guest->email}: " . $e->getMessage());
-            throw $e;
-        }
+            throw $e;     }
     }
 
     /**
