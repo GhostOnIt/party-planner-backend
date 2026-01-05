@@ -23,6 +23,9 @@ class StoreEventRequest extends FormRequest
      */
     public function rules(): array
     {
+        $maxSize = config('partyplanner.uploads.photos.max_size', 5120);
+        $allowedTypes = config('partyplanner.uploads.photos.allowed_types', ['jpeg', 'jpg', 'png', 'gif', 'webp']);
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(EventType::class)],
@@ -34,6 +37,7 @@ class StoreEventRequest extends FormRequest
             'theme' => ['nullable', 'string', 'max:255'],
             'expected_guests_count' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'template_id' => ['nullable', 'exists:event_templates,id'],
+            'cover_photo' => ['nullable', 'image', 'mimes:' . implode(',', $allowedTypes), "max:{$maxSize}"],
         ];
     }
 

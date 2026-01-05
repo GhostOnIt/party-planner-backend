@@ -49,6 +49,29 @@ class Event extends Model
     }
 
     /**
+     * Get the attributes that should be appended to the model's array form.
+     *
+     * @return array<int, string>
+     */
+    protected $appends = ['budget', 'expected_guests'];
+
+    /**
+     * Get the budget attribute (alias for estimated_budget).
+     */
+    public function getBudgetAttribute(): ?float
+    {
+        return $this->estimated_budget ? (float) $this->estimated_budget : null;
+    }
+
+    /**
+     * Get the expected guests attribute (alias for expected_guests_count).
+     */
+    public function getExpectedGuestsAttribute(): ?int
+    {
+        return $this->expected_guests_count;
+    }
+
+    /**
      * Get the owner of the event.
      */
     public function user(): BelongsTo

@@ -221,7 +221,8 @@ class S3Service
     public function getUrl(string $path): string
     {
         if (!$this->isConfigured()) {
-            return Storage::disk('local')->url($path);
+            // Generate relative URL (frontend will handle the base URL)
+            return '/storage/' . ltrim($path, '/');
         }
 
         return "https://{$this->bucket}.s3.{$this->region}.amazonaws.com/{$path}";
@@ -443,7 +444,7 @@ class S3Service
         return [
             'success' => true,
             'path' => $storedPath,
-            'url' => Storage::disk('public')->url($storedPath),
+            'url' => '/storage/' . ltrim($storedPath, '/'),
             'storage' => 'local',
         ];
     }
@@ -527,7 +528,7 @@ class S3Service
     public function getEventPhotoUrl(string $path, int $minutes = 60): ?string
     {
         if (!$this->isConfigured()) {
-            return Storage::disk('public')->url($path);
+            return '/storage/' . ltrim($path, '/');
         }
 
         return $this->getSignedUrl($path, $minutes);
