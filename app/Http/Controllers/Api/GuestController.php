@@ -17,17 +17,50 @@ class GuestController extends Controller
     /**
      * Display a listing of guests for an event.
      */
-    public function index(Event $event): JsonResponse
-    {
-        $this->authorize('view', $event);
 
-        $guests = $event->guests()
-            ->orderBy('name')
-            ->paginate(20);
+     public function index(Request $request, Event $event): JsonResponse
+{
+    $this->authorize('view', $event);
 
-        return response()->json($guests);
+    $query = $event->guests();
+
+    // Filter by RSVP status
+    if ($request->filled('rsvp_status')) {
+        $query->where('rsvp_status', $request->rsvp_status);
     }
 
+    // Search by name, email, or phone
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%");
+        });
+    }
+
+    // Order by name
+    $query->orderBy('name');
+
+    // Pagination with per_page support
+    $perPage = $request->input('per_page', 20);
+    $guests = $query->paginate($perPage);
+
+    // Get stats if needed (optional, can be removed if stats come from separate endpoint)
+    $stats = $this->guestService->getStatistics($event);
+
+    return response()->json([
+        'data' => $guests->items(),
+        'meta' => [
+            'current_page' => $guests->currentPage(),
+            'last_page' => $guests->lastPage(),
+            'per_page' => $guests->perPage(),
+            'total' => $guests->total(),
+        ],
+        'stats' => $stats,
+    ]);
+}
+     
     /**
      * Store a newly created guest.
      */
