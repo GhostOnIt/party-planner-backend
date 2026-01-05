@@ -3,12 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Event\StoreEventRequest;
 use App\Models\Event;
+use App\Services\PhotoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    protected PhotoService $photoService;
+
+    public function __construct(PhotoService $photoService)
+    {
+        $this->photoService = $photoService;
+    }
+
     /**
      * Display a listing of events.
      */
@@ -58,21 +67,32 @@ class EventController extends Controller
     /**
      * Store a newly created event.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreEventRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'type' => 'required|in:mariage,anniversaire,baby_shower,soiree,brunch,autre',
-            'description' => 'nullable|string',
-            'date' => 'required|date|after_or_equal:today',
-            'time' => 'nullable|date_format:H:i',
-            'location' => 'nullable|string|max:255',
-            'estimated_budget' => 'nullable|numeric|min:0',
-            'theme' => 'nullable|string|max:255',
-            'expected_guests_count' => 'nullable|integer|min:1',
-        ]);
+        $validated = $request->validated();
+        $coverPhoto = $request->file('cover_photo');
 
+        // Retirer cover_photo des données validées car ce n'est pas un champ du modèle Event
+        unset($validated['cover_photo']);
+
+        // Créer l'événement
         $event = $request->user()->events()->create($validated);
+
+        // Si une photo de couverture est fournie, l'uploader et la marquer comme featured
+        if ($coverPhoto) {
+            $photo = $this->photoService->upload(
+                $event,
+                $coverPhoto,
+                $request->user(),
+                'event_photo'
+            );
+            
+            // Marquer la photo comme featured (photo de couverture)
+            $this->photoService->setAsFeatured($photo);
+        }
+
+        // Charger les relations nécessaires
+        $event->load('featuredPhoto:id,event_id,url,thumbnail_url');
 
         return response()->json($event, 201);
     }

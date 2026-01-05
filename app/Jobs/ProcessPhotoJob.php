@@ -64,8 +64,10 @@ class ProcessPhotoJob implements ShouldQueue
         $thumbnailPath = $photoService->generateThumbnail($this->sourcePath, $width, $height);
 
         if ($thumbnailPath) {
+             $thumbnailUrl = '/storage/' . ltrim($thumbnailPath, '/');
+            
             $this->photo->update([
-                'thumbnail_url' => Storage::url($thumbnailPath),
+                'thumbnail_url' => $thumbnailUrl,
             ]);
 
             Log::info("ProcessPhotoJob: Generated thumbnail for photo {$this->photo->id}");

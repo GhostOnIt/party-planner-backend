@@ -21,11 +21,13 @@ class PhotoService
     {
         $path = $this->storeFile($event, $file);
 
+         $url = '/storage/' . ltrim($path, '/');
+        
         $photo = $event->photos()->create([
             'uploaded_by_user_id' => $user->id,
             'type' => $type,
-            'url' => Storage::url($path),
-            'thumbnail_url' => Storage::url($path), // Will be updated by job
+            'url' => $url,
+            'thumbnail_url' => $url, // Will be updated by job
             'description' => $description,
             'is_featured' => false,
         ]);
@@ -87,7 +89,8 @@ class PhotoService
         }
 
         // Check if intervention/image is available
-        if (!class_exists(\Intervention\Image\ImageManager::class)) {
+        $imageManagerClass = 'Intervention\Image\ImageManager';
+        if (!class_exists($imageManagerClass)) {
             // Fallback: copy original as thumbnail
             $disk->copy($sourcePath, $thumbnailPath);
             return $thumbnailPath;
@@ -95,8 +98,10 @@ class PhotoService
 
         try {
             // Use Intervention Image if available
-            $manager = new \Intervention\Image\ImageManager(
-                new \Intervention\Image\Drivers\Gd\Driver()
+            /** @var object $manager */
+            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
+            $manager = new $imageManagerClass(
+                new $driverClass()
             );
 
             $image = $manager->read($disk->path($sourcePath));
@@ -123,13 +128,16 @@ class PhotoService
         }
 
         // Check if intervention/image is available
-        if (!class_exists(\Intervention\Image\ImageManager::class)) {
+        $imageManagerClass = 'Intervention\Image\ImageManager';
+        if (!class_exists($imageManagerClass)) {
             return true; // Skip compression if library not available
         }
 
         try {
-            $manager = new \Intervention\Image\ImageManager(
-                new \Intervention\Image\Drivers\Gd\Driver()
+            /** @var object $manager */
+            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
+            $manager = new $imageManagerClass(
+                new $driverClass()
             );
 
             $image = $manager->read($disk->path($sourcePath));
