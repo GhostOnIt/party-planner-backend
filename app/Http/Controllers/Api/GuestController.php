@@ -8,6 +8,7 @@ use App\Models\Guest;
 use App\Services\GuestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class GuestController extends Controller
 {
@@ -70,10 +71,29 @@ class GuestController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('email');
+                }),
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('phone');
+                }),
+            ],
             'notes' => 'nullable|string',
             'send_invitation' => 'sometimes|boolean',
+        ], [
+            'email.unique' => 'Cet email est déjà utilisé pour un invité de cet événement.',
+            'phone.unique' => 'Ce numéro de téléphone est déjà utilisé pour un invité de cet événement.',
         ]);
 
         $sendInvitation = $request->boolean('send_invitation', true);
@@ -103,10 +123,29 @@ class GuestController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('email');
+                })->ignore($guest->id),
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('phone');
+                })->ignore($guest->id),
+            ],
             'rsvp_status' => 'sometimes|required|in:pending,accepted,declined,maybe',
             'notes' => 'nullable|string',
+        ], [
+            'email.unique' => 'Cet email est déjà utilisé pour un invité de cet événement.',
+            'phone.unique' => 'Ce numéro de téléphone est déjà utilisé pour un invité de cet événement.',
         ]);
 
         $guest->update($validated);
