@@ -23,12 +23,15 @@ class Guest extends Model
         'email',
         'phone',
         'rsvp_status',
+        'plus_one',
+        'plus_one_name',
         'checked_in',
         'checked_in_at',
         'invitation_sent_at',
         'invitation_token',
         'reminder_sent_at',
         'notes',
+        'dietary_restrictions',
     ];
 
     /**
@@ -60,6 +63,7 @@ class Guest extends Model
     protected function casts(): array
     {
         return [
+            'plus_one' => 'boolean',
             'checked_in' => 'boolean',
             'checked_in_at' => 'datetime',
             'invitation_sent_at' => 'datetime',

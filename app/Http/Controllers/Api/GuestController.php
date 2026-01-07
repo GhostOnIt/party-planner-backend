@@ -90,6 +90,9 @@ class GuestController extends Controller
                 }),
             ],
             'notes' => 'nullable|string',
+            'plus_one' => 'sometimes|boolean',
+            'plus_one_name' => 'nullable|string|max:255',
+            'dietary_restrictions' => 'nullable|string|max:1000',
             'send_invitation' => 'sometimes|boolean',
         ], [
             'email.unique' => 'Cet email est déjà utilisé pour un invité de cet événement.',
@@ -183,6 +186,9 @@ class GuestController extends Controller
             ],
             'rsvp_status' => 'sometimes|required|in:pending,accepted,declined,maybe',
             'notes' => 'nullable|string',
+            'plus_one' => 'sometimes|boolean',
+            'plus_one_name' => 'sometimes|nullable|string|max:255',
+            'dietary_restrictions' => 'sometimes|nullable|string|max:1000',
         ], [
             'email.unique' => 'Cet email est déjà utilisé pour un invité de cet événement.',
             'phone.unique' => 'Ce numéro de téléphone est déjà utilisé pour un invité de cet événement.',

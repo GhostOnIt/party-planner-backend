@@ -34,6 +34,9 @@ class InvitationController extends Controller
                     'id' => $guest->id,
                     'name' => $guest->name,
                     'rsvp_status' => $guest->rsvp_status,
+                    'plus_one' => (bool) ($guest->plus_one ?? false),
+                    'plus_one_name' => $guest->plus_one_name,
+                    'dietary_restrictions' => $guest->dietary_restrictions,
                 ],
                 'event' => [
                     'id' => $guest->event->id,
@@ -54,7 +57,7 @@ class InvitationController extends Controller
             ->with(['event' => function ($query) {
                 $query->select('id', 'title', 'type', 'date', 'time', 'location', 'theme', 'description');
             }, 'guest' => function ($query) {
-                $query->select('id', 'name', 'rsvp_status');
+                $query->select('id', 'name', 'rsvp_status', 'plus_one', 'plus_one_name', 'dietary_restrictions');
             }])
             ->first();
 
@@ -68,6 +71,9 @@ class InvitationController extends Controller
                     'id' => $invitation->guest->id,
                     'name' => $invitation->guest->name,
                     'rsvp_status' => $invitation->guest->rsvp_status,
+                    'plus_one' => (bool) ($invitation->guest->plus_one ?? false),
+                    'plus_one_name' => $invitation->guest->plus_one_name,
+                    'dietary_restrictions' => $invitation->guest->dietary_restrictions,
                 ],
                 'event' => [
                     'id' => $invitation->event->id,
@@ -97,19 +103,37 @@ class InvitationController extends Controller
         $validated = $request->validate([
             'response' => 'required|in:accepted,declined,maybe',
             'message' => 'nullable|string|max:500',
-            'guests_count' => 'nullable|integer|min:1|max:10',
+            'plus_one_attending' => 'nullable|boolean',
+            'plus_one_name' => 'nullable|string|max:255',
+            'dietary_restrictions' => 'nullable|string|max:1000',
         ]);
 
         // First try to find by guest invitation_token
         $guest = Guest::where('invitation_token', $token)->first();
 
         if ($guest) {
-            $guest->update([
+            $updateData = [
                 'rsvp_status' => $validated['response'],
                 'notes' => $validated['message']
                     ? ($guest->notes ? $guest->notes . "\n" : '') . "RSVP: " . $validated['message']
                     : $guest->notes,
-            ]);
+            ];
+
+            // Update plus_one_name if provided and plus_one_attending is true
+            if (isset($validated['plus_one_attending']) && $validated['plus_one_attending']) {
+                if (isset($validated['plus_one_name'])) {
+                    $updateData['plus_one_name'] = $validated['plus_one_name'];
+                }
+            } elseif (isset($validated['plus_one_attending']) && !$validated['plus_one_attending']) {
+                $updateData['plus_one_name'] = null;
+            }
+
+            // Update dietary_restrictions if provided
+            if (isset($validated['dietary_restrictions'])) {
+                $updateData['dietary_restrictions'] = $validated['dietary_restrictions'];
+            }
+
+            $guest->update($updateData);
 
             // Update invitation if exists
             if ($guest->invitation) {
@@ -118,8 +142,14 @@ class InvitationController extends Controller
 
             return response()->json([
                 'message' => $this->getResponseMessage($validated['response']),
-                'rsvp_status' => $validated['response'],
-                'guest_name' => $guest->name,
+                'guest' => [
+                    'id' => $guest->id,
+                    'name' => $guest->name,
+                    'rsvp_status' => $guest->rsvp_status,
+                    'plus_one' => $guest->plus_one,
+                    'plus_one_name' => $guest->plus_one_name,
+                    'dietary_restrictions' => $guest->dietary_restrictions,
+                ],
             ]);
         }
 
@@ -131,17 +161,39 @@ class InvitationController extends Controller
         if ($invitation) {
             $invitation->update(['responded_at' => now()]);
 
-            $invitation->guest->update([
+            $updateData = [
                 'rsvp_status' => $validated['response'],
                 'notes' => $validated['message']
                     ? ($invitation->guest->notes ? $invitation->guest->notes . "\n" : '') . "RSVP: " . $validated['message']
                     : $invitation->guest->notes,
-            ]);
+            ];
+
+            // Update plus_one_name if provided and plus_one_attending is true
+            if (isset($validated['plus_one_attending']) && $validated['plus_one_attending']) {
+                if (isset($validated['plus_one_name'])) {
+                    $updateData['plus_one_name'] = $validated['plus_one_name'];
+                }
+            } elseif (isset($validated['plus_one_attending']) && !$validated['plus_one_attending']) {
+                $updateData['plus_one_name'] = null;
+            }
+
+            // Update dietary_restrictions if provided
+            if (isset($validated['dietary_restrictions'])) {
+                $updateData['dietary_restrictions'] = $validated['dietary_restrictions'];
+            }
+
+            $invitation->guest->update($updateData);
 
             return response()->json([
                 'message' => $this->getResponseMessage($validated['response']),
-                'rsvp_status' => $validated['response'],
-                'guest_name' => $invitation->guest->name,
+                'guest' => [
+                    'id' => $invitation->guest->id,
+                    'name' => $invitation->guest->name,
+                    'rsvp_status' => $invitation->guest->rsvp_status,
+                    'plus_one' => $invitation->guest->plus_one,
+                    'plus_one_name' => $invitation->guest->plus_one_name,
+                    'dietary_restrictions' => $invitation->guest->dietary_restrictions,
+                ],
             ]);
         }
 
