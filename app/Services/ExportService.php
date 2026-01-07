@@ -13,7 +13,7 @@ class ExportService
     /**
      * Export guests to CSV.
      */
-    public function exportGuestsToCsv(Event $event): StreamedResponse
+    public function exportGuestsToCsv(Event $event, array $filters = []): StreamedResponse
     {
         $filename = Str::slug($event->title) . '-invites-' . now()->format('Y-m-d') . '.csv';
 
@@ -22,7 +22,7 @@ class ExportService
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $guests = $event->guests()->orderBy('name')->get();
+        $guests = $this->applyFilters($event->guests(), $filters)->orderBy('name')->get();
 
         $callback = function () use ($guests) {
             $file = fopen('php://output', 'w');
@@ -65,9 +65,9 @@ class ExportService
     /**
      * Export guests to PDF.
      */
-    public function exportGuestsToPdf(Event $event): Response
+    public function exportGuestsToPdf(Event $event, array $filters = []): Response
     {
-        $guests = $event->guests()->orderBy('name')->get();
+        $guests = $this->applyFilters($event->guests(), $filters)->orderBy('name')->get();
 
         $stats = [
             'total' => $guests->count(),
@@ -88,6 +88,33 @@ class ExportService
         $filename = Str::slug($event->title) . '-invites-' . now()->format('Y-m-d') . '.pdf';
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Apply filters to guests query.
+     */
+    protected function applyFilters($query, array $filters)
+    {
+        // Filter by RSVP status
+        if (!empty($filters['rsvp_status']) && is_array($filters['rsvp_status'])) {
+            $query->whereIn('rsvp_status', $filters['rsvp_status']);
+        }
+
+        // Filter by check-in status
+        if (isset($filters['checked_in'])) {
+            $query->where('checked_in', $filters['checked_in']);
+        }
+
+        // Filter by invitation sent status
+        if (isset($filters['invitation_sent'])) {
+            if ($filters['invitation_sent']) {
+                $query->whereNotNull('invitation_sent_at');
+            } else {
+                $query->whereNull('invitation_sent_at');
+            }
+        }
+
+        return $query;
     }
 
     /**
