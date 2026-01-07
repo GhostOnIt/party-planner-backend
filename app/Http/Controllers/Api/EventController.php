@@ -133,8 +133,24 @@ class EventController extends Controller
             'estimated_budget' => 'nullable|numeric|min:0',
             'theme' => 'nullable|string|max:255',
             'expected_guests_count' => 'nullable|integer|min:1',
-            'status' => 'sometimes|required|in:draft,planning,confirmed,completed,cancelled',
+            'status' => 'sometimes|required|in:upcoming,ongoing,completed,cancelled',
         ]);
+
+        // Prevent manual changes to ongoing or completed status (except for admins or cancelled)
+        // These statuses should be managed automatically by the scheduled command
+        if (isset($validated['status'])) {
+            $user = $request->user();
+            $newStatus = $validated['status'];
+            
+            // Allow admins to set any status
+            if (!$user->isAdmin()) {
+                // Regular users can only set to upcoming or cancelled manually
+                // ongoing and completed are managed automatically
+                if (in_array($newStatus, ['ongoing', 'completed']) && $event->status !== 'cancelled') {
+                    unset($validated['status']);
+                }
+            }
+        }
 
         $event->update($validated);
 

@@ -4,18 +4,16 @@ namespace App\Enums;
 
 enum EventStatus: string
 {
-    case DRAFT = 'draft';
-    case PLANNING = 'planning';
-    case CONFIRMED = 'confirmed';
+    case UPCOMING = 'upcoming';
+    case ONGOING = 'ongoing';
     case COMPLETED = 'completed';
     case CANCELLED = 'cancelled';
 
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Brouillon',
-            self::PLANNING => 'En planification',
-            self::CONFIRMED => 'Confirmé',
+            self::UPCOMING => 'À venir',
+            self::ONGOING => 'En cours',
             self::COMPLETED => 'Terminé',
             self::CANCELLED => 'Annulé',
         };
@@ -24,9 +22,8 @@ enum EventStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::DRAFT => 'gray',
-            self::PLANNING => 'blue',
-            self::CONFIRMED => 'green',
+            self::UPCOMING => 'blue',
+            self::ONGOING => 'green',
             self::COMPLETED => 'purple',
             self::CANCELLED => 'red',
         };
@@ -35,10 +32,9 @@ enum EventStatus: string
     public function icon(): string
     {
         return match ($this) {
-            self::DRAFT => 'pencil',
-            self::PLANNING => 'clock',
-            self::CONFIRMED => 'check-circle',
-            self::COMPLETED => 'flag',
+            self::UPCOMING => 'calendar',
+            self::ONGOING => 'clock',
+            self::COMPLETED => 'check-circle',
             self::CANCELLED => 'x-circle',
         };
     }

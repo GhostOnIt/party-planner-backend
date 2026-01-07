@@ -82,32 +82,34 @@ class EventFactory extends Factory
     }
 
     /**
-     * Indicate that the event is a draft.
+     * Indicate that the event is upcoming.
      */
-    public function draft(): static
+    public function upcoming(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => EventStatus::DRAFT->value,
+            'status' => EventStatus::UPCOMING->value,
+            'date' => fake()->dateTimeBetween('+1 day', '+6 months'),
         ]);
     }
 
     /**
-     * Indicate that the event is in planning.
+     * Indicate that the event is ongoing.
      */
-    public function planning(): static
+    public function ongoing(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => EventStatus::PLANNING->value,
+            'status' => EventStatus::ONGOING->value,
+            'date' => now()->toDateString(),
         ]);
     }
 
     /**
-     * Indicate that the event is confirmed.
+     * Indicate that the event is cancelled.
      */
-    public function confirmed(): static
+    public function cancelled(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => EventStatus::CONFIRMED->value,
+            'status' => EventStatus::CANCELLED->value,
         ]);
     }
 

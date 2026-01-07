@@ -275,15 +275,15 @@ class EventControllerTest extends TestCase
 
         $event = Event::factory()->create([
             'user_id' => $this->user->id,
-            'status' => EventStatus::DRAFT->value,
+            'status' => EventStatus::UPCOMING->value,
         ]);
 
         $response = $this->putJson("/api/events/{$event->id}", [
-            'status' => EventStatus::CONFIRMED->value,
+            'status' => EventStatus::CANCELLED->value,
         ]);
 
         $response->assertOk()
-            ->assertJsonFragment(['status' => EventStatus::CONFIRMED->value]);
+            ->assertJsonFragment(['status' => EventStatus::CANCELLED->value]);
     }
 
     /*
