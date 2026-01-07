@@ -19,14 +19,17 @@ class GuestService
     /**
      * Create a new guest for an event.
      */
-    public function create(Event $event, array $data): Guest
+    public function create(Event $event, array $data, bool $sendInvitation = true): Guest
     {
-        return DB::transaction(function () use ($event, $data) {
+        return DB::transaction(function () use ($event, $data, $sendInvitation) {
             $guest = $event->guests()->create($data);
 
             // Create invitation with token
             $this->createInvitation($guest);
 
+            if($sendInvitation && !empty($guest->email)) {
+                $this->sendInvitation($guest);
+            }
             return $guest->fresh(['invitation']);
         });
     }
@@ -251,9 +254,36 @@ class GuestService
 
     /**
      * Send invitation to a single guest.
+     * If invitation was already sent, sends a reminder instead.
      */
-    public function sendInvitation(Guest $guest, ?string $customMessage = null): void
+    public function sendInvitation(Guest $guest, ?string $customMessage = null): array
     {
+        // Check if guest has email
+        if (empty($guest->email)) {
+            throw new \InvalidArgumentException('L\'invité n\'a pas d\'adresse email.');
+        }
+
+        // Check if invitation was already sent
+        if ($guest->invitation_sent_at) {
+            // Send reminder instead
+            // Check if guest hasn't already accepted
+            if ($guest->rsvp_status === RsvpStatus::ACCEPTED->value) {
+                throw new \InvalidArgumentException('L\'invité a déjà accepté, pas besoin de rappel.');
+            }
+
+            if (config('app.env') === 'local' || config('app.env') === 'testing') {
+                SendReminderJob::dispatchSync($guest);
+            } else {
+                SendReminderJob::dispatch($guest);
+            }
+
+            return [
+                'type' => 'reminder',
+                'message' => 'Rappel envoyé avec succès.',
+            ];
+        }
+
+        // Send new invitation
         // Ensure invitation exists
         $invitation = $guest->invitation ?? $this->createInvitation($guest, $customMessage);
 
@@ -261,36 +291,105 @@ class GuestService
             $invitation->update(['custom_message' => $customMessage]);
         }
 
-        // Dispatch job to queue
-        SendInvitationJob::dispatch($guest);
+        if (config('app.env') === 'local' || config('app.env') === 'testing') {
+            SendInvitationJob::dispatchSync($guest);
+        } else {
+            SendInvitationJob::dispatch($guest);
+        }
+
+        return [
+            'type' => 'invitation',
+            'message' => 'Invitation envoyée avec succès.',
+        ];
     }
 
     /**
      * Send invitations to multiple guests.
+     * For guests who already have invitations, sends reminders instead.
      */
-    public function sendBulkInvitations(Event $event, ?Collection $guests = null, ?string $customMessage = null): int
+    public function sendBulkInvitations(Event $event, ?Collection $guests = null, ?string $customMessage = null): array
     {
-        // Get guests without sent invitations
-        $guestsToInvite = $guests ?? $event->guests()
-            ->whereNull('invitation_sent_at')
+        // Get all guests with email (not just those without invitations)
+        $guestsToProcess = $guests ?? $event->guests()
             ->whereNotNull('email')
             ->get();
 
-        if ($guestsToInvite->isEmpty()) {
-            return 0;
+        if ($guestsToProcess->isEmpty()) {
+            return [
+                'invitations' => 0,
+                'reminders' => 0,
+                'total' => 0,
+            ];
         }
 
-        // Ensure all guests have invitations
-        foreach ($guestsToInvite as $guest) {
-            if (!$guest->invitation) {
-                $this->createInvitation($guest, $customMessage);
+        $invitationCount = 0;
+        $reminderCount = 0;
+
+        foreach ($guestsToProcess as $guest) {
+            try {
+                // Check if invitation was already sent
+                if ($guest->invitation_sent_at) {
+                    // Send reminder if guest hasn't accepted
+                    if ($guest->rsvp_status !== RsvpStatus::ACCEPTED->value) {
+                        if (config('app.env') === 'local' || config('app.env') === 'testing') {
+                            SendReminderJob::dispatchSync($guest);
+                        } else {
+                            SendReminderJob::dispatch($guest);
+                        }
+                        $reminderCount++;
+                    }
+                } else {
+                    // Send new invitation
+                    // Ensure invitation exists
+                    if (!$guest->invitation) {
+                        $this->createInvitation($guest, $customMessage);
+                    }
+
+                    if (config('app.env') === 'local' || config('app.env') === 'testing') {
+                        SendInvitationJob::dispatchSync($guest);
+                    } else {
+                        SendInvitationJob::dispatch($guest);
+                    }
+                    $invitationCount++;
+                }
+            } catch (\Exception $e) {
+                // Log error but continue with other guests
+                \Log::error("Error sending invitation/reminder to guest {$guest->id}: " . $e->getMessage());
             }
         }
 
-        // Dispatch bulk job
-        SendBulkInvitationsJob::dispatch($event, $guestsToInvite->pluck('id')->toArray(), $customMessage);
+        return [
+            'invitations' => $invitationCount,
+            'reminders' => $reminderCount,
+            'total' => $invitationCount + $reminderCount,
+        ];
+    }
 
-        return $guestsToInvite->count();
+    /**
+     * Send reminder to a single guest.
+     */
+    public function sendReminder(Guest $guest): void
+    {
+        // Check if guest has email
+        if (empty($guest->email)) {
+            throw new \InvalidArgumentException('L\'invité n\'a pas d\'adresse email.');
+        }
+
+        // Check if invitation was sent
+        if (!$guest->invitation_sent_at) {
+            throw new \InvalidArgumentException('L\'invitation n\'a pas encore été envoyée.');
+        }
+
+        // Check if guest hasn't already accepted
+        if ($guest->rsvp_status === RsvpStatus::ACCEPTED->value) {
+            throw new \InvalidArgumentException('L\'invité a déjà accepté, pas besoin de rappel.');
+        }
+
+        if (config('app.env') === 'local' || config('app.env') === 'testing') {
+            SendReminderJob::dispatchSync($guest);
+        } else {
+            SendReminderJob::dispatch($guest);
+        }
     }
 
     /**
@@ -320,6 +419,11 @@ class GuestService
      */
     public function checkIn(Guest $guest): Guest
     {
+        // Only allow check-in for guests with pending, accepted, or maybe status
+        if (!in_array($guest->rsvp_status, ['pending', 'accepted', 'maybe'])) {
+            throw new \InvalidArgumentException('Seuls les invités avec un statut "en attente", "accepté" ou "peut-être" peuvent être enregistrés.');
+        }
+
         $guest->update([
             'checked_in' => true,
             'checked_in_at' => now(),
@@ -633,4 +737,9 @@ class GuestService
 
         return $preview;
     }
+
+
+
+
+  
 }

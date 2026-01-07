@@ -8,6 +8,7 @@ use App\Models\Guest;
 use App\Services\GuestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class GuestController extends Controller
 {
@@ -70,12 +71,38 @@ class GuestController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('email');
+                }),
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('phone');
+                }),
+            ],
             'notes' => 'nullable|string',
+            'plus_one' => 'sometimes|boolean',
+            'plus_one_name' => 'nullable|string|max:255',
+            'dietary_restrictions' => 'nullable|string|max:1000',
+            'send_invitation' => 'sometimes|boolean',
+        ], [
+            'email.unique' => 'Cet email est déjà utilisé pour un invité de cet événement.',
+            'phone.unique' => 'Ce numéro de téléphone est déjà utilisé pour un invité de cet événement.',
         ]);
 
-        $guest = $event->guests()->create($validated);
+        $sendInvitation = $request->boolean('send_invitation', true);
+        unset($validated['send_invitation']);
+
+        $guest = $this->guestService->create($event, $validated, $sendInvitation);
 
         return response()->json($guest, 201);
     }
@@ -91,6 +118,46 @@ class GuestController extends Controller
     }
 
     /**
+     * Get invitation details for a guest.
+     */
+    public function getInvitationDetails(Event $event, Guest $guest): JsonResponse
+    {
+        $this->authorize('view', $event);
+
+        // Verify guest belongs to event
+        if ($guest->event_id !== $event->id) {
+            return response()->json([
+                'message' => 'Cet invité n\'appartient pas à cet événement.',
+            ], 404);
+        }
+
+        // Load invitation relationship
+        $guest->load('invitation');
+
+        return response()->json([
+            'guest' => [
+                'id' => $guest->id,
+                'name' => $guest->name,
+                'email' => $guest->email,
+                'phone' => $guest->phone,
+                'rsvp_status' => $guest->rsvp_status,
+                'notes' => $guest->notes,
+                'plus_one' => isset($guest->plus_one) ? (bool) $guest->plus_one : false,
+                'plus_one_name' => $guest->plus_one_name ?? null,
+                'dietary_restrictions' => $guest->dietary_restrictions ?? null,
+            ],
+            'invitation' => $guest->invitation ? [
+                'sent_at' => $guest->invitation->sent_at?->toIso8601String(),
+                'responded_at' => $guest->invitation->responded_at?->toIso8601String(),
+                'opened_at' => $guest->invitation->opened_at?->toIso8601String(),
+                'custom_message' => $guest->invitation->custom_message,
+            ] : null,
+            'invitation_sent_at' => $guest->invitation_sent_at?->toIso8601String(),
+            'invitation_url' => $guest->invitation_url,
+        ]);
+    }
+
+    /**
      * Update the specified guest.
      */
     public function update(Request $request, Event $event, Guest $guest): JsonResponse
@@ -99,10 +166,32 @@ class GuestController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('email');
+                })->ignore($guest->id),
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('guests')->where(function ($query) use ($event) {
+                    return $query->where('event_id', $event->id)
+                        ->whereNotNull('phone');
+                })->ignore($guest->id),
+            ],
             'rsvp_status' => 'sometimes|required|in:pending,accepted,declined,maybe',
             'notes' => 'nullable|string',
+            'plus_one' => 'sometimes|boolean',
+            'plus_one_name' => 'sometimes|nullable|string|max:255',
+            'dietary_restrictions' => 'sometimes|nullable|string|max:1000',
+        ], [
+            'email.unique' => 'Cet email est déjà utilisé pour un invité de cet événement.',
+            'phone.unique' => 'Ce numéro de téléphone est déjà utilisé pour un invité de cet événement.',
         ]);
 
         $guest->update($validated);
@@ -120,6 +209,106 @@ class GuestController extends Controller
         $guest->delete();
 
         return response()->json(null, 204);
+    }
+
+    /**
+     * Send invitation to a specific guest.
+     * If invitation was already sent, sends a reminder instead.
+     */
+    public function sendInvitation(Event $event, Guest $guest, Request $request): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        // Verify guest belongs to event
+        if ($guest->event_id !== $event->id) {
+            return response()->json([
+                'message' => 'Cet invité n\'appartient pas à cet événement.',
+            ], 404);
+        }
+
+        try {
+            $customMessage = $request->input('custom_message');
+            $result = $this->guestService->sendInvitation($guest, $customMessage);
+
+            return response()->json([
+                'message' => $result['message'],
+                'type' => $result['type'],
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Send reminder to a specific guest.
+     */
+    public function sendReminder(Event $event, Guest $guest): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        try {
+            $this->guestService->sendReminder($guest);
+
+            return response()->json([
+                'message' => 'Rappel envoyé avec succès.',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Check-in a guest.
+     */
+    public function checkIn(Event $event, Guest $guest): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        // Verify guest belongs to event
+        if ($guest->event_id !== $event->id) {
+            return response()->json([
+                'message' => 'Cet invité n\'appartient pas à cet événement.',
+            ], 404);
+        }
+
+        try {
+            $guest = $this->guestService->checkIn($guest);
+
+            return response()->json([
+                'message' => 'Check-in effectué avec succès.',
+                'guest' => $guest,
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Undo check-in for a guest.
+     */
+    public function undoCheckIn(Event $event, Guest $guest): JsonResponse
+    {
+        $this->authorize('update', $event);
+
+        // Verify guest belongs to event
+        if ($guest->event_id !== $event->id) {
+            return response()->json([
+                'message' => 'Cet invité n\'appartient pas à cet événement.',
+            ], 404);
+        }
+
+        $guest = $this->guestService->undoCheckIn($guest);
+
+        return response()->json([
+            'message' => 'Check-in annulé avec succès.',
+            'guest' => $guest,
+        ]);
     }
 
     /**

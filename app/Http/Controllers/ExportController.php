@@ -7,6 +7,7 @@ use App\Exports\GuestsExport;
 use App\Exports\TasksExport;
 use App\Models\Event;
 use App\Services\ExportService;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -38,33 +39,66 @@ class ExportController extends Controller
     /**
      * Export guests to CSV.
      */
-    public function exportGuestsCsv(Event $event): StreamedResponse
+    public function exportGuestsCsv(Event $event, Request $request): StreamedResponse
     {
         $this->authorize('view', $event);
 
-        return $this->exportService->exportGuestsToCsv($event);
+        $filters = $this->extractFilters($request);
+
+        return $this->exportService->exportGuestsToCsv($event, $filters);
     }
 
     /**
      * Export guests to PDF.
      */
-    public function exportGuestsPdf(Event $event): Response
+    public function exportGuestsPdf(Event $event, Request $request): Response
     {
         $this->authorize('view', $event);
 
-        return $this->exportService->exportGuestsToPdf($event);
+        $filters = $this->extractFilters($request);
+
+        return $this->exportService->exportGuestsToPdf($event, $filters);
     }
 
     /**
      * Export guests to Excel.
      */
-    public function exportGuestsXlsx(Event $event): BinaryFileResponse
+    public function exportGuestsXlsx(Event $event, Request $request): BinaryFileResponse
     {
         $this->authorize('view', $event);
 
+        $filters = $this->extractFilters($request);
         $filename = Str::slug($event->title) . '-invites-' . now()->format('Y-m-d') . '.xlsx';
 
-        return Excel::download(new GuestsExport($event), $filename);
+        return Excel::download(new GuestsExport($event, $filters), $filename);
+    }
+
+    /**
+     * Extract filters from request.
+     */
+    protected function extractFilters(Request $request): array
+    {
+        $filters = [];
+
+        // RSVP status filter (can be multiple)
+        if ($request->filled('rsvp_status')) {
+            $statuses = is_array($request->rsvp_status)
+                ? $request->rsvp_status
+                : explode(',', $request->rsvp_status);
+            $filters['rsvp_status'] = array_filter($statuses);
+        }
+
+        // Check-in filter
+        if ($request->filled('checked_in')) {
+            $filters['checked_in'] = $request->boolean('checked_in');
+        }
+
+        // Invitation sent filter
+        if ($request->filled('invitation_sent')) {
+            $filters['invitation_sent'] = $request->boolean('invitation_sent');
+        }
+
+        return $filters;
     }
 
     /**

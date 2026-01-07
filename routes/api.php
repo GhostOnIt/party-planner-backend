@@ -66,7 +66,7 @@ Route::prefix('auth')->group(function () {
 */
 
 // Public invitation endpoints
-Route::get('/invitations/{token}', [InvitationController::class, 'show']);
+Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.show');
 Route::post('/invitations/{token}/respond', [InvitationController::class, 'respond']);
 
 // Public event details (limited)
@@ -106,6 +106,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('events/{event}/guests/import', [GuestController::class, 'import']);
     Route::post('events/{event}/guests/preview-import', [GuestController::class, 'previewImport']);
     Route::get('guests/import-template', [GuestController::class, 'downloadTemplate']);
+    Route::get('events/{event}/guests/{guest}/invitation-details', [GuestController::class, 'getInvitationDetails']);
+    Route::post('events/{event}/guests/{guest}/send-invitation', [GuestController::class, 'sendInvitation']);
+    Route::post('events/{event}/guests/{guest}/send-reminder', [GuestController::class, 'sendReminder']);
+    Route::post('events/{event}/guests/{guest}/check-in', [GuestController::class, 'checkIn']);
+    Route::post('events/{event}/guests/{guest}/undo-check-in', [GuestController::class, 'undoCheckIn']);
     Route::apiResource('events.guests', GuestController::class);
 
     /*
