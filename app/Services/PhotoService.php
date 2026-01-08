@@ -348,4 +348,101 @@ class PhotoService
             ->whereIn('id', $photoIds)
             ->update(['type' => $type]);
     }
+
+    /**
+     * Validate photo upload token and return the guest.
+     */
+    public function validatePhotoUploadToken(Event $event, string $token): ?\App\Models\Guest
+    {
+        $guest = \App\Models\Guest::where('event_id', $event->id)
+            ->where('photo_upload_token', $token)
+            ->where('checked_in', true)
+            ->first();
+
+        return $guest;
+    }
+
+    /**
+     * Upload photos publicly (without authentication).
+     */
+    public function uploadPublic(Event $event, array $files, string $token, ?string $guestName = null): Collection
+    {
+        // Validate token
+        $guest = $this->validatePhotoUploadToken($event, $token);
+        if (!$guest) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                response()->json(['message' => 'Token invalide ou invité non vérifié.'], 403)
+            );
+        }
+
+        $photos = collect();
+
+        foreach ($files as $file) {
+            if ($file instanceof UploadedFile && $file->isValid()) {
+                $path = $this->storeFile($event, $file);
+                $url = '/storage/' . ltrim($path, '/');
+
+                // Create photo without user (public upload)
+                $photo = $event->photos()->create([
+                    'uploaded_by_user_id' => null, // Public upload, no user
+                    'type' => 'event_photo',
+                    'url' => $url,
+                    'thumbnail_url' => $url, // Will be updated by job
+                    'description' => $guestName ? "Uploadé par {$guestName}" : 'Uploadé par un invité',
+                    'is_featured' => false,
+                ]);
+
+                // Dispatch job for async processing
+                ProcessPhotoJob::dispatch($photo, $path);
+
+                $photos->push($photo);
+            }
+        }
+
+        return $photos;
+    }
+
+    /**
+     * Download multiple photos as a ZIP archive.
+     */
+    public function downloadMultiple(Event $event, array $photoIds): string
+    {
+        $photos = $event->photos()->whereIn('id', $photoIds)->get();
+
+        if ($photos->isEmpty()) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                response()->json(['message' => 'Aucune photo trouvée.'], 404)
+            );
+        }
+
+        // Create temporary ZIP file
+        $zipPath = storage_path('app/temp/' . Str::uuid() . '.zip');
+        $zipDir = dirname($zipPath);
+
+        if (!is_dir($zipDir)) {
+            mkdir($zipDir, 0755, true);
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new \Exception('Impossible de créer le fichier ZIP.');
+        }
+
+        $disk = Storage::disk('public');
+
+        foreach ($photos as $photo) {
+            $path = $this->urlToPath($photo->url);
+            if ($path && $disk->exists($path)) {
+                $fileContent = $disk->get($path);
+                // Generate filename from photo ID and extension
+                $extension = pathinfo($path, PATHINFO_EXTENSION) ?: 'jpg';
+                $filename = 'photo-' . $photo->id . '.' . $extension;
+                $zip->addFromString($filename, $fileContent);
+            }
+        }
+
+        $zip->close();
+
+        return $zipPath;
+    }
 }

@@ -424,12 +424,26 @@ class GuestService
             throw new \InvalidArgumentException('Seuls les invités avec un statut "en attente", "accepté" ou "peut-être" peuvent être enregistrés.');
         }
 
+        $wasCheckedIn = $guest->checked_in;
+
         $guest->update([
             'checked_in' => true,
             'checked_in_at' => now(),
         ]);
 
-        return $guest->fresh();
+        // Refresh to get updated photo_upload_token if it was auto-generated
+        $guest->refresh();
+
+        // Send photo upload link email if guest has email and wasn't already checked in
+        if (!$wasCheckedIn && !empty($guest->email) && !empty($guest->photo_upload_token)) {
+            if (config('app.env') === 'local' || config('app.env') === 'testing') {
+                \App\Jobs\SendPhotoUploadLinkJob::dispatchSync($guest);
+            } else {
+                \App\Jobs\SendPhotoUploadLinkJob::dispatch($guest);
+            }
+        }
+
+        return $guest;
     }
 
     /**
