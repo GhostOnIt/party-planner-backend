@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Mail\InvitationMail;
+use App\Mail\PhotoUploadMail;
 use App\Models\Guest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
-class SendInvitationJob implements ShouldQueue
+class SendPhotoUploadLinkJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -41,53 +41,50 @@ class SendInvitationJob implements ShouldQueue
     {
         // Check if guest has email
         if (empty($this->guest->email)) {
-            Log::warning("SendInvitationJob: Guest {$this->guest->id} has no email address");
+            Log::warning("SendPhotoUploadLinkJob: Guest {$this->guest->id} has no email address");
             return;
         }
 
-        // Check if invitation exists
-        $invitation = $this->guest->invitation;
+        // Check if guest is checked in
+        if (!$this->guest->checked_in) {
+            Log::warning("SendPhotoUploadLinkJob: Guest {$this->guest->id} is not checked in");
+            return;
+        }
 
-        if (!$invitation) {
-            Log::warning("SendInvitationJob: Guest {$this->guest->id} has no invitation");
+        // Check if guest has photo upload token
+        if (empty($this->guest->photo_upload_token)) {
+            Log::warning("SendPhotoUploadLinkJob: Guest {$this->guest->id} has no photo upload token");
             return;
         }
 
         try {
-             try {
-                 $mailer = Mail::mailer();
+            try {
+                $mailer = Mail::mailer();
                 
                 $result = Mail::to($this->guest->email)
-                    ->send(new InvitationMail($this->guest, $invitation));
+                    ->send(new PhotoUploadMail($this->guest));
                 
-                 if ($result === null || $result === 0) {
+                if ($result === null || $result === 0) {
                     throw new \Exception("Mail::send() returned null or 0, email may not have been sent");
                 }
+
+                Log::info("SendPhotoUploadLinkJob: Photo upload link sent to {$this->guest->email} for event {$this->guest->event_id}");
             } catch (TransportExceptionInterface $e) {
-                Log::error("SendInvitationJob: SMTP transport error - " . $e->getMessage(), [
+                Log::error("SendPhotoUploadLinkJob: SMTP transport error - " . $e->getMessage(), [
                     'guest_id' => $this->guest->id,
                     'guest_email' => $this->guest->email,
                     'error_code' => $e->getCode(),
                     'previous_exception' => $e->getPrevious()?->getMessage(),
                 ]);
-                throw $e;  
+                throw $e;
             } catch (\Exception $e) {
-                Log::error("SendInvitationJob: Exception during send - " . $e->getMessage(), [
-                    'guest_id' => $this->guest->id,
-                    'guest_email' => $this->guest->email,
-                    'exception_class' => get_class($e),
-                    'error_code' => $e->getCode(),
-                ]);
+                Log::error("SendPhotoUploadLinkJob: Failed to send photo upload link to {$this->guest->email}: " . $e->getMessage());
                 throw $e;
             }
-
-             $this->guest->update(['invitation_sent_at' => now()]);
-            $invitation->markAsSent();
-
-            Log::info("SendInvitationJob: Invitation sent to {$this->guest->email} for event {$this->guest->event_id}");
         } catch (\Exception $e) {
-            Log::error("SendInvitationJob: Failed to send invitation to {$this->guest->email}: " . $e->getMessage());
-            throw $e;     }
+            Log::error("SendPhotoUploadLinkJob: Job failed for guest {$this->guest->id}: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
@@ -95,7 +92,7 @@ class SendInvitationJob implements ShouldQueue
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("SendInvitationJob: Job failed for guest {$this->guest->id}: " . $exception->getMessage());
+        Log::error("SendPhotoUploadLinkJob: Job failed for guest {$this->guest->id}: " . $exception->getMessage());
     }
 
     /**
@@ -104,7 +101,7 @@ class SendInvitationJob implements ShouldQueue
     public function tags(): array
     {
         return [
-            'invitation',
+            'photo-upload-link',
             'guest:' . $this->guest->id,
             'event:' . $this->guest->event_id,
         ];

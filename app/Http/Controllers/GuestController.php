@@ -204,24 +204,28 @@ class GuestController extends Controller
 
     /**
      * Send invitation to a single guest.
+     * If invitation was already sent, sends a reminder instead.
      */
     public function sendInvitation(Request $request, Event $event, Guest $guest): RedirectResponse
     {
         $this->authorize('sendInvitations', $event);
 
-        if (empty($guest->email)) {
+        try {
+            $customMessage = $request->input('custom_message');
+            $result = $this->guestService->sendInvitation($guest, $customMessage);
+
+            $message = $result['type'] === 'reminder'
+                ? "Rappel envoyé à {$guest->name}."
+                : "Invitation envoyée à {$guest->name}.";
+
             return redirect()
                 ->route('events.guests.index', $event)
-                ->with('error', 'Cet invité n\'a pas d\'adresse email.');
+                ->with('success', $message);
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('events.guests.index', $event)
+                ->with('error', $e->getMessage());
         }
-
-        $customMessage = $request->input('custom_message');
-
-        $this->guestService->sendInvitation($guest, $customMessage);
-
-        return redirect()
-            ->route('events.guests.index', $event)
-            ->with('success', "Invitation envoyée à {$guest->name}.");
     }
 
     /**
@@ -233,17 +237,26 @@ class GuestController extends Controller
 
         $customMessage = $request->input('custom_message');
 
-        $count = $this->guestService->sendBulkInvitations($event, null, $customMessage);
+        $result = $this->guestService->sendBulkInvitations($event, null, $customMessage);
 
-        if ($count === 0) {
+        if ($result['total'] === 0) {
             return redirect()
                 ->route('events.guests.index', $event)
-                ->with('info', 'Aucune invitation à envoyer. Tous les invités avec email ont déjà reçu leur invitation.');
+                ->with('info', 'Aucune invitation ou rappel à envoyer.');
+        }
+
+        $message = '';
+        if ($result['invitations'] > 0 && $result['reminders'] > 0) {
+            $message = "{$result['invitations']} invitation(s) et {$result['reminders']} rappel(s) en cours d'envoi.";
+        } elseif ($result['invitations'] > 0) {
+            $message = "{$result['invitations']} invitation(s) en cours d'envoi.";
+        } elseif ($result['reminders'] > 0) {
+            $message = "{$result['reminders']} rappel(s) en cours d'envoi.";
         }
 
         return redirect()
             ->route('events.guests.index', $event)
-            ->with('success', "{$count} invitation(s) en cours d'envoi.");
+            ->with('success', $message);
     }
 
     /**

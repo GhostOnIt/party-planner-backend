@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ReminderMail extends Mailable
+class PhotoUploadMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -28,7 +28,7 @@ class ReminderMail extends Mailable
         $event = $this->guest->event;
 
         return new Envelope(
-            subject: "Rappel : Votre réponse est attendue pour {$event->title}",
+            subject: "Partagez vos photos de {$event->title}",
         );
     }
 
@@ -37,13 +37,15 @@ class ReminderMail extends Mailable
      */
     public function content(): Content
     {
+        $event = $this->guest->event;
+        $uploadUrl = config('app.frontend_url', config('app.url')) . '/upload-photo/' . $event->id . '/' . $this->guest->photo_upload_token;
+
         return new Content(
-            markdown: 'emails.reminder',
+            markdown: 'emails.photo-upload',
             with: [
                 'guest' => $this->guest,
-                'event' => $this->guest->event,
-                'invitation' => $this->guest->invitation,
-                'invitationUrl' => $this->guest->invitation?->public_url,
+                'event' => $event,
+                'uploadUrl' => $uploadUrl,
             ],
         );
     }

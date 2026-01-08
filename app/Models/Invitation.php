@@ -100,7 +100,7 @@ class Invitation extends Model
      */
     public function getPublicUrlAttribute(): string
     {
-        return route('invitations.show', $this->token);
+        return config('app.frontend_url', config('app.url')) . '/invitation/' . $this->token;
     }
 
     /**
