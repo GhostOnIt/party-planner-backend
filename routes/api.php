@@ -155,10 +155,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [PhotoController::class, 'store']);
         Route::get('/statistics', [PhotoController::class, 'statistics']);
         Route::post('/bulk-delete', [PhotoController::class, 'bulkDelete']);
+        Route::post('/bulk-download', [PhotoController::class, 'bulkDownload']);
         Route::post('/bulk-update-type', [PhotoController::class, 'bulkUpdateType']);
 
         // Routes avec paramètre {photo} ensuite
         Route::get('/{photo}', [PhotoController::class, 'show']);
+        Route::get('/{photo}/download', [PhotoController::class, 'download']);
         Route::put('/{photo}', [PhotoController::class, 'update']);
         Route::delete('/{photo}', [PhotoController::class, 'destroy']);
         Route::post('/{photo}/toggle-featured', [PhotoController::class, 'toggleFeatured']);
