@@ -57,7 +57,11 @@ class EventController extends Controller
 
         $perPage = $request->input('per_page', 10);
         $events = $query
-            ->with(['user:id,name', 'featuredPhoto:id,event_id,url,thumbnail_url'])
+            ->with([
+                'user:id,name',
+                'coverPhoto:id,event_id,url,thumbnail_url',
+                'featuredPhoto:id,event_id,url,thumbnail_url'
+            ])
             ->withCount(['guests', 'tasks'])
             ->paginate($perPage);
 
@@ -92,7 +96,10 @@ class EventController extends Controller
         }
 
         // Charger les relations nécessaires
-        $event->load('featuredPhoto:id,event_id,url,thumbnail_url');
+        $event->load([
+            'coverPhoto:id,event_id,url,thumbnail_url',
+            'featuredPhoto:id,event_id,url,thumbnail_url'
+        ]);
 
         return response()->json($event, 201);
     }
@@ -109,6 +116,7 @@ class EventController extends Controller
             'tasks',
             'budgetItems',
             'photos',
+            'coverPhoto',
             'featuredPhoto',
             'collaborators.user',
         ]);

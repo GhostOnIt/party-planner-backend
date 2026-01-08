@@ -266,16 +266,14 @@ class GuestService
         // Check if invitation was already sent
         if ($guest->invitation_sent_at) {
             // Send reminder instead
-            // Check if guest hasn't already accepted
-            if ($guest->rsvp_status === RsvpStatus::ACCEPTED->value) {
-                throw new \InvalidArgumentException('L\'invité a déjà accepté, pas besoin de rappel.');
+            // Check if guest hasn't already responded (accepted or declined)
+            if (in_array($guest->rsvp_status, [RsvpStatus::ACCEPTED->value, RsvpStatus::DECLINED->value])) {
+                throw new \InvalidArgumentException('L\'invité a déjà répondu, pas besoin de rappel.');
             }
 
-            if (config('app.env') === 'local' || config('app.env') === 'testing') {
-                SendReminderJob::dispatchSync($guest);
-            } else {
-                SendReminderJob::dispatch($guest);
-            }
+            // Dispatch the reminder job
+            // With QUEUE_CONNECTION=database, jobs are queued and processed by the worker
+            SendReminderJob::dispatch($guest);
 
             return [
                 'type' => 'reminder',
@@ -291,11 +289,9 @@ class GuestService
             $invitation->update(['custom_message' => $customMessage]);
         }
 
-        if (config('app.env') === 'local' || config('app.env') === 'testing') {
-            SendInvitationJob::dispatchSync($guest);
-        } else {
-            SendInvitationJob::dispatch($guest);
-        }
+        // Dispatch the invitation job
+        // With QUEUE_CONNECTION=database, jobs are queued and processed by the worker
+        SendInvitationJob::dispatch($guest);
 
         return [
             'type' => 'invitation',
@@ -329,13 +325,10 @@ class GuestService
             try {
                 // Check if invitation was already sent
                 if ($guest->invitation_sent_at) {
-                    // Send reminder if guest hasn't accepted
-                    if ($guest->rsvp_status !== RsvpStatus::ACCEPTED->value) {
-                        if (config('app.env') === 'local' || config('app.env') === 'testing') {
-                            SendReminderJob::dispatchSync($guest);
-                        } else {
-                            SendReminderJob::dispatch($guest);
-                        }
+                    // Send reminder if guest hasn't responded (accepted or declined)
+                    if (!in_array($guest->rsvp_status, [RsvpStatus::ACCEPTED->value, RsvpStatus::DECLINED->value])) {
+                        // Dispatch the reminder job
+                        SendReminderJob::dispatch($guest);
                         $reminderCount++;
                     }
                 } else {
@@ -345,11 +338,8 @@ class GuestService
                         $this->createInvitation($guest, $customMessage);
                     }
 
-                    if (config('app.env') === 'local' || config('app.env') === 'testing') {
-                        SendInvitationJob::dispatchSync($guest);
-                    } else {
-                        SendInvitationJob::dispatch($guest);
-                    }
+                    // Dispatch the invitation job
+                    SendInvitationJob::dispatch($guest);
                     $invitationCount++;
                 }
             } catch (\Exception $e) {
@@ -380,16 +370,14 @@ class GuestService
             throw new \InvalidArgumentException('L\'invitation n\'a pas encore été envoyée.');
         }
 
-        // Check if guest hasn't already accepted
-        if ($guest->rsvp_status === RsvpStatus::ACCEPTED->value) {
-            throw new \InvalidArgumentException('L\'invité a déjà accepté, pas besoin de rappel.');
+        // Check if guest hasn't already responded (accepted or declined)
+        if (in_array($guest->rsvp_status, [RsvpStatus::ACCEPTED->value, RsvpStatus::DECLINED->value])) {
+            throw new \InvalidArgumentException('L\'invité a déjà répondu, pas besoin de rappel.');
         }
 
-        if (config('app.env') === 'local' || config('app.env') === 'testing') {
-            SendReminderJob::dispatchSync($guest);
-        } else {
-            SendReminderJob::dispatch($guest);
-        }
+        // Dispatch the reminder job
+        // With QUEUE_CONNECTION=database, jobs are queued and processed by the worker
+        SendReminderJob::dispatch($guest);
     }
 
     /**
@@ -398,7 +386,7 @@ class GuestService
     public function sendReminders(Event $event): int
     {
         $guestsToRemind = $event->guests()
-            ->where('rsvp_status', RsvpStatus::PENDING->value)
+            ->whereIn('rsvp_status', [RsvpStatus::PENDING->value, RsvpStatus::MAYBE->value])
             ->whereNotNull('invitation_sent_at')
             ->whereNotNull('email')
             ->where(function ($query) {
@@ -436,11 +424,9 @@ class GuestService
 
         // Send photo upload link email if guest has email and wasn't already checked in
         if (!$wasCheckedIn && !empty($guest->email) && !empty($guest->photo_upload_token)) {
-            if (config('app.env') === 'local' || config('app.env') === 'testing') {
-                \App\Jobs\SendPhotoUploadLinkJob::dispatchSync($guest);
-            } else {
-                \App\Jobs\SendPhotoUploadLinkJob::dispatch($guest);
-            }
+            // Dispatch the photo upload link job
+            // With QUEUE_CONNECTION=database, jobs are queued and processed by the worker
+            \App\Jobs\SendPhotoUploadLinkJob::dispatch($guest);
         }
 
         return $guest;

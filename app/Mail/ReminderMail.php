@@ -4,13 +4,12 @@ namespace App\Mail;
 
 use App\Models\Guest;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ReminderMail extends Mailable implements ShouldQueue
+class ReminderMail extends Mailable
 {
     use Queueable, SerializesModels;
 
