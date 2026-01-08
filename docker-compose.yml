@@ -47,11 +47,11 @@ services:
       REDIS_HOST: redis
       REDIS_PASSWORD: "null"
       REDIS_PORT: 6379
-      MAIL_MAILER: smtp
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
-      MAIL_FROM_ADDRESS: "no-reply@partyplanner.cg"
-      MAIL_FROM_NAME: "Party Planner"
+      SMTP_MAILER: smtp
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_FROM_ADDRESS: "no-reply@partyplanner.cg"
+      SMTP_FROM_NAME: "Party Planner"
       # Party Planner Configuration
       CURRENCY_CODE: XAF
       CURRENCY_SYMBOL: FCFA

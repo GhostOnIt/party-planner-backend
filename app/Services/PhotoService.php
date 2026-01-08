@@ -151,9 +151,13 @@ class PhotoService
 
     /**
      * Delete a photo and its files.
+     * If the photo is the cover photo, remove cover_photo_id from the event.
      */
     public function delete(Photo $photo): bool
     {
+        $event = $photo->event;
+        $isCoverPhoto = $event->cover_photo_id === $photo->id;
+
         // Extract paths from URLs
         $mainPath = $this->urlToPath($photo->url);
         $thumbnailPath = $this->urlToPath($photo->thumbnail_url);
@@ -170,7 +174,15 @@ class PhotoService
             $disk->delete($thumbnailPath);
         }
 
-        return $photo->delete();
+        // Delete the photo record
+        $photo->delete();
+
+        // If it was the cover photo, remove cover_photo_id from the event
+        if ($isCoverPhoto) {
+            $event->update(['cover_photo_id' => null]);
+        }
+
+        return true;
     }
 
     /**
@@ -186,16 +198,38 @@ class PhotoService
 
     /**
      * Toggle featured status.
+     * If the photo becomes featured, it becomes the cover photo.
+     * If it's unfeatured and it was the cover photo, remove cover_photo_id.
      */
     public function toggleFeatured(Photo $photo): Photo
     {
+        $wasFeatured = $photo->is_featured;
         $photo->update(['is_featured' => !$photo->is_featured]);
+        $photo->refresh();
+
+        $event = $photo->event;
+
+        if ($photo->is_featured) {
+            // Photo became featured: set as cover photo and unfeature others
+            $event->photos()
+                ->where('id', '!=', $photo->id)
+                ->where('is_featured', true)
+                ->update(['is_featured' => false]);
+            
+            $event->update(['cover_photo_id' => $photo->id]);
+        } else {
+            // Photo is no longer featured: if it was the cover photo, remove it
+            if ($event->cover_photo_id === $photo->id) {
+                $event->update(['cover_photo_id' => null]);
+            }
+        }
 
         return $photo->fresh();
     }
 
     /**
      * Set a photo as the only featured photo for an event.
+     * This also sets it as the cover photo.
      */
     public function setAsFeatured(Photo $photo): Photo
     {
@@ -207,6 +241,9 @@ class PhotoService
 
         // Feature this photo
         $photo->update(['is_featured' => true]);
+
+        // Set as cover photo in the event
+        $photo->event->update(['cover_photo_id' => $photo->id]);
 
         return $photo->fresh();
     }
