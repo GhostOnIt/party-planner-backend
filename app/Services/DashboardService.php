@@ -64,7 +64,7 @@ class DashboardService
 
         return [
             'events_count' => $events->count(),
-            'active_events' => $events->whereIn('status', ['planning', 'confirmed'])->count(),
+            'active_events' => $events->whereIn('status', ['upcoming', 'ongoing'])->count(),
             'completed_events' => $events->where('status', 'completed')->count(),
             'collaborations_count' => $collaborations->count(),
             'total_guests' => $events->sum(fn($e) => $e->guests()->count()),
@@ -86,7 +86,7 @@ class DashboardService
 
         return [
             'total' => $events->count(),
-            'active' => $events->whereIn('status', ['planning', 'confirmed'])->count(),
+            'active' => $events->whereIn('status', ['upcoming', 'ongoing'])->count(),
             'completed' => $events->where('status', 'completed')->count(),
             'cancelled' => $events->where('status', 'cancelled')->count(),
             'by_type' => $events->groupBy('type')->map->count()->toArray(),

@@ -36,7 +36,7 @@ class EventService
 
             // Set default status
             if (empty($data['status'])) {
-                $data['status'] = config('partyplanner.events.default_status', 'draft');
+                $data['status'] = config('partyplanner.events.default_status', 'upcoming');
             }
 
             // Create the event
@@ -88,7 +88,7 @@ class EventService
                 'estimated_budget' => $overrides['estimated_budget'] ?? $event->estimated_budget,
                 'theme' => $overrides['theme'] ?? $event->theme,
                 'expected_guests_count' => $overrides['expected_guests_count'] ?? $event->expected_guests_count,
-                'status' => EventStatus::DRAFT->value,
+                'status' => EventStatus::UPCOMING->value,
             ];
 
             // Create the duplicated event
@@ -172,20 +172,25 @@ class EventService
 
     /**
      * Update event status.
+     * Protects cancelled status - once cancelled, it can only be changed manually.
      */
     public function updateStatus(Event $event, EventStatus $status): Event
     {
-        $event->update(['status' => $status->value]);
+        // Protect cancelled status - if event is cancelled, only allow changing to non-cancelled
+        // If trying to change from cancelled, allow it (manual override)
+        // But if trying to change a non-cancelled event to cancelled, allow it
+        if ($event->status === EventStatus::CANCELLED->value && $status !== EventStatus::CANCELLED) {
+            // Allow changing from cancelled to another status (manual override)
+            $event->update(['status' => $status->value]);
+        } elseif ($status === EventStatus::CANCELLED->value) {
+            // Allow setting to cancelled (manual action)
+            $event->update(['status' => $status->value]);
+        } else {
+            // For other status changes, allow them (automatic updates will handle the rest)
+            $event->update(['status' => $status->value]);
+        }
 
         return $event->fresh();
-    }
-
-    /**
-     * Mark event as confirmed.
-     */
-    public function confirm(Event $event): Event
-    {
-        return $this->updateStatus($event, EventStatus::CONFIRMED);
     }
 
     /**
@@ -198,6 +203,7 @@ class EventService
 
     /**
      * Mark event as completed.
+     * Note: This is mainly for manual completion. Automatic status updates will handle most cases.
      */
     public function complete(Event $event): Event
     {

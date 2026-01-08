@@ -72,6 +72,13 @@ Route::post('/invitations/{token}/respond', [InvitationController::class, 'respo
 // Public event details (limited)
 Route::get('/events/{event}/public', [EventController::class, 'publicShow']);
 
+// Public photo upload routes (no auth required, token validated)
+Route::prefix('events/{event}/photos/public/{token}')->group(function () {
+    Route::get('/', [PhotoController::class, 'publicIndex']);
+    Route::post('/', [PhotoController::class, 'publicStore']);
+    Route::post('/download-multiple', [PhotoController::class, 'publicDownloadMultiple']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | API Routes - Authenticated

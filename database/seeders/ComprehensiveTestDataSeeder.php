@@ -110,12 +110,12 @@ class ComprehensiveTestDataSeeder extends Seeder
             ['type' => EventType::BRUNCH, 'count' => fake()->numberBetween(0, 1)],
         ];
 
-        // Status distribution: 60% planning, 20% confirmed, 15% completed, 5% draft
+        // Status distribution: 60% upcoming, 20% ongoing, 15% completed, 5% cancelled
         $statusWeights = [
-            'planning' => 60,
-            'confirmed' => 20,
+            'upcoming' => 60,
+            'ongoing' => 20,
             'completed' => 15,
-            'draft' => 5,
+            'cancelled' => 5,
         ];
 
         $created = 0;

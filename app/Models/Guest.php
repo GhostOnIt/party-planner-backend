@@ -29,6 +29,7 @@ class Guest extends Model
         'checked_in_at',
         'invitation_sent_at',
         'invitation_token',
+        'photo_upload_token',
         'reminder_sent_at',
         'notes',
         'dietary_restrictions',
@@ -39,7 +40,7 @@ class Guest extends Model
      *
      * @var list<string>
      */
-    protected $appends = ['invitation_url'];
+    protected $appends = ['invitation_url', 'photo_upload_url'];
 
     /**
      * Boot the model.
@@ -51,6 +52,17 @@ class Guest extends Model
         static::creating(function (Guest $guest) {
             if (empty($guest->invitation_token)) {
                 $guest->invitation_token = Str::random(64);
+            }
+            // Generate photo upload token if guest is checked in
+            if ($guest->checked_in && empty($guest->photo_upload_token)) {
+                $guest->photo_upload_token = Str::random(64);
+            }
+        });
+
+        static::updating(function (Guest $guest) {
+            // Generate photo upload token if guest becomes checked in
+            if ($guest->isDirty('checked_in') && $guest->checked_in && empty($guest->photo_upload_token)) {
+                $guest->photo_upload_token = Str::random(64);
             }
         });
     }
@@ -136,5 +148,28 @@ class Guest extends Model
         $this->save();
 
         return $this->invitation_token;
+    }
+
+    /**
+     * Get the public photo upload URL.
+     */
+    public function getPhotoUploadUrlAttribute(): ?string
+    {
+        if (!$this->photo_upload_token || !$this->event_id) {
+            return null;
+        }
+
+        return config('app.frontend_url', config('app.url')) . '/upload-photo/' . $this->event_id . '/' . $this->photo_upload_token;
+    }
+
+    /**
+     * Generate a new photo upload token.
+     */
+    public function regeneratePhotoUploadToken(): string
+    {
+        $this->photo_upload_token = Str::random(64);
+        $this->save();
+
+        return $this->photo_upload_token;
     }
 }

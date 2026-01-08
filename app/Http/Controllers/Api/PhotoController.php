@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Photo\PublicStorePhotoRequest;
 use App\Http\Requests\Photo\StorePhotoRequest;
 use App\Models\Event;
 use App\Models\Photo;
 use App\Services\PhotoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class PhotoController extends Controller
 {
@@ -204,5 +207,151 @@ class PhotoController extends Controller
             'message' => "{$updated} photo(s) mise(s) à jour.",
             'count' => $updated,
         ]);
+    }
+
+    /**
+     * Public: Get photos for an event (no auth required, token validated).
+     */
+    public function publicIndex(Request $request, Event $event, string $token): JsonResponse
+    {
+        // Validate token
+        $guest = $this->photoService->validatePhotoUploadToken($event, $token);
+        if (!$guest) {
+            return response()->json([
+                'message' => 'Token invalide ou invité non vérifié.',
+            ], 403);
+        }
+
+        $query = $event->photos();
+
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by featured
+        if ($request->filled('featured')) {
+            $query->where('is_featured', $request->boolean('featured'));
+        }
+
+        $photos = $query
+            ->orderBy('is_featured', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate($request->input('per_page', 20));
+
+        return response()->json([
+            'photos' => $photos,
+            'event' => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'date' => $event->date,
+                'location' => $event->location,
+            ],
+            'guest' => [
+                'name' => $guest->name,
+            ],
+        ]);
+    }
+
+    /**
+     * Public: Upload photos (no auth required, token validated).
+     */
+    public function publicStore(PublicStorePhotoRequest $request, Event $event, string $token): JsonResponse
+    {
+        // Validate token
+        $guest = $this->photoService->validatePhotoUploadToken($event, $token);
+        if (!$guest) {
+            return response()->json([
+                'message' => 'Token invalide ou invité non vérifié.',
+            ], 403);
+        }
+
+        $files = $request->file('photos');
+        $count = is_array($files) ? count($files) : 1;
+
+        // Check if event can accept more photos
+        if (!$this->photoService->canAddPhotos($event, $count)) {
+            $remaining = $this->photoService->getRemainingSlots($event);
+            return response()->json([
+                'message' => "Vous ne pouvez ajouter que {$remaining} photo(s) supplémentaire(s).",
+                'remaining_slots' => $remaining,
+            ], 422);
+        }
+
+        $photos = $this->photoService->uploadPublic(
+            $event,
+            is_array($files) ? $files : [$files],
+            $token,
+            $guest->name
+        );
+
+        return response()->json([
+            'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
+            'photos' => $photos,
+        ], 201);
+    }
+
+    /**
+     * Public: Download multiple photos as ZIP (no auth required, token validated).
+     */
+    public function publicDownloadMultiple(Request $request, Event $event, string $token)
+    {
+        // Validate token
+        $guest = $this->photoService->validatePhotoUploadToken($event, $token);
+        if (!$guest) {
+            return response()->json([
+                'message' => 'Token invalide ou invité non vérifié.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'photos' => ['required', 'array', 'min:1'],
+            'photos.*' => ['required'],
+        ]);
+
+        // Convert all photo IDs to integers (in case they come as strings from JSON)
+        $photoIds = array_map(function ($id) {
+            return is_numeric($id) ? (int) $id : $id;
+        }, $validated['photos']);
+
+        // Validate that all IDs are valid integers and exist
+        foreach ($photoIds as $id) {
+            if (!is_int($id) || $id <= 0) {
+                return response()->json([
+                    'message' => 'Les IDs de photos doivent être des entiers valides.',
+                    'errors' => ['photos' => ['Les IDs de photos doivent être des entiers valides.']],
+                ], 422);
+            }
+        }
+
+        // Check if all photos exist
+        $existingPhotos = \App\Models\Photo::whereIn('id', $photoIds)->pluck('id')->toArray();
+        if (count($existingPhotos) !== count($photoIds)) {
+            return response()->json([
+                'message' => 'Certaines photos n\'existent pas.',
+                'errors' => ['photos' => ['Certaines photos n\'existent pas.']],
+            ], 422);
+        }
+        $photosCount = $event->photos()->whereIn('id', $photoIds)->count();
+        if ($photosCount !== count($photoIds)) {
+            return response()->json([
+                'message' => 'Certaines photos n\'appartiennent pas à cet événement.',
+            ], 422);
+        }
+
+        try {
+            $zipPath = $this->photoService->downloadMultiple($event, $photoIds);
+            $filename = Str::slug($event->title) . '-photos-' . now()->format('Y-m-d') . '.zip';
+
+            // Return file download
+            $response = response()->download($zipPath, $filename)->deleteFileAfterSend(true);
+
+            return $response;
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la création du fichier ZIP.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

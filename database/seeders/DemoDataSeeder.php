@@ -66,7 +66,7 @@ class DemoDataSeeder extends Seeder
                 'estimated_budget' => 2500000,
                 'theme' => 'Champêtre Provençal',
                 'expected_guests_count' => 120,
-                'status' => EventStatus::PLANNING->value,
+                'status' => EventStatus::UPCOMING->value,
             ]
         );
 
@@ -235,7 +235,7 @@ class DemoDataSeeder extends Seeder
             [
                 'type' => EventType::ANNIVERSAIRE->value,
                 'date' => now()->addMonths(1),
-                'status' => EventStatus::CONFIRMED->value,
+                'status' => EventStatus::UPCOMING->value,
                 'expected_guests_count' => 50,
                 'estimated_budget' => 300000,
             ]
