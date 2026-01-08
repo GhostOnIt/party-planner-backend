@@ -210,6 +210,47 @@ class PhotoController extends Controller
     }
 
     /**
+     * Download multiple photos as ZIP.
+     */
+    public function bulkDownload(Request $request, Event $event)
+    {
+        $this->authorize('view', $event);
+
+        $validated = $request->validate([
+            'photos' => ['required', 'array', 'min:1'],
+            'photos.*' => ['required', 'integer'],
+        ]);
+
+        // Convert all photo IDs to integers
+        $photoIds = array_map('intval', $validated['photos']);
+
+        // Validate that all photos exist and belong to this event
+        $existingPhotos = Photo::whereIn('id', $photoIds)
+            ->where('event_id', $event->id)
+            ->pluck('id')
+            ->toArray();
+
+        if (count($existingPhotos) !== count($photoIds)) {
+            return response()->json([
+                'message' => 'Certaines photos n\'existent pas ou n\'appartiennent pas à cet événement.',
+            ], 422);
+        }
+
+        try {
+            $zipPath = $this->photoService->downloadMultiple($event, $photoIds);
+            $filename = Str::slug($event->title) . '-photos-' . now()->format('Y-m-d') . '.zip';
+
+            // Return file download
+            return response()->download($zipPath, $filename)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erreur lors de la création du fichier ZIP.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Public: Get photos for an event (no auth required, token validated).
      */
     public function publicIndex(Request $request, Event $event, string $token): JsonResponse
@@ -289,6 +330,30 @@ class PhotoController extends Controller
             'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
             'photos' => $photos,
         ], 201);
+    }
+
+    /**
+     * Download a single photo.
+     */
+    public function download(Event $event, Photo $photo)
+    {
+        $this->authorize('view', $event);
+
+        // Get the file path from the photo URL
+        $path = str_replace('/storage/', '', $photo->url);
+
+        // Check if file exists
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+            return response()->json([
+                'message' => 'Photo introuvable.',
+            ], 404);
+        }
+
+        // Use Laravel's download response which handles headers correctly
+        return \Illuminate\Support\Facades\Storage::disk('public')->download(
+            $path,
+            $photo->original_name ?? 'photo.jpg'
+        );
     }
 
     /**
