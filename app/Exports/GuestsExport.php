@@ -15,12 +15,32 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class GuestsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
 {
     public function __construct(
-        protected Event $event
+        protected Event $event,
+        protected array $filters = []
     ) {}
 
     public function collection(): Collection
     {
-        return $this->event->guests()->orderBy('name')->get();
+        $query = $this->event->guests();
+
+        // Apply filters
+        if (!empty($this->filters['rsvp_status']) && is_array($this->filters['rsvp_status'])) {
+            $query->whereIn('rsvp_status', $this->filters['rsvp_status']);
+        }
+
+        if (isset($this->filters['checked_in'])) {
+            $query->where('checked_in', $this->filters['checked_in']);
+        }
+
+        if (isset($this->filters['invitation_sent'])) {
+            if ($this->filters['invitation_sent']) {
+                $query->whereNotNull('invitation_sent_at');
+            } else {
+                $query->whereNull('invitation_sent_at');
+            }
+        }
+
+        return $query->orderBy('name')->get();
     }
 
     public function headings(): array

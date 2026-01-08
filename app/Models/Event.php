@@ -30,6 +30,7 @@ class Event extends Model
         'theme',
         'expected_guests_count',
         'status',
+        'cover_photo_id',
     ];
 
     /**
@@ -46,6 +47,29 @@ class Event extends Model
             'actual_budget' => 'decimal:2',
             'expected_guests_count' => 'integer',
         ];
+    }
+
+    /**
+     * Get the attributes that should be appended to the model's array form.
+     *
+     * @return array<int, string>
+     */
+    protected $appends = ['budget', 'expected_guests'];
+
+    /**
+     * Get the budget attribute (alias for estimated_budget).
+     */
+    public function getBudgetAttribute(): ?float
+    {
+        return $this->estimated_budget ? (float) $this->estimated_budget : null;
+    }
+
+    /**
+     * Get the expected guests attribute (alias for expected_guests_count).
+     */
+    public function getExpectedGuestsAttribute(): ?int
+    {
+        return $this->expected_guests_count;
     }
 
     /**
@@ -97,11 +121,48 @@ class Event extends Model
     }
 
     /**
+     * Get the cover photo for the event.
+     */
+    public function coverPhoto(): BelongsTo
+    {
+        return $this->belongsTo(Photo::class, 'cover_photo_id');
+    }
+
+    /**
      * Get the featured photo (cover image) for the event.
+     * This relation now prioritizes cover_photo_id over is_featured.
+     * For backward compatibility, it still works with eager loading.
      */
     public function featuredPhoto(): HasOne
     {
+        // Use coverPhoto relation if available, otherwise fallback to is_featured
+        // This is handled via an accessor to maintain eager loading compatibility
         return $this->hasOne(Photo::class)->where('is_featured', true)->latest();
+    }
+
+    /**
+     * Get the featured photo attribute (accessor).
+     * Returns cover_photo_id if set, otherwise falls back to is_featured photo.
+     * This ensures backward compatibility while prioritizing cover_photo_id.
+     */
+    public function getFeaturedPhotoAttribute()
+    {
+        // If cover_photo_id is set and coverPhoto is loaded, return it
+        if ($this->cover_photo_id) {
+            if ($this->relationLoaded('coverPhoto') && $this->coverPhoto) {
+                return $this->coverPhoto;
+            }
+            // Load coverPhoto if not already loaded
+            return $this->coverPhoto;
+        }
+
+        // Otherwise, return the first featured photo
+        if ($this->relationLoaded('featuredPhoto')) {
+            return $this->getRelation('featuredPhoto');
+        }
+
+        // Fallback: load it dynamically
+        return $this->photos()->where('is_featured', true)->latest()->first();
     }
 
     /**

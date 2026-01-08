@@ -29,9 +29,9 @@ class SendGuestReminderJob implements ShouldQueue
             return;
         }
 
-        // Skip if guest has already responded
-        if ($this->guest->rsvp_status !== 'pending') {
-            Log::info("SendGuestReminderJob: Guest {$this->guest->id} already responded ({$this->guest->rsvp_status})");
+        // Skip if guest has already responded (accepted or declined)
+        if (in_array($this->guest->rsvp_status, ['accepted', 'declined'])) {
+            Log::info("SendGuestReminderJob: Guest {$this->guest->id} already responded ({$this->guest->rsvp_status}), skipping reminder");
             return;
         }
 

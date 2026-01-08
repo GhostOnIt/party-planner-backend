@@ -17,12 +17,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
+          User::firstOrCreate(
+            ['email' => 'pamarolic017@gmail.com'],
+            [
+                'name' => 'Rolic PAMA',
+                'password' => Hash::make('Test@1234'),
+                'email_verified_at' => now(),
+                'role' => UserRole::ADMIN,
+            ]
+        );
         // Utilisateur admin
         User::firstOrCreate(
             ['email' => 'alexsonicka@gmail.com'],
             [
                 'name' => 'Alexandre Sonicka',
-                'password' => Hash::make('test1234'),
+                'password' => Hash::make('Test@1234'),
                 'email_verified_at' => now(),
                 'role' => UserRole::ADMIN,
             ]
@@ -33,7 +43,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'jane@example.com'],
             [
                 'name' => 'Jane Doe',
-                'password' => Hash::make('test1234'),
+                'password' => Hash::make('Test@1234'),
                 'email_verified_at' => now(),
                 'role' => UserRole::USER,
             ]
@@ -43,7 +53,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'john@example.com'],
             [
                 'name' => 'John Doe',
-                'password' => Hash::make('test1234'),
+                'password' => Hash::make('Test@1234'),
                 'email_verified_at' => now(),
                 'role' => UserRole::USER,
             ]

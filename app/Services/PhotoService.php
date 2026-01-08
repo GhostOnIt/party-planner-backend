@@ -21,11 +21,13 @@ class PhotoService
     {
         $path = $this->storeFile($event, $file);
 
+         $url = '/storage/' . ltrim($path, '/');
+        
         $photo = $event->photos()->create([
             'uploaded_by_user_id' => $user->id,
             'type' => $type,
-            'url' => Storage::url($path),
-            'thumbnail_url' => Storage::url($path), // Will be updated by job
+            'url' => $url,
+            'thumbnail_url' => $url, // Will be updated by job
             'description' => $description,
             'is_featured' => false,
         ]);
@@ -87,7 +89,8 @@ class PhotoService
         }
 
         // Check if intervention/image is available
-        if (!class_exists(\Intervention\Image\ImageManager::class)) {
+        $imageManagerClass = 'Intervention\Image\ImageManager';
+        if (!class_exists($imageManagerClass)) {
             // Fallback: copy original as thumbnail
             $disk->copy($sourcePath, $thumbnailPath);
             return $thumbnailPath;
@@ -95,8 +98,10 @@ class PhotoService
 
         try {
             // Use Intervention Image if available
-            $manager = new \Intervention\Image\ImageManager(
-                new \Intervention\Image\Drivers\Gd\Driver()
+            /** @var object $manager */
+            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
+            $manager = new $imageManagerClass(
+                new $driverClass()
             );
 
             $image = $manager->read($disk->path($sourcePath));
@@ -123,13 +128,16 @@ class PhotoService
         }
 
         // Check if intervention/image is available
-        if (!class_exists(\Intervention\Image\ImageManager::class)) {
+        $imageManagerClass = 'Intervention\Image\ImageManager';
+        if (!class_exists($imageManagerClass)) {
             return true; // Skip compression if library not available
         }
 
         try {
-            $manager = new \Intervention\Image\ImageManager(
-                new \Intervention\Image\Drivers\Gd\Driver()
+            /** @var object $manager */
+            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
+            $manager = new $imageManagerClass(
+                new $driverClass()
             );
 
             $image = $manager->read($disk->path($sourcePath));
@@ -143,9 +151,13 @@ class PhotoService
 
     /**
      * Delete a photo and its files.
+     * If the photo is the cover photo, remove cover_photo_id from the event.
      */
     public function delete(Photo $photo): bool
     {
+        $event = $photo->event;
+        $isCoverPhoto = $event->cover_photo_id === $photo->id;
+
         // Extract paths from URLs
         $mainPath = $this->urlToPath($photo->url);
         $thumbnailPath = $this->urlToPath($photo->thumbnail_url);
@@ -162,7 +174,15 @@ class PhotoService
             $disk->delete($thumbnailPath);
         }
 
-        return $photo->delete();
+        // Delete the photo record
+        $photo->delete();
+
+        // If it was the cover photo, remove cover_photo_id from the event
+        if ($isCoverPhoto) {
+            $event->update(['cover_photo_id' => null]);
+        }
+
+        return true;
     }
 
     /**
@@ -178,16 +198,38 @@ class PhotoService
 
     /**
      * Toggle featured status.
+     * If the photo becomes featured, it becomes the cover photo.
+     * If it's unfeatured and it was the cover photo, remove cover_photo_id.
      */
     public function toggleFeatured(Photo $photo): Photo
     {
+        $wasFeatured = $photo->is_featured;
         $photo->update(['is_featured' => !$photo->is_featured]);
+        $photo->refresh();
+
+        $event = $photo->event;
+
+        if ($photo->is_featured) {
+            // Photo became featured: set as cover photo and unfeature others
+            $event->photos()
+                ->where('id', '!=', $photo->id)
+                ->where('is_featured', true)
+                ->update(['is_featured' => false]);
+            
+            $event->update(['cover_photo_id' => $photo->id]);
+        } else {
+            // Photo is no longer featured: if it was the cover photo, remove it
+            if ($event->cover_photo_id === $photo->id) {
+                $event->update(['cover_photo_id' => null]);
+            }
+        }
 
         return $photo->fresh();
     }
 
     /**
      * Set a photo as the only featured photo for an event.
+     * This also sets it as the cover photo.
      */
     public function setAsFeatured(Photo $photo): Photo
     {
@@ -199,6 +241,9 @@ class PhotoService
 
         // Feature this photo
         $photo->update(['is_featured' => true]);
+
+        // Set as cover photo in the event
+        $photo->event->update(['cover_photo_id' => $photo->id]);
 
         return $photo->fresh();
     }
@@ -339,5 +384,102 @@ class PhotoService
         return $event->photos()
             ->whereIn('id', $photoIds)
             ->update(['type' => $type]);
+    }
+
+    /**
+     * Validate photo upload token and return the guest.
+     */
+    public function validatePhotoUploadToken(Event $event, string $token): ?\App\Models\Guest
+    {
+        $guest = \App\Models\Guest::where('event_id', $event->id)
+            ->where('photo_upload_token', $token)
+            ->where('checked_in', true)
+            ->first();
+
+        return $guest;
+    }
+
+    /**
+     * Upload photos publicly (without authentication).
+     */
+    public function uploadPublic(Event $event, array $files, string $token, ?string $guestName = null): Collection
+    {
+        // Validate token
+        $guest = $this->validatePhotoUploadToken($event, $token);
+        if (!$guest) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                response()->json(['message' => 'Token invalide ou invité non vérifié.'], 403)
+            );
+        }
+
+        $photos = collect();
+
+        foreach ($files as $file) {
+            if ($file instanceof UploadedFile && $file->isValid()) {
+                $path = $this->storeFile($event, $file);
+                $url = '/storage/' . ltrim($path, '/');
+
+                // Create photo without user (public upload)
+                $photo = $event->photos()->create([
+                    'uploaded_by_user_id' => null, // Public upload, no user
+                    'type' => 'event_photo',
+                    'url' => $url,
+                    'thumbnail_url' => $url, // Will be updated by job
+                    'description' => $guestName ? "Uploadé par {$guestName}" : 'Uploadé par un invité',
+                    'is_featured' => false,
+                ]);
+
+                // Dispatch job for async processing
+                ProcessPhotoJob::dispatch($photo, $path);
+
+                $photos->push($photo);
+            }
+        }
+
+        return $photos;
+    }
+
+    /**
+     * Download multiple photos as a ZIP archive.
+     */
+    public function downloadMultiple(Event $event, array $photoIds): string
+    {
+        $photos = $event->photos()->whereIn('id', $photoIds)->get();
+
+        if ($photos->isEmpty()) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                response()->json(['message' => 'Aucune photo trouvée.'], 404)
+            );
+        }
+
+        // Create temporary ZIP file
+        $zipPath = storage_path('app/temp/' . Str::uuid() . '.zip');
+        $zipDir = dirname($zipPath);
+
+        if (!is_dir($zipDir)) {
+            mkdir($zipDir, 0755, true);
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new \Exception('Impossible de créer le fichier ZIP.');
+        }
+
+        $disk = Storage::disk('public');
+
+        foreach ($photos as $photo) {
+            $path = $this->urlToPath($photo->url);
+            if ($path && $disk->exists($path)) {
+                $fileContent = $disk->get($path);
+                // Generate filename from photo ID and extension
+                $extension = pathinfo($path, PATHINFO_EXTENSION) ?: 'jpg';
+                $filename = 'photo-' . $photo->id . '.' . $extension;
+                $zip->addFromString($filename, $fileContent);
+            }
+        }
+
+        $zip->close();
+
+        return $zipPath;
     }
 }
