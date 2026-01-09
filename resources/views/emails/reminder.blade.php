@@ -14,7 +14,7 @@ Nous n'avons pas encore reçu votre réponse pour l'événement suivant :
 @endif
 
 @php
-    $daysUntil = now()->diffInDays($event->date, false);
+   $daysUntil = floor(now()->diffInDays($event->date, false));
 @endphp
 
 @if($daysUntil > 0)
