@@ -62,6 +62,10 @@ return new class extends Migration
         // For databases that support it, we can add a check constraint
         $driver = DB::getDriverName();
         if ($driver === 'pgsql') {
+             $constraintExists = DB::select("SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'events_status_check' AND table_name = 'events'");
+            if (!empty($constraintExists)) {
+                DB::statement("ALTER TABLE events DROP CONSTRAINT events_status_check");
+            }
             DB::statement("ALTER TABLE events ADD CONSTRAINT events_status_check CHECK (status IN ('upcoming', 'ongoing', 'completed', 'cancelled'))");
         }
     }
