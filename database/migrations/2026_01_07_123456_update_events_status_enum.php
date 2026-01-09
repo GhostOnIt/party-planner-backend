@@ -12,7 +12,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, migrate existing data to new status values
+        // First, remove existing constraint if it exists (before data migration)
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            $constraintExists = DB::select("SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'events_status_check' AND table_name = 'events'");
+            if (!empty($constraintExists)) {
+                DB::statement("ALTER TABLE events DROP CONSTRAINT events_status_check");
+            }
+        }
+
+        // Change from enum to string to allow intermediate values
+        Schema::table('events', function (Blueprint $table) {
+            $table->string('status', 20)->default('upcoming')->change();
+        });
+
+        // Now migrate existing data to new status values
         $today = now()->startOfDay();
         $now = now();
         
@@ -52,20 +66,9 @@ return new class extends Migration
                 }
             }
         }
-        
-        // Update the enum column type
-        // Change from enum to string first, then back to enum with new values
-        Schema::table('events', function (Blueprint $table) {
-            $table->string('status', 20)->default('upcoming')->change();
-        });
-        
-        // For databases that support it, we can add a check constraint
-        $driver = DB::getDriverName();
+
+        // Add the new check constraint with updated values
         if ($driver === 'pgsql') {
-             $constraintExists = DB::select("SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'events_status_check' AND table_name = 'events'");
-            if (!empty($constraintExists)) {
-                DB::statement("ALTER TABLE events DROP CONSTRAINT events_status_check");
-            }
             DB::statement("ALTER TABLE events ADD CONSTRAINT events_status_check CHECK (status IN ('upcoming', 'ongoing', 'completed', 'cancelled'))");
         }
     }
