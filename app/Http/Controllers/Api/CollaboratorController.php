@@ -62,10 +62,10 @@ class CollaboratorController extends Controller
             ], 422);
         }
 
-        $collaborator = $this->collaboratorService->inviteByEmail(
+        $collaborator = $this->collaboratorService->inviteByEmailWithRoles(
             $event,
             $request->validated('email'),
-            $request->validated('role'),
+            $request->validated('roles'),
             $request->validated('custom_role_id')
         );
 
@@ -96,7 +96,7 @@ class CollaboratorController extends Controller
             return response()->json(['message' => 'Impossible de modifier le propriétaire.'], 422);
         }
 
-        $collaborator = $this->collaboratorService->updateRole($collaborator, $request->validated('role'));
+        $collaborator = $this->collaboratorService->updateRoles($collaborator, $request->validated('roles'));
 
         return response()->json([
             'message' => 'Rôle mis à jour.',

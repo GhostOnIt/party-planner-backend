@@ -17,12 +17,28 @@ class CollaboratorService
      */
     public function invite(Event $event, User $user, string $role, ?int $customRoleId = null, bool $sendNotification = true): Collaborator
     {
+        return $this->inviteWithRoles($event, $user, [$role], $customRoleId, $sendNotification);
+    }
+
+    /**
+     * Invite a user to collaborate on an event with multiple roles.
+     */
+    public function inviteWithRoles(Event $event, User $user, array $roles, ?int $customRoleId = null, bool $sendNotification = true): Collaborator
+    {
         $collaborator = $event->collaborators()->create([
             'user_id' => $user->id,
-            'role' => $role,
+            'role' => $roles[0] ?? null, // Keep primary role for backward compatibility
             'custom_role_id' => $customRoleId,
             'invited_at' => now(),
         ]);
+
+        // Add roles to pivot table using the CollaboratorRole model
+        foreach ($roles as $role) {
+            \App\Models\CollaboratorRole::create([
+                'collaborator_id' => $collaborator->id,
+                'role' => $role,
+            ]);
+        }
 
         if ($sendNotification) {
             SendCollaborationInvitationJob::dispatch($collaborator);
@@ -35,6 +51,14 @@ class CollaboratorService
      * Invite a user by email.
      */
     public function inviteByEmail(Event $event, string $email, string $role, ?int $customRoleId = null): ?Collaborator
+    {
+        return $this->inviteByEmailWithRoles($event, $email, [$role], $customRoleId);
+    }
+
+    /**
+     * Invite a user by email with multiple roles.
+     */
+    public function inviteByEmailWithRoles(Event $event, string $email, array $roles, ?int $customRoleId = null): ?Collaborator
     {
         $user = User::where('email', $email)->first();
 
@@ -52,7 +76,7 @@ class CollaboratorService
             return null;
         }
 
-        return $this->invite($event, $user, $role, $customRoleId);
+        return $this->inviteWithRoles($event, $user, $roles, $customRoleId);
     }
 
     /**
@@ -98,6 +122,38 @@ class CollaboratorService
         $this->notifyRoleChange($collaborator);
 
         return $collaborator->fresh('customRole');
+    }
+
+    /**
+     * Update collaborator roles.
+     */
+    public function updateRoles(Collaborator $collaborator, array $roles, ?int $customRoleId = null): Collaborator
+    {
+        // Cannot change owner role
+        if ($collaborator->hasRole('owner')) {
+            return $collaborator;
+        }
+
+        // Update the primary role for backward compatibility
+        $collaborator->update([
+            'role' => $roles[0] ?? null,
+            'custom_role_id' => $customRoleId,
+        ]);
+
+        // Remove existing roles and add new ones
+        $collaborator->collaboratorRoles()->delete();
+
+        foreach ($roles as $role) {
+            \App\Models\CollaboratorRole::create([
+                'collaborator_id' => $collaborator->id,
+                'role' => $role,
+            ]);
+        }
+
+        // Notify collaborator of role change
+        $this->notifyRoleChange($collaborator);
+
+        return $collaborator->fresh(['customRole', 'collaboratorRoles']);
     }
 
     /**
@@ -154,8 +210,8 @@ class CollaboratorService
     public function getCollaborators(Event $event): Collection
     {
         return $event->collaborators()
-            ->with('user')
-            ->orderByRaw("CASE role WHEN 'owner' THEN 1 WHEN 'editor' THEN 2 WHEN 'viewer' THEN 3 END")
+            ->with(['user', 'collaboratorRoles'])
+            ->orderByRaw("CASE role WHEN 'owner' THEN 1 WHEN 'editor' THEN 2 WHEN 'viewer' THEN 3 WHEN 'coordinator' THEN 4 WHEN 'guest_manager' THEN 5 WHEN 'planner' THEN 6 WHEN 'accountant' THEN 7 WHEN 'photographer' THEN 8 WHEN 'supervisor' THEN 9 WHEN 'reporter' THEN 10 END")
             ->get();
     }
 

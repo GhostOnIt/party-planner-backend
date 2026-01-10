@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Collaborator extends Model
 {
@@ -62,11 +63,27 @@ class Collaborator extends Model
     }
 
     /**
+     * Get the roles for this collaborator.
+     */
+    public function collaboratorRoles()
+    {
+        return $this->hasMany(\App\Models\CollaboratorRole::class);
+    }
+
+    /**
+     * Get the role values as array.
+     */
+    public function getRoleValues(): array
+    {
+        return $this->collaboratorRoles->pluck('role')->toArray();
+    }
+
+    /**
      * Check if the collaborator is the owner.
      */
     public function isOwner(): bool
     {
-        return $this->role === 'owner';
+        return $this->hasRole('owner');
     }
 
     /**
@@ -74,7 +91,32 @@ class Collaborator extends Model
      */
     public function canEdit(): bool
     {
-        return in_array($this->role, ['owner', 'editor', 'coordinator']);
+        return $this->hasAnyRole(['owner', 'editor', 'coordinator']);
+    }
+
+    /**
+     * Check if collaborator has a specific role.
+     */
+    public function hasRole(string $role): bool
+    {
+        // Support both old single role system and new multiple roles system
+        if ($this->relationLoaded('collaboratorRoles')) {
+            return $this->collaboratorRoles->contains('role', $role);
+        }
+
+        return $this->role === $role;
+    }
+
+    /**
+     * Check if collaborator has any of the specified roles.
+     */
+    public function hasAnyRole(array $roles): bool
+    {
+        if ($this->relationLoaded('collaboratorRoles')) {
+            return $this->collaboratorRoles->whereIn('role', $roles)->isNotEmpty();
+        }
+
+        return in_array($this->role, $roles);
     }
 
     /**
@@ -86,23 +128,39 @@ class Collaborator extends Model
     }
 
     /**
-     * Get the effective role name (custom role name or system role).
+     * Get the effective role names (custom role name or system roles).
+     */
+    public function getEffectiveRoleNames(): array
+    {
+        if ($this->hasCustomRole() && $this->customRole) {
+            return [$this->customRole->name];
+        }
+
+        if ($this->relationLoaded('collaboratorRoles') && $this->collaboratorRoles->isNotEmpty()) {
+            return $this->collaboratorRoles->map(function($collaboratorRole) {
+                return $this->getSystemRoleDisplayName($collaboratorRole->role);
+            })->toArray();
+        }
+
+        return [$this->getSystemRoleDisplayName()];
+    }
+
+    /**
+     * Get the effective role name (primary role for backward compatibility).
      */
     public function getEffectiveRoleName(): string
     {
-        if ($this->hasCustomRole() && $this->customRole) {
-            return $this->customRole->name;
-        }
-
-        return $this->getSystemRoleDisplayName();
+        return $this->getEffectiveRoleNames()[0] ?? 'Aucun';
     }
 
     /**
      * Get the display name for system roles.
      */
-    public function getSystemRoleDisplayName(): string
+    public function getSystemRoleDisplayName(?string $role = null): string
     {
-        return match($this->role) {
+        $roleToCheck = $role ?? $this->role;
+
+        return match($roleToCheck) {
             'owner' => 'Propriétaire',
             'coordinator' => 'Coordinateur',
             'guest_manager' => 'Gestionnaire d\'Invités',
@@ -113,28 +171,44 @@ class Collaborator extends Model
             'reporter' => 'Rapporteur',
             'editor' => 'Éditeur', // Legacy
             'viewer' => 'Lecteur', // Legacy
-            default => ucfirst($this->role),
+            default => ucfirst($roleToCheck ?? ''),
         };
     }
 
     /**
-     * Get the role color for UI.
+     * Get the role colors for UI.
+     */
+    public function getRoleColors(): array
+    {
+        if ($this->hasCustomRole() && $this->customRole) {
+            return [$this->customRole->getColorClass()];
+        }
+
+        if ($this->relationLoaded('collaboratorRoles') && $this->collaboratorRoles->isNotEmpty()) {
+            return $this->collaboratorRoles->map(function($collaboratorRole) {
+                return $this->getSystemRoleColor($collaboratorRole->role);
+            })->toArray();
+        }
+
+        return [$this->getSystemRoleColor()];
+    }
+
+    /**
+     * Get the role color for UI (primary color for backward compatibility).
      */
     public function getRoleColor(): string
     {
-        if ($this->hasCustomRole() && $this->customRole) {
-            return $this->customRole->getColorClass();
-        }
-
-        return $this->getSystemRoleColor();
+        return $this->getRoleColors()[0] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
 
     /**
      * Get the color for system roles.
      */
-    public function getSystemRoleColor(): string
+    public function getSystemRoleColor(?string $role = null): string
     {
-        return match($this->role) {
+        $roleToCheck = $role ?? $this->role;
+
+        return match($roleToCheck) {
             'owner' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
             'coordinator' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
             'guest_manager' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
@@ -155,5 +229,23 @@ class Collaborator extends Model
     public function isAccepted(): bool
     {
         return $this->accepted_at !== null;
+    }
+
+    /**
+     * Get roles attribute for API responses.
+     */
+    public function getRolesAttribute(): array
+    {
+        return $this->getRoleValues();
+    }
+
+    /**
+     * Always load roles relationship.
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('withRoles', function ($builder) {
+            $builder->with('collaboratorRoles');
+        });
     }
 }
