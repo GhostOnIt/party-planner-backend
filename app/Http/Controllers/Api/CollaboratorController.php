@@ -29,6 +29,12 @@ class CollaboratorController extends Controller
         $canAddCollaborator = $this->collaboratorService->canAddCollaborator($event);
         $remainingSlots = PHP_INT_MAX; // Unlimited collaborators
 
+        // Add roles to each collaborator for frontend compatibility
+        $collaborators->transform(function ($collaborator) {
+            $collaborator->roles = $collaborator->getRoleValues();
+            return $collaborator;
+        });
+
         return response()->json([
             'collaborators' => $collaborators,
             'stats' => $stats,
@@ -75,9 +81,13 @@ class CollaboratorController extends Controller
             ], 422);
         }
 
+        // Add roles to collaborator for frontend compatibility
+        $collaborator->roles = $collaborator->getRoleValues();
+        $collaborator->load('user');
+
         return response()->json([
             'message' => 'Invitation envoyée.',
-            'collaborator' => $collaborator->load('user'),
+            'collaborator' => $collaborator,
         ], 201);
     }
 
@@ -98,9 +108,13 @@ class CollaboratorController extends Controller
 
         $collaborator = $this->collaboratorService->updateRoles($collaborator, $request->validated('roles'));
 
+        // Add roles to collaborator for frontend compatibility
+        $collaborator->roles = $collaborator->getRoleValues();
+        $collaborator->load('user');
+
         return response()->json([
             'message' => 'Rôle mis à jour.',
-            'collaborator' => $collaborator->load('user'),
+            'collaborator' => $collaborator,
         ]);
     }
 

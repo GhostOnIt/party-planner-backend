@@ -232,11 +232,16 @@ class Collaborator extends Model
     }
 
     /**
-     * Get roles attribute for API responses.
+     * Convert model to array with roles.
      */
-    public function getRolesAttribute(): array
+    public function toArray(): array
     {
-        return $this->getRoleValues();
+        $array = parent::toArray();
+
+        // Add roles array for API responses
+        $array['roles'] = $this->getRoleValues();
+
+        return $array;
     }
 
     /**
