@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CollaboratorController;
+use App\Http\Controllers\Api\CustomRoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\GuestController;
@@ -183,6 +184,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/leave', [CollaboratorController::class, 'leave']);
         Route::post('/{user}/resend', [CollaboratorController::class, 'resendInvitation']);
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Roles (nested under events)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('events/{event}/roles')->group(function () {
+        Route::get('/', [CustomRoleController::class, 'index']);
+        Route::post('/', [CustomRoleController::class, 'store']);
+        Route::put('/{role}', [CustomRoleController::class, 'update']);
+        Route::delete('/{role}', [CustomRoleController::class, 'destroy']);
+    });
+
+// Permissions endpoint (not nested under events)
+Route::get('/permissions', [CustomRoleController::class, 'permissions']);
+
+// Available roles endpoint
+Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
 
     /*
     |--------------------------------------------------------------------------

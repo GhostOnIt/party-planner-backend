@@ -27,13 +27,13 @@ class CollaboratorController extends Controller
         $collaborators = $this->collaboratorService->getCollaborators($event);
         $stats = $this->collaboratorService->getStatistics($event);
         $canAddCollaborator = $this->collaboratorService->canAddCollaborator($event);
-        $remainingSlots = $this->collaboratorService->getRemainingSlots($event);
+        $remainingSlots = PHP_INT_MAX; // Unlimited collaborators
 
         return response()->json([
             'collaborators' => $collaborators,
             'stats' => $stats,
             'can_add_collaborator' => $canAddCollaborator,
-            'remaining_slots' => $remainingSlots,
+            'remaining_slots' => PHP_INT_MAX, // Unlimited collaborators
         ]);
     }
 
@@ -58,14 +58,15 @@ class CollaboratorController extends Controller
     {
         if (!$this->collaboratorService->canAddCollaborator($event)) {
             return response()->json([
-                'message' => 'Limite de collaborateurs atteinte.',
+                'message' => 'Un abonnement actif est requis pour inviter des collaborateurs.',
             ], 422);
         }
 
         $collaborator = $this->collaboratorService->inviteByEmail(
             $event,
             $request->validated('email'),
-            $request->validated('role')
+            $request->validated('role'),
+            $request->validated('custom_role_id')
         );
 
         if (!$collaborator) {

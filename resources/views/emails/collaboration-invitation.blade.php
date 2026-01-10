@@ -20,20 +20,7 @@ Bonjour {{ $invitee->name }},
 
 Vous êtes invité(e) en tant que **{{ $roleLabel }}**.
 
-@if($collaborator->role === 'editor')
-En tant qu'éditeur, vous pourrez :
-- Modifier les informations de l'événement
-- Gérer les invités
-- Gérer les tâches
-- Gérer le budget
-- Ajouter des photos
-@else
-En tant que lecteur, vous pourrez :
-- Consulter les informations de l'événement
-- Voir la liste des invités
-- Voir les tâches
-- Voir le budget
-@endif
+Vous pourrez accéder à l'événement selon les permissions associées à votre rôle.
 
 <x-mail::button :url="$acceptUrl" color="success">
 Accepter l'invitation
