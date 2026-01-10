@@ -41,6 +41,8 @@ class CollaboratorService
         }
 
         if ($sendNotification) {
+            // Load roles relationship before sending email
+            $collaborator->load('collaboratorRoles');
             SendCollaborationInvitationJob::dispatch($collaborator);
         }
 

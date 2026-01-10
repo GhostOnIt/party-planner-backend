@@ -40,6 +40,5 @@ Si les boutons ne fonctionnent pas, copiez et collez ces liens dans votre naviga
 
 **Accepter :** {{ $acceptUrl }}
 
-**Décliner :** {{ $declineUrl }}
-</x-mail::subcopy>
+ </x-mail::subcopy>
 </x-mail::message>

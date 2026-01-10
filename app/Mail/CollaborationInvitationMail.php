@@ -38,7 +38,12 @@ class CollaborationInvitationMail extends Mailable implements ShouldQueue
     {
         // Get all roles for the collaborator
         $roleNames = $this->collaborator->getEffectiveRoleNames();
-        $roleLabel = count($roleNames) > 1 ? implode(' et ', $roleNames) : $roleNames[0];
+        if (count($roleNames) > 1) {
+             $lastRole = array_pop($roleNames);
+            $roleLabel = implode(', ', $roleNames) . ' et ' . $lastRole;
+        } else {
+            $roleLabel = $roleNames[0] ?? 'Collaborateur';
+        }
 
         $frontendUrl = config('app.frontend_url', config('app.url'));
         $eventId = $this->collaborator->event->id;
