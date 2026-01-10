@@ -230,7 +230,30 @@ class CollaboratorController extends Controller
      */
     public function pendingInvitations(Request $request): JsonResponse
     {
-        $invitations = $this->collaboratorService->getUserPendingInvitations($request->user());
+        $collaborators = $this->collaboratorService->getUserPendingInvitations($request->user());
+
+        // Transform collaborators into invitation-compatible format
+        $invitations = $collaborators->map(function ($collaborator) {
+            // Ensure we have valid data
+            $event = $collaborator->event;
+            $inviter = $event ? $event->user : null;
+
+            return [
+                'id' => $collaborator->id,
+                'event_id' => $collaborator->event_id,
+                'event' => $event,
+                'user_id' => $collaborator->user_id,
+                'user' => $collaborator->user,
+                'inviter_id' => $inviter ? $inviter->id : null,
+                'inviter' => $inviter,
+                'role' => $collaborator->role,
+                'roles' => $collaborator->getRoleValues(),
+                'status' => 'pending',
+                'message' => null,
+                'created_at' => $collaborator->invited_at ?? $collaborator->created_at ?? now(),
+                'updated_at' => $collaborator->updated_at,
+            ];
+        });
 
         return response()->json(['invitations' => $invitations]);
     }
