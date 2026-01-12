@@ -248,6 +248,7 @@ class CollaboratorService
             ->with('event.user')
             ->whereNull('accepted_at')
             ->orderBy('invited_at', 'desc')
+            ->orderBy('created_at', 'desc') // Fallback sort by creation date
             ->get();
     }
 
