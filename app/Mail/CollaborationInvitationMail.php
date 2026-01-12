@@ -56,8 +56,7 @@ class CollaborationInvitationMail extends Mailable implements ShouldQueue
                 'inviter' => $this->collaborator->event->user,
                 'invitee' => $this->collaborator->user,
                 'roleLabel' => $roleLabel,
-                'acceptUrl' => "{$frontendUrl}/events/{$eventId}/collaborators/accept",
-                'declineUrl' => "{$frontendUrl}/events/{$eventId}/collaborators/decline",
+                'invitationsUrl' => "{$frontendUrl}/invitations",
             ],
         );
     }

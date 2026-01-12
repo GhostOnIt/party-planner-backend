@@ -28,3 +28,4 @@ echo "✅ Cleared {$failedCount} failed jobs\n";
 
 echo "\n🎯 Queue cleared! New invitation jobs should work correctly.\n";
 echo "💡 Test by creating a new collaborator invitation.\n";
+
