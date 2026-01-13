@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Task;
+use App\Services\PermissionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
+    public function __construct(
+        protected PermissionService $permissionService
+    ) {}
+
     /**
      * Display a listing of tasks for an event.
      */
@@ -56,8 +61,31 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date',
-            'assigned_to_user_id' => 'nullable|exists:users,id',
+            'assigned_to_user_id' => [
+                'nullable',
+                'exists:users,id',
+                function ($attribute, $value, $fail) use ($event) {
+                    if ($value) {
+                        // Check if assigned user is event owner or active collaborator
+                        if ($value !== $event->user_id) {
+                            $isCollaborator = $event->collaborators()
+                                ->where('user_id', $value)
+                                ->whereNotNull('accepted_at')
+                                ->exists();
+
+                            if (!$isCollaborator) {
+                                $fail('L\'utilisateur assigné doit être le propriétaire ou un collaborateur actif de l\'événement.');
+                            }
+                        }
+                    }
+                },
+            ],
         ]);
+
+        // Check assignment permission after validation
+        if (!empty($validated['assigned_to_user_id'])) {
+            $this->authorize('assign', Task::make(['event_id' => $event->id]));
+        }
 
         $task = $event->tasks()->create($validated);
 
@@ -89,8 +117,31 @@ class TaskController extends Controller
             'status' => 'sometimes|required|in:todo,in_progress,completed,cancelled',
             'priority' => 'sometimes|required|in:low,medium,high',
             'due_date' => 'nullable|date',
-            'assigned_to_user_id' => 'nullable|exists:users,id',
+            'assigned_to_user_id' => [
+                'nullable',
+                'exists:users,id',
+                function ($attribute, $value, $fail) use ($event) {
+                    if ($value) {
+                        // Check if assigned user is event owner or active collaborator
+                        if ($value !== $event->user_id) {
+                            $isCollaborator = $event->collaborators()
+                                ->where('user_id', $value)
+                                ->whereNotNull('accepted_at')
+                                ->exists();
+
+                            if (!$isCollaborator) {
+                                $fail('L\'utilisateur assigné doit être le propriétaire ou un collaborateur actif de l\'événement.');
+                            }
+                        }
+                    }
+                },
+            ],
         ]);
+
+        // Check assignment permission after validation
+        if (isset($validated['assigned_to_user_id']) && $validated['assigned_to_user_id'] !== $task->assigned_to_user_id) {
+            $this->authorize('assign', $task);
+        }
 
         if (isset($validated['status'])) {
             if ($validated['status'] === 'completed' && $task->status !== 'completed') {
