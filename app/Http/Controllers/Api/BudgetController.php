@@ -22,7 +22,7 @@ class BudgetController extends Controller
      */
     public function index(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('viewAny', [BudgetItem::class, $event]);
 
         $query = $event->budgetItems();
 
@@ -52,7 +52,7 @@ class BudgetController extends Controller
      */
     public function statistics(Event $event): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('viewAny', [BudgetItem::class, $event]);
 
         $stats = $this->budgetService->getStatistics($event);
         $byCategory = $this->budgetService->getByCategory($event);
@@ -68,7 +68,7 @@ class BudgetController extends Controller
      */
     public function show(Event $event, BudgetItem $item): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('view', $item);
 
         return response()->json($item);
     }
@@ -78,6 +78,8 @@ class BudgetController extends Controller
      */
     public function store(StoreBudgetItemRequest $request, Event $event): JsonResponse
     {
+        $this->authorize('create', [BudgetItem::class, $event]);
+
         $item = $this->budgetService->create($event, $request->validated());
 
         return response()->json($item, 201);
@@ -88,6 +90,8 @@ class BudgetController extends Controller
      */
     public function update(UpdateBudgetItemRequest $request, Event $event, BudgetItem $item): JsonResponse
     {
+        $this->authorize('update', $item);
+
         $item = $this->budgetService->update($item, $request->validated());
 
         return response()->json($item);
@@ -98,7 +102,7 @@ class BudgetController extends Controller
      */
     public function destroy(Event $event, BudgetItem $item): JsonResponse
     {
-        $this->authorize('manageBudget', $event);
+        $this->authorize('delete', $item);
 
         $this->budgetService->delete($item);
 

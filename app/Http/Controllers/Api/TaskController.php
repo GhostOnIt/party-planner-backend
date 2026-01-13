@@ -15,7 +15,7 @@ class TaskController extends Controller
      */
     public function index(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('viewAny', [Task::class, $event]);
 
         $query = $event->tasks()->with('assignedUser');
 
@@ -49,7 +49,7 @@ class TaskController extends Controller
      */
     public function store(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('create', [Task::class, $event]);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -69,7 +69,7 @@ class TaskController extends Controller
      */
     public function show(Event $event, Task $task): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('view', $task);
 
         $task->load('assignedUser');
 
@@ -81,7 +81,7 @@ class TaskController extends Controller
      */
     public function update(Request $request, Event $event, Task $task): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('update', $task);
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
@@ -110,7 +110,7 @@ class TaskController extends Controller
      */
     public function destroy(Event $event, Task $task): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('delete', $task);
 
         $task->delete();
 

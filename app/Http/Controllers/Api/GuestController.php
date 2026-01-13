@@ -21,7 +21,7 @@ class GuestController extends Controller
 
      public function index(Request $request, Event $event): JsonResponse
 {
-    $this->authorize('view', $event);
+    $this->authorize('viewAny', [Guest::class, $event]);
 
     $query = $event->guests();
 
@@ -67,7 +67,7 @@ class GuestController extends Controller
      */
     public function store(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('create', [Guest::class, $event]);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -112,7 +112,7 @@ class GuestController extends Controller
      */
     public function show(Event $event, Guest $guest): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('view', $guest);
 
         return response()->json($guest);
     }
@@ -122,7 +122,7 @@ class GuestController extends Controller
      */
     public function getInvitationDetails(Event $event, Guest $guest): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('viewInvitationDetails', $guest);
 
         // Verify guest belongs to event
         if ($guest->event_id !== $event->id) {
@@ -162,7 +162,7 @@ class GuestController extends Controller
      */
     public function update(Request $request, Event $event, Guest $guest): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('update', $guest);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -204,7 +204,7 @@ class GuestController extends Controller
      */
     public function destroy(Event $event, Guest $guest): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('delete', $guest);
 
         $guest->delete();
 
@@ -217,7 +217,7 @@ class GuestController extends Controller
      */
     public function sendInvitation(Event $event, Guest $guest, Request $request): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('sendInvitation', $guest);
 
         // Verify guest belongs to event
         if ($guest->event_id !== $event->id) {
@@ -246,7 +246,7 @@ class GuestController extends Controller
      */
     public function sendReminder(Event $event, Guest $guest): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('sendReminder', $guest);
 
         try {
             $this->guestService->sendReminder($guest);
@@ -266,7 +266,7 @@ class GuestController extends Controller
      */
     public function checkIn(Event $event, Guest $guest): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('checkIn', $guest);
 
         // Verify guest belongs to event
         if ($guest->event_id !== $event->id) {
@@ -294,7 +294,7 @@ class GuestController extends Controller
      */
     public function undoCheckIn(Event $event, Guest $guest): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('undoCheckIn', $guest);
 
         // Verify guest belongs to event
         if ($guest->event_id !== $event->id) {
@@ -316,7 +316,7 @@ class GuestController extends Controller
      */
     public function statistics(Event $event): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('viewAny', [Guest::class, $event]);
 
         $stats = $this->guestService->getStatistics($event);
         $canAddMore = $this->guestService->canAddGuest($event);
@@ -334,7 +334,7 @@ class GuestController extends Controller
      */
     public function import(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('import', [Guest::class, $event]);
 
         $validated = $request->validate([
             'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120',
@@ -401,7 +401,7 @@ class GuestController extends Controller
      */
     public function previewImport(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('update', $event);
+        $this->authorize('import', [Guest::class, $event]);
 
         $validated = $request->validate([
             'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120',

@@ -103,6 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
     | Events
     |--------------------------------------------------------------------------
     */
+    Route::get('events/{event}/permissions', [EventController::class, 'getPermissions']);
     Route::apiResource('events', EventController::class);
 
     /*
