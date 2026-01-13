@@ -24,7 +24,7 @@ class PhotoController extends Controller
      */
     public function index(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('viewAny', [Photo::class, $event]);
 
         $query = $event->photos()->with('uploadedBy');
 
@@ -60,7 +60,7 @@ class PhotoController extends Controller
      */
     public function statistics(Event $event): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('viewAny', [Photo::class, $event]);
 
         $stats = $this->photoService->getStatistics($event);
         $canAddPhotos = $this->photoService->canAddPhotos($event);
@@ -78,7 +78,7 @@ class PhotoController extends Controller
      */
     public function show(Event $event, Photo $photo): JsonResponse
     {
-        $this->authorize('view', $event);
+        $this->authorize('view', $photo);
 
         $photo->load('uploadedBy');
 
@@ -90,6 +90,8 @@ class PhotoController extends Controller
      */
     public function store(StorePhotoRequest $request, Event $event): JsonResponse
     {
+        $this->authorize('upload', [Photo::class, $event]);
+
         $files = $request->file('photos');
         $count = is_array($files) ? count($files) : 1;
 
@@ -120,7 +122,7 @@ class PhotoController extends Controller
      */
     public function update(Request $request, Event $event, Photo $photo): JsonResponse
     {
-        $this->authorize('managePhotos', $event);
+        $this->authorize('update', $photo);
 
         $validated = $request->validate([
             'description' => ['nullable', 'string', 'max:255'],
@@ -137,7 +139,7 @@ class PhotoController extends Controller
      */
     public function destroy(Event $event, Photo $photo): JsonResponse
     {
-        $this->authorize('managePhotos', $event);
+        $this->authorize('delete', $photo);
 
         $this->photoService->delete($photo);
 
@@ -149,7 +151,7 @@ class PhotoController extends Controller
      */
     public function toggleFeatured(Event $event, Photo $photo): JsonResponse
     {
-        $this->authorize('managePhotos', $event);
+        $this->authorize('setFeatured', $photo);
 
         $photo = $this->photoService->toggleFeatured($photo);
 
@@ -161,7 +163,7 @@ class PhotoController extends Controller
      */
     public function setFeatured(Event $event, Photo $photo): JsonResponse
     {
-        $this->authorize('managePhotos', $event);
+        $this->authorize('setFeatured', $photo);
 
         $photo = $this->photoService->setAsFeatured($photo);
 
@@ -173,7 +175,9 @@ class PhotoController extends Controller
      */
     public function bulkDelete(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('managePhotos', $event);
+        // For bulk operations, check if user can delete any photos for this event
+        $this->authorize('viewAny', [Photo::class, $event]); // Basic access check
+        // Note: Individual photo permissions are checked in the service
 
         $request->validate([
             'photos' => ['required', 'array'],
@@ -193,7 +197,7 @@ class PhotoController extends Controller
      */
     public function bulkUpdateType(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('managePhotos', $event);
+        $this->authorize('viewAny', [Photo::class, $event]); // Basic access check
 
         $request->validate([
             'photos' => ['required', 'array'],
@@ -214,7 +218,7 @@ class PhotoController extends Controller
      */
     public function bulkDownload(Request $request, Event $event)
     {
-        $this->authorize('view', $event);
+        $this->authorize('download', [Photo::class, $event]);
 
         $validated = $request->validate([
             'photos' => ['required', 'array', 'min:1'],
@@ -337,7 +341,7 @@ class PhotoController extends Controller
      */
     public function download(Event $event, Photo $photo)
     {
-        $this->authorize('view', $event);
+        $this->authorize('download', [Photo::class, $event]);
 
         // Get the file path from the photo URL
         $path = str_replace('/storage/', '', $photo->url);
