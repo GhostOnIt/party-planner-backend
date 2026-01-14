@@ -59,6 +59,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Seed permissions (required for app functionality)
+        $this->call([
+            PermissionSeeder::class,
+        ]);
+
         // Seed event templates (required for app functionality)
         $this->call([
             EventTemplateSeeder::class,
