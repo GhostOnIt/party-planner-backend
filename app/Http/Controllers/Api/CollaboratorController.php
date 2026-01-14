@@ -27,13 +27,19 @@ class CollaboratorController extends Controller
         $collaborators = $this->collaboratorService->getCollaborators($event);
         $stats = $this->collaboratorService->getStatistics($event);
         $canAddCollaborator = $this->collaboratorService->canAddCollaborator($event);
-        $remainingSlots = $this->collaboratorService->getRemainingSlots($event);
+        $remainingSlots = PHP_INT_MAX; // Unlimited collaborators
+
+        // Add roles to each collaborator for frontend compatibility
+        $collaborators->transform(function ($collaborator) {
+            $collaborator->roles = $collaborator->getRoleValues();
+            return $collaborator;
+        });
 
         return response()->json([
             'collaborators' => $collaborators,
             'stats' => $stats,
             'can_add_collaborator' => $canAddCollaborator,
-            'remaining_slots' => $remainingSlots,
+            'remaining_slots' => PHP_INT_MAX, // Unlimited collaborators
         ]);
     }
 
@@ -58,14 +64,15 @@ class CollaboratorController extends Controller
     {
         if (!$this->collaboratorService->canAddCollaborator($event)) {
             return response()->json([
-                'message' => 'Limite de collaborateurs atteinte.',
+                'message' => 'Un abonnement actif est requis pour inviter des collaborateurs.',
             ], 422);
         }
 
-        $collaborator = $this->collaboratorService->inviteByEmail(
+        $collaborator = $this->collaboratorService->inviteByEmailWithRoles(
             $event,
             $request->validated('email'),
-            $request->validated('role')
+            $request->validated('roles'),
+            $request->validated('custom_role_id')
         );
 
         if (!$collaborator) {
@@ -74,9 +81,13 @@ class CollaboratorController extends Controller
             ], 422);
         }
 
+        // Add roles to collaborator for frontend compatibility
+        $collaborator->roles = $collaborator->getRoleValues();
+        $collaborator->load('user');
+
         return response()->json([
             'message' => 'Invitation envoyée.',
-            'collaborator' => $collaborator->load('user'),
+            'collaborator' => $collaborator,
         ], 201);
     }
 
@@ -95,11 +106,15 @@ class CollaboratorController extends Controller
             return response()->json(['message' => 'Impossible de modifier le propriétaire.'], 422);
         }
 
-        $collaborator = $this->collaboratorService->updateRole($collaborator, $request->validated('role'));
+        $collaborator = $this->collaboratorService->updateRoles($collaborator, $request->validated('roles'));
+
+        // Add roles to collaborator for frontend compatibility
+        $collaborator->roles = $collaborator->getRoleValues();
+        $collaborator->load('user');
 
         return response()->json([
             'message' => 'Rôle mis à jour.',
-            'collaborator' => $collaborator->load('user'),
+            'collaborator' => $collaborator,
         ]);
     }
 
@@ -215,7 +230,30 @@ class CollaboratorController extends Controller
      */
     public function pendingInvitations(Request $request): JsonResponse
     {
-        $invitations = $this->collaboratorService->getUserPendingInvitations($request->user());
+        $collaborators = $this->collaboratorService->getUserPendingInvitations($request->user());
+
+        // Transform collaborators into invitation-compatible format
+        $invitations = $collaborators->map(function ($collaborator) {
+            // Ensure we have valid data
+            $event = $collaborator->event;
+            $inviter = $event ? $event->user : null;
+
+            return [
+                'id' => $collaborator->id,
+                'event_id' => $collaborator->event_id,
+                'event' => $event,
+                'user_id' => $collaborator->user_id,
+                'user' => $collaborator->user,
+                'inviter_id' => $inviter ? $inviter->id : null,
+                'inviter' => $inviter,
+                'role' => $collaborator->role,
+                'roles' => $collaborator->getRoleValues(),
+                'status' => 'pending',
+                'message' => null,
+                'created_at' => $collaborator->invited_at ?? $collaborator->created_at ?? now(),
+                'updated_at' => $collaborator->updated_at,
+            ];
+        });
 
         return response()->json(['invitations' => $invitations]);
     }

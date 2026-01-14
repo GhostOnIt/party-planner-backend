@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventStatus;
 use App\Enums\EventType;
+use App\Events\EventCreated;
 use App\Models\Event;
 use App\Models\EventTemplate;
 use App\Models\User;
@@ -49,6 +50,9 @@ class EventService
                 // Auto-apply template based on event type
                 $this->autoApplyTemplate($event);
             }
+
+            // Dispatch event created event
+            EventCreated::dispatch($event);
 
             return $event->fresh();
         });

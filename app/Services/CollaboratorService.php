@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enums\CollaboratorRole;
-use App\Enums\PlanType;
 use App\Jobs\SendCollaborationInvitationJob;
 use App\Models\Collaborator;
 use App\Models\Event;
@@ -16,15 +15,34 @@ class CollaboratorService
     /**
      * Invite a user to collaborate on an event.
      */
-    public function invite(Event $event, User $user, string $role, bool $sendNotification = true): Collaborator
+    public function invite(Event $event, User $user, string $role, ?int $customRoleId = null, bool $sendNotification = true): Collaborator
+    {
+        return $this->inviteWithRoles($event, $user, [$role], $customRoleId, $sendNotification);
+    }
+
+    /**
+     * Invite a user to collaborate on an event with multiple roles.
+     */
+    public function inviteWithRoles(Event $event, User $user, array $roles, ?int $customRoleId = null, bool $sendNotification = true): Collaborator
     {
         $collaborator = $event->collaborators()->create([
             'user_id' => $user->id,
-            'role' => $role,
+            'role' => $roles[0] ?? null, // Keep primary role for backward compatibility
+            'custom_role_id' => $customRoleId,
             'invited_at' => now(),
         ]);
 
+        // Add roles to pivot table using the CollaboratorRole model
+        foreach ($roles as $role) {
+            \App\Models\CollaboratorRole::create([
+                'collaborator_id' => $collaborator->id,
+                'role' => $role,
+            ]);
+        }
+
         if ($sendNotification) {
+            // Load roles relationship before sending email
+            $collaborator->load('collaboratorRoles');
             SendCollaborationInvitationJob::dispatch($collaborator);
         }
 
@@ -34,7 +52,15 @@ class CollaboratorService
     /**
      * Invite a user by email.
      */
-    public function inviteByEmail(Event $event, string $email, string $role): ?Collaborator
+    public function inviteByEmail(Event $event, string $email, string $role, ?int $customRoleId = null): ?Collaborator
+    {
+        return $this->inviteByEmailWithRoles($event, $email, [$role], $customRoleId);
+    }
+
+    /**
+     * Invite a user by email with multiple roles.
+     */
+    public function inviteByEmailWithRoles(Event $event, string $email, array $roles, ?int $customRoleId = null): ?Collaborator
     {
         $user = User::where('email', $email)->first();
 
@@ -52,7 +78,7 @@ class CollaboratorService
             return null;
         }
 
-        return $this->invite($event, $user, $role);
+        return $this->inviteWithRoles($event, $user, $roles, $customRoleId);
     }
 
     /**
@@ -82,19 +108,54 @@ class CollaboratorService
     /**
      * Update collaborator role.
      */
-    public function updateRole(Collaborator $collaborator, string $role): Collaborator
+    public function updateRole(Collaborator $collaborator, string $role, ?int $customRoleId = null): Collaborator
     {
         // Cannot change owner role
         if ($collaborator->role === 'owner') {
             return $collaborator;
         }
 
-        $collaborator->update(['role' => $role]);
+        $collaborator->update([
+            'role' => $role,
+            'custom_role_id' => $customRoleId,
+        ]);
 
         // Notify collaborator of role change
         $this->notifyRoleChange($collaborator);
 
-        return $collaborator->fresh();
+        return $collaborator->fresh('customRole');
+    }
+
+    /**
+     * Update collaborator roles.
+     */
+    public function updateRoles(Collaborator $collaborator, array $roles, ?int $customRoleId = null): Collaborator
+    {
+        // Cannot change owner role
+        if ($collaborator->hasRole('owner')) {
+            return $collaborator;
+        }
+
+        // Update the primary role for backward compatibility
+        $collaborator->update([
+            'role' => $roles[0] ?? null,
+            'custom_role_id' => $customRoleId,
+        ]);
+
+        // Remove existing roles and add new ones
+        $collaborator->collaboratorRoles()->delete();
+
+        foreach ($roles as $role) {
+            \App\Models\CollaboratorRole::create([
+                'collaborator_id' => $collaborator->id,
+                'role' => $role,
+            ]);
+        }
+
+        // Notify collaborator of role change
+        $this->notifyRoleChange($collaborator);
+
+        return $collaborator->fresh(['customRole', 'collaboratorRoles']);
     }
 
     /**
@@ -151,8 +212,8 @@ class CollaboratorService
     public function getCollaborators(Event $event): Collection
     {
         return $event->collaborators()
-            ->with('user')
-            ->orderByRaw("CASE role WHEN 'owner' THEN 1 WHEN 'editor' THEN 2 WHEN 'viewer' THEN 3 END")
+            ->with(['user', 'collaboratorRoles'])
+            ->orderByRaw("CASE role WHEN 'owner' THEN 1 WHEN 'editor' THEN 2 WHEN 'viewer' THEN 3 WHEN 'coordinator' THEN 4 WHEN 'guest_manager' THEN 5 WHEN 'planner' THEN 6 WHEN 'accountant' THEN 7 WHEN 'photographer' THEN 8 WHEN 'supervisor' THEN 9 WHEN 'reporter' THEN 10 END")
             ->get();
     }
 
@@ -187,6 +248,7 @@ class CollaboratorService
             ->with('event.user')
             ->whereNull('accepted_at')
             ->orderBy('invited_at', 'desc')
+            ->orderBy('created_at', 'desc') // Fallback sort by creation date
             ->get();
     }
 
@@ -202,41 +264,32 @@ class CollaboratorService
     }
 
     /**
-     * Check if event can add more collaborators based on subscription.
+     * Check if event can add more collaborators.
+     * Now only requires an active subscription (no numerical limits).
      */
     public function canAddCollaborator(Event $event): bool
     {
-        $currentCount = $event->collaborators()->count();
-        $maxCollaborators = $this->getMaxCollaborators($event);
-
-        return $currentCount < $maxCollaborators;
-    }
-
-    /**
-     * Get maximum collaborators allowed.
-     */
-    public function getMaxCollaborators(Event $event): int
-    {
+        // Check if user has an active subscription
         $subscription = $event->subscription;
 
-        if (!$subscription || !$subscription->isActive()) {
-            return config('partyplanner.free_tier.max_collaborators', 1);
-        }
-
-        $planType = PlanType::tryFrom($subscription->plan_type);
-
-        return $planType?->maxCollaborators() ?? 3;
+        return $subscription && $subscription->isActive();
     }
 
     /**
-     * Get remaining collaborator slots.
+     * Get collaborator statistics (unlimited collaborators now).
      */
-    public function getRemainingSlots(Event $event): int
+    public function getStatistics(Event $event): array
     {
-        $max = $this->getMaxCollaborators($event);
-        $current = $event->collaborators()->count();
+        $collaborators = $event->collaborators;
 
-        return max(0, $max - $current);
+        return [
+            'total' => $collaborators->count(),
+            'pending' => $collaborators->whereNull('accepted_at')->count(),
+            'accepted' => $collaborators->whereNotNull('accepted_at')->count(),
+            'editors' => $collaborators->whereIn('role', ['owner', 'editor', 'coordinator'])->count(),
+            'viewers' => $collaborators->whereIn('role', ['viewer', 'supervisor', 'reporter'])->count(),
+            'custom_roles' => $collaborators->whereNotNull('custom_role_id')->count(),
+        ];
     }
 
     /**
@@ -283,22 +336,6 @@ class CollaboratorService
         $collaborator->update(['invited_at' => now()]);
 
         SendCollaborationInvitationJob::dispatch($collaborator);
-    }
-
-    /**
-     * Get statistics for collaborators.
-     */
-    public function getStatistics(Event $event): array
-    {
-        $collaborators = $event->collaborators;
-
-        return [
-            'total' => $collaborators->count(),
-            'pending' => $collaborators->whereNull('accepted_at')->count(),
-            'accepted' => $collaborators->whereNotNull('accepted_at')->count(),
-            'editors' => $collaborators->where('role', 'editor')->count(),
-            'viewers' => $collaborators->where('role', 'viewer')->count(),
-        ];
     }
 
     /**

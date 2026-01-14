@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\EventCreated;
+use App\Listeners\CreateSystemRolesForEvent;
 use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\Payment;
@@ -9,6 +11,7 @@ use App\Policies\AdminPolicy;
 use App\Policies\CollaboratorPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\PaymentPolicy;
+use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -41,5 +44,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('admin.viewAllSubscriptions', [AdminPolicy::class, 'viewAllSubscriptions']);
         Gate::define('admin.viewActivityLogs', [AdminPolicy::class, 'viewActivityLogs']);
         Gate::define('admin.manageTemplates', [AdminPolicy::class, 'manageTemplates']);
+
+        // Register event listeners
+        EventFacade::listen(
+            EventCreated::class,
+            CreateSystemRolesForEvent::class
+        );
     }
 }

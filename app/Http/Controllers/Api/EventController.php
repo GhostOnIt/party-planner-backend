@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\StoreEventRequest;
 use App\Models\Event;
+use App\Services\PermissionService;
 use App\Services\PhotoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,10 +13,12 @@ use Illuminate\Http\Request;
 class EventController extends Controller
 {
     protected PhotoService $photoService;
+    protected PermissionService $permissionService;
 
-    public function __construct(PhotoService $photoService)
+    public function __construct(PhotoService $photoService, PermissionService $permissionService)
     {
         $this->photoService = $photoService;
+        $this->permissionService = $permissionService;
     }
 
     /**
@@ -25,10 +28,14 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        // Admins see all events, users see only their own
-        $query = $user->isAdmin()
-            ? Event::query()
-            : $user->events();
+        // All users see their own events + events where they are collaborators
+        $query = Event::where(function ($q) use ($user) {
+            $q->where('user_id', $user->id) // Events created by user
+              ->orWhereHas('collaborators', function ($collaboratorQuery) use ($user) {
+                  $collaboratorQuery->where('user_id', $user->id)
+                                   ->whereNotNull('accepted_at'); // Events where user is accepted collaborator
+              });
+        });
 
         // Filter by upcoming events only (date >= today)
         if ($request->boolean('upcoming')) {
@@ -177,6 +184,8 @@ class EventController extends Controller
         return response()->json(null, 204);
     }
 
+
+
     /**
      * Get public event details (limited).
      */
@@ -191,5 +200,38 @@ class EventController extends Controller
             'location' => $event->location,
             'theme' => $event->theme,
         ]);
+    }
+
+    /**
+     * Get user permissions for an event.
+     */
+    public function getPermissions(Event $event): JsonResponse
+    {
+        $user = request()->user();
+
+        return response()->json([
+            'permissions' => $this->permissionService->getUserPermissions($user, $event),
+            'role' => $this->getUserRole($user, $event),
+            'is_owner' => $event->user_id === $user->id,
+            'can_manage' => $this->permissionService->userCan($user, $event, 'collaborators.invite'),
+            'can_invite' => $this->permissionService->userCan($user, $event, 'collaborators.invite'),
+            'can_edit_roles' => $this->permissionService->userCan($user, $event, 'collaborators.edit_roles'),
+            'can_remove_collaborators' => $this->permissionService->userCan($user, $event, 'collaborators.remove'),
+            'can_create_custom_roles' => $this->permissionService->userCan($user, $event, 'collaborators.invite'), // Same as can_invite for now
+        ]);
+    }
+
+    /**
+     * Get user role for an event.
+     */
+    private function getUserRole($user, Event $event): string
+    {
+        if ($event->user_id === $user->id) {
+            return 'owner';
+        }
+
+        $collaborator = $event->collaborators()->where('user_id', $user->id)->first();
+
+        return $collaborator ? ($collaborator->effective_role ?? 'none') : 'none';
     }
 }
