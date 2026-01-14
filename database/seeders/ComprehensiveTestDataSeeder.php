@@ -22,20 +22,18 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Faker\Factory as FakerFactory;
 
 class ComprehensiveTestDataSeeder extends Seeder
 {
     use WithoutModelEvents;
-
-    protected $faker;
 
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $this->faker = FakerFactory::create('fr_FR');
+        // Set locale to French for fake() helper
+        fake()->locale('fr_FR');
         
         $users = User::all();
 
@@ -63,36 +61,36 @@ class ComprehensiveTestDataSeeder extends Seeder
     protected function createDataForUser(User $user, array $allUserIds): void
     {
         // Create 5-7 events per user
-        $eventCount = $this->faker->numberBetween(5, 7);
+        $eventCount = fake()->numberBetween(5, 7);
         $events = $this->createEventsForUser($user, $eventCount);
 
         foreach ($events as $event) {
             // Create guests (50-350 per event)
-            $guestCount = $this->faker->numberBetween(50, 350);
+            $guestCount = fake()->numberBetween(50, 350);
             $this->createGuestsForEvent($event, $guestCount);
 
             // Create tasks (8-15 per event)
-            $taskCount = $this->faker->numberBetween(8, 15);
+            $taskCount = fake()->numberBetween(8, 15);
             $this->createTasksForEvent($event, $taskCount);
 
             // Create budget items (6-12 per event)
-            $budgetItemCount = $this->faker->numberBetween(6, 12);
+            $budgetItemCount = fake()->numberBetween(6, 12);
             $this->createBudgetItemsForEvent($event, $budgetItemCount);
 
             // Create photos (5-20 per event)
-            $photoCount = $this->faker->numberBetween(5, 20);
+            $photoCount = fake()->numberBetween(5, 20);
             $this->createPhotosForEvent($event, $user, $photoCount);
 
             // Create collaborators (0-3 per event)
-            $collaboratorCount = $this->faker->numberBetween(0, 3);
+            $collaboratorCount = fake()->numberBetween(0, 3);
             $this->createCollaboratorsForEvent($event, $user, $allUserIds, $collaboratorCount);
 
             // Create notifications (3-8 per event)
-            $notificationCount = $this->faker->numberBetween(3, 8);
+            $notificationCount = fake()->numberBetween(3, 8);
             $this->createNotificationsForUser($user, $event, $notificationCount);
 
             // 70% chance of having a subscription
-            if ($this->faker->boolean(70)) {
+            if (fake()->boolean(70)) {
                 $this->createSubscriptionForEvent($event, $user);
             }
         }
@@ -107,11 +105,11 @@ class ComprehensiveTestDataSeeder extends Seeder
 
         // Event type distribution
         $typeDistribution = [
-            ['type' => EventType::MARIAGE, 'count' => $this->faker->numberBetween(1, 2)],
-            ['type' => EventType::ANNIVERSAIRE, 'count' => $this->faker->numberBetween(1, 2)],
+            ['type' => EventType::MARIAGE, 'count' => fake()->numberBetween(1, 2)],
+            ['type' => EventType::ANNIVERSAIRE, 'count' => fake()->numberBetween(1, 2)],
             ['type' => EventType::BABY_SHOWER, 'count' => 1],
             ['type' => EventType::SOIREE, 'count' => 1],
-            ['type' => EventType::BRUNCH, 'count' => $this->faker->numberBetween(0, 1)],
+            ['type' => EventType::BRUNCH, 'count' => fake()->numberBetween(0, 1)],
         ];
 
         // Status distribution: 60% upcoming, 20% ongoing, 15% completed, 5% cancelled
@@ -136,7 +134,7 @@ class ComprehensiveTestDataSeeder extends Seeder
 
         // Fill remaining slots with random types
         while ($created < $count) {
-            $type = $this->faker->randomElement(EventType::cases());
+            $type = fake()->randomElement(EventType::cases());
             $status = $this->weightedRandomStatusString($statusWeights);
             $events[] = $this->createEvent($user, $type, $status);
             $created++;
@@ -172,23 +170,23 @@ class ComprehensiveTestDataSeeder extends Seeder
         $guestRange = $guestRanges[$type->value] ?? [50, 150];
 
         $date = $status === 'completed'
-            ? $this->faker->dateTimeBetween('-6 months', '-1 day')
-            : $this->faker->dateTimeBetween('now', '+6 months');
+            ? fake()->dateTimeBetween('-6 months', '-1 day')
+            : fake()->dateTimeBetween('now', '+6 months');
 
         return Event::create([
             'user_id' => $user->id,
             'title' => $this->generateEventTitle($type),
             'type' => $type->value,
-            'description' => $this->faker->optional(0.7)->paragraph(),
+            'description' => fake()->optional(0.7)->paragraph(),
             'date' => $date,
-            'time' => $this->faker->optional(0.8)->time('H:i'),
-            'location' => $this->faker->optional(0.8)->address(),
-            'estimated_budget' => $this->faker->numberBetween($budgetRange[0], $budgetRange[1]),
-            'theme' => $this->faker->optional(0.5)->randomElement([
+            'time' => fake()->optional(0.8)->time('H:i'),
+            'location' => fake()->optional(0.8)->address(),
+            'estimated_budget' => fake()->numberBetween($budgetRange[0], $budgetRange[1]),
+            'theme' => fake()->optional(0.5)->randomElement([
                 'Bohème', 'Champêtre', 'Moderne', 'Vintage', 'Tropical',
                 'Élégant', 'Rustique', 'Minimaliste', 'Glamour', 'Nature'
             ]),
-            'expected_guests_count' => $this->faker->numberBetween($guestRange[0], $guestRange[1]),
+            'expected_guests_count' => fake()->numberBetween($guestRange[0], $guestRange[1]),
             'status' => $status,
         ]);
     }
@@ -199,26 +197,26 @@ class ComprehensiveTestDataSeeder extends Seeder
     protected function generateEventTitle(EventType $type): string
     {
         return match ($type) {
-            EventType::MARIAGE => $this->faker->randomElement([
-                'Mariage de ' . $this->faker->firstName() . ' & ' . $this->faker->firstName(),
+            EventType::MARIAGE => fake()->randomElement([
+                'Mariage de ' . fake()->firstName() . ' & ' . fake()->firstName(),
                 'Notre mariage',
-                'Wedding ' . $this->faker->lastName(),
+                'Wedding ' . fake()->lastName(),
             ]),
-            EventType::ANNIVERSAIRE => $this->faker->randomElement([
-                'Anniversaire de ' . $this->faker->firstName(),
-                $this->faker->numberBetween(18, 60) . ' ans de ' . $this->faker->firstName(),
+            EventType::ANNIVERSAIRE => fake()->randomElement([
+                'Anniversaire de ' . fake()->firstName(),
+                fake()->numberBetween(18, 60) . ' ans de ' . fake()->firstName(),
                 'Fête d\'anniversaire',
             ]),
-            EventType::BABY_SHOWER => $this->faker->randomElement([
-                'Baby Shower de ' . $this->faker->firstNameFemale(),
-                'Bienvenue bébé ' . $this->faker->lastName(),
+            EventType::BABY_SHOWER => fake()->randomElement([
+                'Baby Shower de ' . fake()->firstNameFemale(),
+                'Bienvenue bébé ' . fake()->lastName(),
             ]),
-            EventType::SOIREE => $this->faker->randomElement([
-                'Soirée ' . $this->faker->word(),
+            EventType::SOIREE => fake()->randomElement([
+                'Soirée ' . fake()->word(),
                 'Grande soirée',
                 'Fête de fin d\'année',
             ]),
-            EventType::BRUNCH => $this->faker->randomElement([
+            EventType::BRUNCH => fake()->randomElement([
                 'Brunch dominical',
                 'Brunch entre amis',
             ]),
@@ -242,18 +240,18 @@ class ComprehensiveTestDataSeeder extends Seeder
         $guests = [];
         foreach ($statusDistribution as $status => $statusCount) {
             for ($i = 0; $i < $statusCount; $i++) {
-                $checkedIn = $status === RsvpStatus::ACCEPTED->value && $this->faker->boolean(30);
+                $checkedIn = $status === RsvpStatus::ACCEPTED->value && fake()->boolean(30);
                 $guests[] = [
                     'event_id' => $event->id,
-                    'name' => $this->faker->name(),
-                    'email' => $this->faker->optional(0.8)->safeEmail(),
-                    'phone' => $this->faker->optional(0.6)->phoneNumber(),
+                    'name' => fake()->name(),
+                    'email' => fake()->optional(0.8)->safeEmail(),
+                    'phone' => fake()->optional(0.6)->phoneNumber(),
                     'rsvp_status' => $status,
                     'checked_in' => $checkedIn,
-                    'checked_in_at' => $checkedIn ? $this->faker->dateTimeBetween('-1 month', 'now') : null,
-                    'invitation_sent_at' => $this->faker->optional(0.7)->dateTimeBetween('-2 months', 'now'),
-                    'reminder_sent_at' => $this->faker->optional(0.3)->dateTimeBetween('-1 month', 'now'),
-                    'notes' => $this->faker->optional(0.1)->sentence(),
+                    'checked_in_at' => $checkedIn ? fake()->dateTimeBetween('-1 month', 'now') : null,
+                    'invitation_sent_at' => fake()->optional(0.7)->dateTimeBetween('-2 months', 'now'),
+                    'reminder_sent_at' => fake()->optional(0.3)->dateTimeBetween('-1 month', 'now'),
+                    'notes' => fake()->optional(0.1)->sentence(),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -272,17 +270,17 @@ class ComprehensiveTestDataSeeder extends Seeder
 
         $invitations = [];
         foreach ($invitationGuestIds as $guestId) {
-            $sent = $this->faker->boolean(70);
-            $opened = $sent && $this->faker->boolean(50);
-            $responded = $opened && $this->faker->boolean(60);
+            $sent = fake()->boolean(70);
+            $opened = $sent && fake()->boolean(50);
+            $responded = $opened && fake()->boolean(60);
 
             $invitations[] = [
                 'event_id' => $event->id,
                 'guest_id' => $guestId,
                 'token' => \Illuminate\Support\Str::random(32),
-                'sent_at' => $sent ? $this->faker->dateTimeBetween('-1 month', 'now') : null,
-                'opened_at' => $opened ? $this->faker->dateTimeBetween('-3 weeks', 'now') : null,
-                'responded_at' => $responded ? $this->faker->dateTimeBetween('-2 weeks', 'now') : null,
+                'sent_at' => $sent ? fake()->dateTimeBetween('-1 month', 'now') : null,
+                'opened_at' => $opened ? fake()->dateTimeBetween('-3 weeks', 'now') : null,
+                'responded_at' => $responded ? fake()->dateTimeBetween('-2 weeks', 'now') : null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -322,11 +320,11 @@ class ComprehensiveTestDataSeeder extends Seeder
                 $tasks[] = [
                     'event_id' => $event->id,
                     'title' => $taskTitles[$titleIndex % count($taskTitles)],
-                    'description' => $this->faker->optional(0.4)->paragraph(),
+                    'description' => fake()->optional(0.4)->paragraph(),
                     'status' => $status,
-                    'priority' => $this->faker->randomElement(['low', 'medium', 'high']),
-                    'due_date' => $this->faker->optional(0.7)->dateTimeBetween('now', '+3 months'),
-                    'completed_at' => $isCompleted ? $this->faker->dateTimeBetween('-1 month', 'now') : null,
+                    'priority' => fake()->randomElement(['low', 'medium', 'high']),
+                    'due_date' => fake()->optional(0.7)->dateTimeBetween('now', '+3 months'),
+                    'completed_at' => $isCompleted ? fake()->dateTimeBetween('-1 month', 'now') : null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -355,22 +353,22 @@ class ComprehensiveTestDataSeeder extends Seeder
 
         $items = [];
         for ($i = 0; $i < $count; $i++) {
-            $category = $this->faker->randomElement($categories);
+            $category = fake()->randomElement($categories);
             $templates = $itemTemplates[$category->value] ?? ['Autre'];
-            $estimatedCost = $this->faker->numberBetween(10000, 500000);
-            $hasActualCost = $this->faker->boolean(60);
-            $actualCost = $hasActualCost ? $estimatedCost * $this->faker->randomFloat(2, 0.8, 1.3) : null;
-            $paid = $hasActualCost && $this->faker->boolean(60);
+            $estimatedCost = fake()->numberBetween(10000, 500000);
+            $hasActualCost = fake()->boolean(60);
+            $actualCost = $hasActualCost ? $estimatedCost * fake()->randomFloat(2, 0.8, 1.3) : null;
+            $paid = $hasActualCost && fake()->boolean(60);
 
             $items[] = [
                 'event_id' => $event->id,
                 'category' => $category->value,
-                'name' => $this->faker->randomElement($templates),
+                'name' => fake()->randomElement($templates),
                 'estimated_cost' => $estimatedCost,
                 'actual_cost' => $actualCost,
                 'paid' => $paid,
-                'payment_date' => $paid ? $this->faker->dateTimeBetween('-2 months', 'now') : null,
-                'notes' => $this->faker->optional(0.2)->sentence(),
+                'payment_date' => $paid ? fake()->dateTimeBetween('-2 months', 'now') : null,
+                'notes' => fake()->optional(0.2)->sentence(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -389,11 +387,11 @@ class ComprehensiveTestDataSeeder extends Seeder
             $photos[] = [
                 'event_id' => $event->id,
                 'uploaded_by_user_id' => $user->id,
-                'url' => 'https://picsum.photos/800/600?random=' . $this->faker->uuid(),
-                'thumbnail_url' => 'https://picsum.photos/200/150?random=' . $this->faker->uuid(),
-                'type' => $this->faker->randomElement(['moodboard', 'event_photo']),
-                'description' => $this->faker->optional(0.5)->sentence(),
-                'is_featured' => $this->faker->boolean(10),
+                'url' => 'https://picsum.photos/800/600?random=' . fake()->uuid(),
+                'thumbnail_url' => 'https://picsum.photos/200/150?random=' . fake()->uuid(),
+                'type' => fake()->randomElement(['moodboard', 'event_photo']),
+                'description' => fake()->optional(0.5)->sentence(),
+                'is_featured' => fake()->boolean(10),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -413,16 +411,16 @@ class ComprehensiveTestDataSeeder extends Seeder
         $availableUserIds = array_diff($allUserIds, [$owner->id]);
         if (empty($availableUserIds)) return;
 
-        $collaboratorIds = $this->faker->randomElements($availableUserIds, min($count, count($availableUserIds)));
+        $collaboratorIds = fake()->randomElements($availableUserIds, min($count, count($availableUserIds)));
 
         $collaborators = [];
         foreach ($collaboratorIds as $userId) {
-            $accepted = $this->faker->boolean(80);
+            $accepted = fake()->boolean(80);
             $collaborators[] = [
                 'event_id' => $event->id,
                 'user_id' => $userId,
-                'role' => $this->faker->randomElement(['editor', 'viewer']),
-                'accepted_at' => $accepted ? $this->faker->dateTimeBetween('-1 month', 'now') : null,
+                'role' => fake()->randomElement(['editor', 'viewer']),
+                'accepted_at' => $accepted ? fake()->dateTimeBetween('-1 month', 'now') : null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -441,17 +439,17 @@ class ComprehensiveTestDataSeeder extends Seeder
 
         $notifications = [];
         for ($i = 0; $i < $count; $i++) {
-            $read = $this->faker->boolean(50);
-            $type = $this->faker->randomElement($types);
+            $read = fake()->boolean(50);
+            $type = fake()->randomElement($types);
             $notifications[] = [
                 'user_id' => $user->id,
                 'event_id' => $event->id,
                 'type' => $type,
                 'title' => $this->getNotificationTitle($type, $event),
                 'message' => $this->getNotificationMessage($type, $event),
-                'read_at' => $read ? $this->faker->dateTimeBetween('-1 week', 'now') : null,
-                'sent_via' => $this->faker->randomElement(['email', 'push']),
-                'created_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
+                'read_at' => $read ? fake()->dateTimeBetween('-1 week', 'now') : null,
+                'sent_via' => fake()->randomElement(['email', 'push']),
+                'created_at' => fake()->dateTimeBetween('-1 month', 'now'),
                 'updated_at' => now(),
             ];
         }
@@ -485,7 +483,7 @@ class ComprehensiveTestDataSeeder extends Seeder
             'budget_alert' => "Le budget de votre événement {$event->title} nécessite votre attention.",
             'event_reminder' => "Votre événement {$event->title} aura lieu bientôt.",
             'collaboration_invite' => "Vous avez été invité à collaborer sur {$event->title}.",
-            default => $this->faker->sentence(),
+            default => fake()->sentence(),
         };
     }
 
@@ -495,7 +493,7 @@ class ComprehensiveTestDataSeeder extends Seeder
     protected function createSubscriptionForEvent(Event $event, User $user): void
     {
         // 50% starter, 50% pro
-        $planType = $this->faker->boolean(50) ? PlanType::STARTER : PlanType::PRO;
+        $planType = fake()->boolean(50) ? PlanType::STARTER : PlanType::PRO;
 
         $guestCount = Guest::where('event_id', $event->id)->count();
         $extraGuests = max(0, $guestCount - $planType->includedGuests());
@@ -519,10 +517,10 @@ class ComprehensiveTestDataSeeder extends Seeder
             'guest_price_per_unit' => $planType->pricePerExtraGuest(),
             'total_price' => $totalPrice,
             'payment_status' => $paymentStatus,
-            'payment_method' => $this->faker->randomElement(['mtn_mobile_money', 'airtel_money']),
-            'payment_reference' => $paymentStatus === 'paid' ? $this->faker->uuid() : null,
+            'payment_method' => fake()->randomElement(['mtn_mobile_money', 'airtel_money']),
+            'payment_reference' => $paymentStatus === 'paid' ? fake()->uuid() : null,
             'expires_at' => $paymentStatus === 'paid'
-                ? $this->faker->dateTimeBetween('+6 months', '+1 year')
+                ? fake()->dateTimeBetween('+6 months', '+1 year')
                 : null,
         ]);
 
@@ -533,7 +531,7 @@ class ComprehensiveTestDataSeeder extends Seeder
                 'amount' => $totalPrice,
                 'payment_method' => $subscription->payment_method,
                 'status' => $paymentStatus === 'paid' ? 'completed' : 'failed',
-                'transaction_reference' => $this->faker->uuid(),
+                'transaction_reference' => fake()->uuid(),
                 'metadata' => json_encode(['status' => $paymentStatus, 'processed_at' => now()->toIso8601String()]),
             ]);
         }
@@ -545,7 +543,7 @@ class ComprehensiveTestDataSeeder extends Seeder
     protected function weightedRandomStatusString(array $weights): string
     {
         $total = array_sum($weights);
-        $random = $this->faker->numberBetween(1, $total);
+        $random = fake()->numberBetween(1, $total);
         $cumulative = 0;
 
         foreach ($weights as $status => $weight) {
@@ -564,7 +562,7 @@ class ComprehensiveTestDataSeeder extends Seeder
     protected function weightedRandomString(array $weights): string
     {
         $total = array_sum(array_column($weights, 'weight'));
-        $random = $this->faker->numberBetween(1, $total);
+        $random = fake()->numberBetween(1, $total);
         $cumulative = 0;
 
         foreach ($weights as $item) {

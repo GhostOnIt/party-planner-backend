@@ -71,7 +71,7 @@ class DatabaseSeeder extends Seeder
 
         // Comprehensive test data for development
         $this->call([
-            ComprehensiveTestDataSeeder::class,
+            // ComprehensiveTestDataSeeder::class,
             AdminActivityLogSeeder::class,
         ]);
     }
