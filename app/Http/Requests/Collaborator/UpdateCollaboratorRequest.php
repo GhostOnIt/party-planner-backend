@@ -26,9 +26,13 @@ class UpdateCollaboratorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => [
+            'roles' => [
                 'required',
-                Rule::in(['editor', 'viewer']),
+                'array',
+                'min:1',
+            ],
+            'roles.*' => [
+                Rule::in(CollaboratorRole::values()),
             ],
         ];
     }
@@ -41,7 +45,8 @@ class UpdateCollaboratorRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'role' => 'rôle',
+            'roles' => 'rôles',
+            'roles.*' => 'rôle',
         ];
     }
 
@@ -53,8 +58,10 @@ class UpdateCollaboratorRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'role.required' => 'Le rôle est obligatoire.',
-            'role.in' => 'Le rôle doit être "Éditeur" ou "Lecteur".',
+            'roles.required' => 'Au moins un rôle doit être sélectionné.',
+            'roles.array' => 'Les rôles doivent être fournis sous forme de tableau.',
+            'roles.min' => 'Au moins un rôle doit être sélectionné.',
+            'roles.*.in' => 'Un des rôles sélectionnés n\'est pas valide.',
         ];
     }
 }

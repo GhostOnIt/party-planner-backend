@@ -20,27 +20,10 @@ Bonjour {{ $invitee->name }},
 
 Vous êtes invité(e) en tant que **{{ $roleLabel }}**.
 
-@if($collaborator->role === 'editor')
-En tant qu'éditeur, vous pourrez :
-- Modifier les informations de l'événement
-- Gérer les invités
-- Gérer les tâches
-- Gérer le budget
-- Ajouter des photos
-@else
-En tant que lecteur, vous pourrez :
-- Consulter les informations de l'événement
-- Voir la liste des invités
-- Voir les tâches
-- Voir le budget
-@endif
+Vous pourrez accéder à l'événement selon les permissions associées à votre rôle.
 
-<x-mail::button :url="$acceptUrl" color="success">
-Accepter l'invitation
-</x-mail::button>
-
-<x-mail::button :url="$declineUrl" color="gray">
-Décliner
+<x-mail::button :url="$invitationsUrl" color="primary">
+Voir mes invitations
 </x-mail::button>
 
 Si vous ne connaissez pas {{ $inviter->name }} ou n'avez pas sollicité cette invitation, vous pouvez ignorer cet email.
@@ -49,10 +32,8 @@ Cordialement,<br>
 L'équipe {{ config('app.name') }}
 
 <x-mail::subcopy>
-Si les boutons ne fonctionnent pas, copiez et collez ces liens dans votre navigateur :
+Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
 
-**Accepter :** {{ $acceptUrl }}
-
-**Décliner :** {{ $declineUrl }}
+**Voir mes invitations :** {{ $invitationsUrl }}
 </x-mail::subcopy>
 </x-mail::message>

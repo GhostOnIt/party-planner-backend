@@ -31,9 +31,18 @@ class StoreCollaboratorRequest extends FormRequest
                 'email',
                 'exists:users,email',
             ],
-            'role' => [
+            'roles' => [
                 'required',
-                Rule::in(['editor', 'viewer']),
+                'array',
+                'min:1',
+            ],
+            'roles.*' => [
+                Rule::in(CollaboratorRole::values()),
+            ],
+            'custom_role_id' => [
+                'nullable',
+                'integer',
+                'exists:custom_roles,id',
             ],
         ];
     }
@@ -47,7 +56,8 @@ class StoreCollaboratorRequest extends FormRequest
     {
         return [
             'email' => 'adresse email',
-            'role' => 'rôle',
+            'roles' => 'rôles',
+            'roles.*' => 'rôle',
         ];
     }
 
@@ -62,8 +72,11 @@ class StoreCollaboratorRequest extends FormRequest
             'email.required' => 'L\'adresse email est obligatoire.',
             'email.email' => 'L\'adresse email n\'est pas valide.',
             'email.exists' => 'Aucun utilisateur trouvé avec cette adresse email. L\'utilisateur doit d\'abord créer un compte.',
-            'role.required' => 'Le rôle est obligatoire.',
-            'role.in' => 'Le rôle doit être "Éditeur" ou "Lecteur".',
+            'roles.required' => 'Au moins un rôle doit être sélectionné.',
+            'roles.array' => 'Les rôles doivent être fournis sous forme de tableau.',
+            'roles.min' => 'Au moins un rôle doit être sélectionné.',
+            'roles.*.in' => 'Un des rôles sélectionnés n\'est pas valide.',
+            'custom_role_id.exists' => 'Le rôle personnalisé sélectionné n\'existe pas.',
         ];
     }
 }

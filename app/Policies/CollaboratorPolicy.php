@@ -6,9 +6,13 @@ use App\Enums\CollaboratorRole;
 use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\User;
+use App\Services\PermissionService;
 
 class CollaboratorPolicy
 {
+    public function __construct(
+        private PermissionService $permissionService
+    ) {}
     /**
      * Perform pre-authorization checks.
      * Admins can do anything.
@@ -27,7 +31,7 @@ class CollaboratorPolicy
      */
     public function viewAny(User $user, Event $event): bool
     {
-        return $event->canBeViewedBy($user);
+        return $this->permissionService->userCan($user, $event, 'collaborators.view');
     }
 
     /**
@@ -35,7 +39,7 @@ class CollaboratorPolicy
      */
     public function view(User $user, Collaborator $collaborator): bool
     {
-        return $collaborator->event->canBeViewedBy($user);
+        return $this->permissionService->userCan($user, $collaborator->event, 'collaborators.view');
     }
 
     /**
@@ -43,17 +47,7 @@ class CollaboratorPolicy
      */
     public function create(User $user, Event $event): bool
     {
-        // Event owner can always add collaborators
-        if ($event->user_id === $user->id) {
-            return true;
-        }
-
-        // Check if user is a collaborator with owner role
-        $userCollaborator = $event->collaborators()
-            ->where('user_id', $user->id)
-            ->first();
-
-        return $userCollaborator && $userCollaborator->role === CollaboratorRole::OWNER->value;
+        return $this->permissionService->userCan($user, $event, 'collaborators.invite');
     }
 
     /**
@@ -61,28 +55,7 @@ class CollaboratorPolicy
      */
     public function update(User $user, Collaborator $collaborator): bool
     {
-        $event = $collaborator->event;
-
-        // Event owner can update any collaborator
-        if ($event->user_id === $user->id) {
-            return true;
-        }
-
-        // Collaborator with owner role can update non-owner collaborators
-        $userCollaborator = $event->collaborators()
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$userCollaborator || $userCollaborator->role !== CollaboratorRole::OWNER->value) {
-            return false;
-        }
-
-        // Cannot update other owners or the event owner
-        if ($collaborator->role === CollaboratorRole::OWNER->value) {
-            return false;
-        }
-
-        return true;
+        return $this->permissionService->userCan($user, $collaborator->event, 'collaborators.edit_roles');
     }
 
     /**
@@ -90,29 +63,12 @@ class CollaboratorPolicy
      */
     public function delete(User $user, Collaborator $collaborator): bool
     {
-        $event = $collaborator->event;
-
         // Cannot remove the event owner from collaborators
-        if ($collaborator->user_id === $event->user_id) {
+        if ($collaborator->user_id === $collaborator->event->user_id) {
             return false;
         }
 
-        // Event owner can remove anyone except themselves
-        if ($event->user_id === $user->id) {
-            return true;
-        }
-
-        // Collaborator with owner role can remove editors/viewers
-        $userCollaborator = $event->collaborators()
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$userCollaborator || $userCollaborator->role !== CollaboratorRole::OWNER->value) {
-            return false;
-        }
-
-        // Cannot remove other owners
-        return $collaborator->role !== CollaboratorRole::OWNER->value;
+        return $this->permissionService->userCan($user, $collaborator->event, 'collaborators.remove');
     }
 
     /**
@@ -161,18 +117,6 @@ class CollaboratorPolicy
             return false;
         }
 
-        $event = $collaborator->event;
-
-        // Event owner can resend
-        if ($event->user_id === $user->id) {
-            return true;
-        }
-
-        // Owner-role collaborators can resend
-        $userCollaborator = $event->collaborators()
-            ->where('user_id', $user->id)
-            ->first();
-
-        return $userCollaborator && $userCollaborator->role === CollaboratorRole::OWNER->value;
+        return $this->permissionService->userCan($user, $collaborator->event, 'collaborators.invite');
     }
 }

@@ -5,9 +5,14 @@ namespace App\Policies;
 use App\Enums\CollaboratorRole;
 use App\Models\Event;
 use App\Models\User;
+use App\Services\PermissionService;
 
 class EventPolicy
 {
+    public function __construct(
+        private PermissionService $permissionService
+    ) {}
+
     /**
      * Perform pre-authorization checks.
      * Admins can do anything.
@@ -26,7 +31,7 @@ class EventPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return true; // Users can always view their own events and events where they collaborate
     }
 
     /**
@@ -34,7 +39,13 @@ class EventPolicy
      */
     public function view(User $user, Event $event): bool
     {
-        return $event->canBeViewedBy($user);
+        // Check if user has any permission on this event
+        return $this->permissionService->userCanInModule($user, $event, 'events')
+            || $this->permissionService->userCanInModule($user, $event, 'guests')
+            || $this->permissionService->userCanInModule($user, $event, 'tasks')
+            || $this->permissionService->userCanInModule($user, $event, 'budget')
+            || $this->permissionService->userCanInModule($user, $event, 'photos')
+            || $this->permissionService->userCanInModule($user, $event, 'collaborators');
     }
 
     /**
@@ -50,7 +61,7 @@ class EventPolicy
      */
     public function update(User $user, Event $event): bool
     {
-        return $event->canBeEditedBy($user);
+        return $this->permissionService->userCan($user, $event, 'events.edit');
     }
 
     /**
@@ -67,8 +78,7 @@ class EventPolicy
      */
     public function collaborate(User $user, Event $event): bool
     {
-        // Only the owner can manage collaborators
-        return $event->user_id === $user->id;
+        return $this->permissionService->userCan($user, $event, 'collaborators.invite');
     }
 
     /**
@@ -76,17 +86,7 @@ class EventPolicy
      */
     public function inviteCollaborator(User $user, Event $event): bool
     {
-        // Owner can always invite
-        if ($event->user_id === $user->id) {
-            return true;
-        }
-
-        // Check if user is a collaborator with owner role
-        $collaborator = $event->collaborators()
-            ->where('user_id', $user->id)
-            ->first();
-
-        return $collaborator && $collaborator->role === CollaboratorRole::OWNER->value;
+        return $this->permissionService->userCan($user, $event, 'collaborators.invite');
     }
 
     /**
@@ -94,31 +94,12 @@ class EventPolicy
      */
     public function removeCollaborator(User $user, Event $event, User $collaboratorToRemove): bool
     {
-        // Owner can remove anyone except themselves
-        if ($event->user_id === $user->id) {
-            return $collaboratorToRemove->id !== $user->id;
-        }
-
-        // Collaborators with owner role can remove editors/viewers
-        $userCollaborator = $event->collaborators()
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$userCollaborator || $userCollaborator->role !== CollaboratorRole::OWNER->value) {
-            return false;
-        }
-
         // Cannot remove the event owner
         if ($collaboratorToRemove->id === $event->user_id) {
             return false;
         }
 
-        // Check if target is not an owner role
-        $targetCollaborator = $event->collaborators()
-            ->where('user_id', $collaboratorToRemove->id)
-            ->first();
-
-        return $targetCollaborator && $targetCollaborator->role !== CollaboratorRole::OWNER->value;
+        return $this->permissionService->userCan($user, $event, 'collaborators.remove');
     }
 
     /**
@@ -126,7 +107,7 @@ class EventPolicy
      */
     public function manageGuests(User $user, Event $event): bool
     {
-        return $event->canBeEditedBy($user);
+        return $this->permissionService->userCanInModule($user, $event, 'guests');
     }
 
     /**
@@ -134,7 +115,7 @@ class EventPolicy
      */
     public function manageTasks(User $user, Event $event): bool
     {
-        return $event->canBeEditedBy($user);
+        return $this->permissionService->userCanInModule($user, $event, 'tasks');
     }
 
     /**
@@ -142,7 +123,7 @@ class EventPolicy
      */
     public function manageBudget(User $user, Event $event): bool
     {
-        return $event->canBeEditedBy($user);
+        return $this->permissionService->userCanInModule($user, $event, 'budget');
     }
 
     /**
@@ -150,7 +131,7 @@ class EventPolicy
      */
     public function managePhotos(User $user, Event $event): bool
     {
-        return $event->canBeEditedBy($user);
+        return $this->permissionService->userCanInModule($user, $event, 'photos');
     }
 
     /**
@@ -174,7 +155,7 @@ class EventPolicy
      */
     public function duplicate(User $user, Event $event): bool
     {
-        return $event->canBeViewedBy($user);
+        return $this->view($user, $event); // Same as view permission
     }
 
     /**
