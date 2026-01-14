@@ -28,10 +28,14 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        // Admins see all events, users see only their own
-        $query = $user->isAdmin()
-            ? Event::query()
-            : $user->events();
+        // All users see their own events + events where they are collaborators
+        $query = Event::where(function ($q) use ($user) {
+            $q->where('user_id', $user->id) // Events created by user
+              ->orWhereHas('collaborators', function ($collaboratorQuery) use ($user) {
+                  $collaboratorQuery->where('user_id', $user->id)
+                                   ->whereNotNull('accepted_at'); // Events where user is accepted collaborator
+              });
+        });
 
         // Filter by upcoming events only (date >= today)
         if ($request->boolean('upcoming')) {

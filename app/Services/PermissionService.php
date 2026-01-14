@@ -32,8 +32,14 @@ class PermissionService
             return $collaborator->customRole->hasPermission($permission);
         }
 
-        // Fall back to system role permissions
-        return $this->systemRoleCan($collaborator->role, $permission);
+        // Check system role permissions for all roles
+        $roles = $collaborator->getRoleValues();
+        foreach ($roles as $role) {
+            if ($this->systemRoleCan($role, $permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -57,8 +63,14 @@ class PermissionService
             return $collaborator->customRole->hasAnyPermissionInModule($module);
         }
 
-        // Fall back to system role permissions
-        return $this->systemRoleCanInModule($collaborator->role, $module);
+        // Check system role permissions for all roles
+        $roles = $collaborator->getRoleValues();
+        foreach ($roles as $role) {
+            if ($this->systemRoleCanInModule($role, $module)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -82,8 +94,16 @@ class PermissionService
             return $collaborator->customRole->getPermissionNames();
         }
 
-        // Get system role permissions
-        return $this->getSystemRolePermissions($collaborator->role);
+        // Get system role permissions (merge permissions from all roles)
+        $roles = $collaborator->getRoleValues();
+        $allPermissions = [];
+
+        foreach ($roles as $role) {
+            $rolePermissions = $this->getSystemRolePermissions($role);
+            $allPermissions = array_merge($allPermissions, $rolePermissions);
+        }
+
+        return array_values(array_unique($allPermissions));
     }
 
     /**
