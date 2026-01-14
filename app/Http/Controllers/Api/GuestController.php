@@ -8,6 +8,7 @@ use App\Models\Guest;
 use App\Services\GuestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class GuestController extends Controller
@@ -32,12 +33,18 @@ class GuestController extends Controller
 
     // Search by name, email, or phone
     if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%");
-        });
+        $search = trim(Str::lower((string) $request->input('search')));
+
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+
+            // Case-insensitive search that works on both MySQL and PostgreSQL.
+            $query->where(function ($q) use ($like) {
+                $q->whereRaw('LOWER(name) LIKE ?', [$like])
+                    ->orWhereRaw("LOWER(COALESCE(email, '')) LIKE ?", [$like])
+                    ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", [$like]);
+            });
+        }
     }
 
     // Order by name
