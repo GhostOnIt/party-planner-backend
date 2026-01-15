@@ -87,6 +87,14 @@ class CustomRoleController extends Controller
 
         $role = $event->customRoles()->findOrFail($roleId);
 
+        // A role cannot be deleted if it is assigned to at least one collaborator
+        // (business rule enforced here for clearer API message).
+        if ($role->collaborators()->exists()) {
+            return response()->json([
+                'message' => 'Ce rôle est assigné à au moins un collaborateur et ne peut pas être supprimé.',
+            ], 422);
+        }
+
         $this->customRoleService->deleteRole($role);
 
         return response()->json([
