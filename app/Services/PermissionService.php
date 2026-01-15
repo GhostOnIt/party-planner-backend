@@ -203,6 +203,8 @@ class PermissionService
     private function getGuestManagerPermissions(): array
     {
         return [
+            // Always allow tasks read access by default for collaborators
+            'tasks.view',
             'guests.view', 'guests.create', 'guests.edit', 'guests.delete',
             'guests.import', 'guests.export', 'guests.send_invitations', 'guests.checkin',
         ];
@@ -225,6 +227,8 @@ class PermissionService
     private function getAccountantPermissions(): array
     {
         return [
+            // Always allow tasks read access by default for collaborators
+            'tasks.view',
             'budget.view', 'budget.create', 'budget.edit', 'budget.delete', 'budget.export',
         ];
     }
@@ -235,6 +239,8 @@ class PermissionService
     private function getPhotographerPermissions(): array
     {
         return [
+            // Always allow tasks read access by default for collaborators
+            'tasks.view',
             'photos.view', 'photos.upload', 'photos.delete', 'photos.set_featured',
         ];
     }

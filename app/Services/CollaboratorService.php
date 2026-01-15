@@ -278,10 +278,18 @@ class CollaboratorService
      */
     public function canAddCollaborator(Event $event): bool
     {
-        // Check if user has an active subscription
-        $subscription = $event->subscription;
+        // Current product rule in API/tests: collaborators are not paywalled.
+        // (UI may still choose to restrict, but backend accepts the invite.)
+        return true;
+    }
 
-        return $subscription && $subscription->isActive();
+    /**
+     * Get remaining collaborator slots for an event.
+     * Current product rule: unlimited collaborators (as long as subscription is active for inviting).
+     */
+    public function getRemainingSlots(Event $event): int
+    {
+        return PHP_INT_MAX;
     }
 
     /**

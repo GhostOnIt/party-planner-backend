@@ -20,14 +20,14 @@ class CollaboratorFactory extends Factory
     public function definition(): array
     {
         $invitedAt = fake()->dateTimeBetween('-1 month', 'now');
-        $accepted = fake()->boolean(80);
 
         return [
             'event_id' => Event::factory(),
             'user_id' => User::factory(),
             'role' => fake()->randomElement([CollaboratorRole::EDITOR, CollaboratorRole::VIEWER])->value,
             'invited_at' => $invitedAt,
-            'accepted_at' => $accepted ? fake()->dateTimeBetween($invitedAt, 'now') : null,
+            // Accepted by default (tests should opt-in to pending() when needed)
+            'accepted_at' => fake()->dateTimeBetween($invitedAt, 'now'),
         ];
     }
 

@@ -10,6 +10,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // SQLite does not support ALTER TABLE ... DROP/ADD CONSTRAINT in the same way.
+        // Tests run on SQLite, so we skip this constraint update there.
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Drop the old check constraint
         DB::statement("ALTER TABLE collaborators DROP CONSTRAINT collaborators_role_check");
 
@@ -37,6 +43,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Drop the new check constraint
         DB::statement("ALTER TABLE collaborators DROP CONSTRAINT collaborators_role_check");
 

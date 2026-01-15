@@ -43,7 +43,7 @@ class GuestController extends Controller
                 $q->whereRaw('LOWER(name) LIKE ?', [$like])
                     ->orWhereRaw("LOWER(COALESCE(email, '')) LIKE ?", [$like])
                     ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", [$like]);
-            });
+        });
         }
     }
 

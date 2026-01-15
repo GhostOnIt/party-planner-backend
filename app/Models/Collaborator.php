@@ -84,7 +84,12 @@ class Collaborator extends Model
      */
     public function getRoleValues(): array
     {
-        return $this->collaboratorRoles->pluck('role')->toArray();
+        if ($this->relationLoaded('collaboratorRoles') && $this->collaboratorRoles->isNotEmpty()) {
+            return $this->collaboratorRoles->pluck('role')->toArray();
+        }
+
+        // Fallback to legacy single role column for backward compatibility
+        return $this->role ? [$this->role] : [];
     }
 
     /**
