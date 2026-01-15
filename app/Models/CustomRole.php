@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CustomRole extends Model
 {
@@ -63,9 +62,10 @@ class CustomRole extends Model
     /**
      * Get the collaborators with this role.
      */
-    public function collaborators(): HasMany
+    public function collaborators(): BelongsToMany
     {
-        return $this->hasMany(Collaborator::class, 'custom_role_id');
+        return $this->belongsToMany(Collaborator::class, 'collaborator_custom_roles')
+            ->withTimestamps();
     }
 
     /**

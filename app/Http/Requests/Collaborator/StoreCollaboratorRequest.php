@@ -39,12 +39,22 @@ class StoreCollaboratorRequest extends FormRequest
             'roles.*' => [
                 Rule::in(CollaboratorRole::values()),
             ],
-            'custom_role_id' => [
-                'nullable',
-                'integer',
-                'exists:custom_roles,id',
-            ],
+            // Legacy single custom role
+            'custom_role_id' => ['nullable', 'integer', 'exists:custom_roles,id'],
+            // New multi custom roles
+            'custom_role_ids' => ['nullable', 'array'],
+            'custom_role_ids.*' => ['integer', 'exists:custom_roles,id'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $customRoleIds = $this->input('custom_role_ids');
+        $legacy = $this->input('custom_role_id');
+
+        if (is_null($customRoleIds) && !is_null($legacy)) {
+            $this->merge(['custom_role_ids' => [$legacy]]);
+        }
     }
 
     /**
