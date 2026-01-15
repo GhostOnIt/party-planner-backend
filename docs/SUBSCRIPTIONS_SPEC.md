@@ -330,3 +330,52 @@ Le frontend peut :
 -   Stratégie produit = **Option C** :
     -   **Top-up** (solution rapide) + **Upgrade** de plan.
 -   “Invités illimités” = illimité **par événement**.
+
+---
+
+## 13) Points forts & recommandations (anti-problèmes)
+
+### 13.1 Points forts (ce qui va éviter des problèmes)
+
+- **Duplication = consommation de crédit** : excellente décision. Sans cela, un utilisateur pourrait créer un “modèle” et dupliquer indéfiniment sans jamais repayer.
+- **Top-up / Pack de crédits** : réduit la frustration et évite un passage forcé au plan supérieur juste pour “1 événement de plus”. C’est une friction acceptable et monétisable.
+- **Illimité via `-1`** : simple, standard, et robuste pour les comparaisons logiques.
+- **Séparation Limits (nombres) vs Features (booléens)** : rend l’admin claire, évolutive, et évite des règles implicites difficiles à maintenir.
+
+### 13.2 Précisions recommandées (cas limites + UX)
+
+#### A) Période de reset & échec de renouvellement
+
+- **Règle** : le reset n’intervient que si le **cycle est renouvelé et payé**.
+- **Si le paiement échoue / pas renouvelé** :
+  - le compte bascule sur un état “non renouvelé” (ex: plan “Gratuit/Lecture seule” ou “Accès limité”),
+  - avec `events.creations_per_billing_period = 0` (et autres limites minimales),
+  - afin de forcer un renouvellement/upgrade/top-up avant de continuer.
+
+#### B) Rollover (report de crédits)
+
+- **Décision V1 (recommandée)** : les crédits non utilisés (y compris top-ups) à la fin de la période sont **perdus** (pas de report).
+- **UX** : afficher clairement la date de fin de période + message “Les crédits non utilisés expirent en fin de période”.
+
+#### C) Créations vs suppression (compréhension utilisateur)
+
+Scénario : quota 200, l’utilisateur crée 200, supprime 10 → il voit 190 événements mais reste bloqué.
+
+- **Règle** : cohérente (pas de remboursement).
+- **UX recommandée** : afficher un compteur de consommation explicite, par exemple :
+  - “Utilisé : 200 / 200 (dont 10 supprimés)”
+  - “Restant : 0 — reset le JJ/MM”
+
+#### D) “Illimité” plan AGENCE : soft limit technique
+
+Même si l’offre est “illimitée” commercialement, il est prudent d’avoir une limite technique de protection (anti-abus) :
+- ex: `events.creations_per_billing_period = 5000` au lieu de `-1`, ou
+- `-1` au niveau produit mais un **cap technique** (rate limit, anti-bot, heuristiques).
+
+Cette limite peut être augmentée manuellement pour les gros clients légitimes.
+
+#### E) Alerte proactive (80–90% du quota)
+
+Pour éviter le blocage “brutal” et améliorer la conversion :
+- à 80% puis 90% de consommation, envoyer une notification (in-app et/ou email) :
+  - “Vous approchez de votre limite, pensez à prendre un pack ou à upgrader.”
