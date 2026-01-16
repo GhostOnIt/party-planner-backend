@@ -11,6 +11,7 @@ use App\Services\QuotaService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -134,6 +135,23 @@ class EventController extends Controller
         $validated = $request->validated();
         $coverPhoto = $request->file('cover_photo');
 
+        // Debug: Log file information
+        if ($coverPhoto) {
+            Log::info('Cover photo received', [
+                'has_file' => $request->hasFile('cover_photo'),
+                'is_valid' => $coverPhoto->isValid(),
+                'size' => $coverPhoto->getSize(),
+                'mime_type' => $coverPhoto->getMimeType(),
+                'original_name' => $coverPhoto->getClientOriginalName(),
+                'extension' => $coverPhoto->getClientOriginalExtension(),
+            ]);
+        } else {
+            Log::info('No cover photo in request', [
+                'has_file' => $request->hasFile('cover_photo'),
+                'all_files' => array_keys($request->allFiles()),
+            ]);
+        }
+
         // Retirer cover_photo des données validées car ce n'est pas un champ du modèle Event
         unset($validated['cover_photo']);
 
@@ -145,15 +163,40 @@ class EventController extends Controller
 
         // Si une photo de couverture est fournie, l'uploader et la marquer comme featured
         if ($coverPhoto) {
-            $photo = $this->photoService->upload(
-                $event,
-                $coverPhoto,
-                $request->user(),
-                'event_photo'
-            );
-            
-            // Marquer la photo comme featured (photo de couverture)
-            $this->photoService->setAsFeatured($photo);
+            try {
+                // Vérifier que le fichier est valide
+                if (!$coverPhoto->isValid()) {
+                    return response()->json([
+                        'message' => 'Le fichier photo de couverture n\'est pas valide.',
+                        'errors' => [
+                            'cover_photo' => ['Le fichier photo de couverture n\'est pas valide.']
+                        ]
+                    ], 422);
+                }
+
+                $photo = $this->photoService->upload(
+                    $event,
+                    $coverPhoto,
+                    $request->user(),
+                    'event_photo'
+                );
+                
+                // Marquer la photo comme featured (photo de couverture)
+                $this->photoService->setAsFeatured($photo);
+            } catch (\Exception $e) {
+                Log::error('Cover photo upload failed', [
+                    'event_id' => $event->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'message' => 'L\'upload de la photo de couverture a échoué.',
+                    'errors' => [
+                        'cover_photo' => ['L\'upload de la photo de couverture a échoué.']
+                    ]
+                ], 422);
+            }
         }
 
         // Charger les relations nécessaires

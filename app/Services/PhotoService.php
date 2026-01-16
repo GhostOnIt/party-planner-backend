@@ -59,10 +59,23 @@ class PhotoService
      */
     protected function storeFile(Event $event, UploadedFile $file): string
     {
+        // Vérifier que le fichier est valide
+        if (!$file->isValid()) {
+            throw new \RuntimeException('Le fichier uploadé n\'est pas valide.');
+        }
+
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = "events/{$event->id}/photos/{$filename}";
 
-        Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+        try {
+            $stored = Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+            
+            if (!$stored) {
+                throw new \RuntimeException('Impossible de stocker le fichier sur le disque.');
+            }
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Erreur lors du stockage du fichier: ' . $e->getMessage(), 0, $e);
+        }
 
         return $path;
     }
