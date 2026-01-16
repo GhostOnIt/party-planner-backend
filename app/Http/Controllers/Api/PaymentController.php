@@ -39,27 +39,67 @@ class PaymentController extends Controller
     public function initiate(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
+            'subscription_id' => 'nullable|exists:subscriptions,id',
             'phone_number' => 'required|string',
             'amount' => 'sometimes|numeric|min:0',
             'plan' => 'sometimes|string|in:starter,pro',
             'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
         ]);
 
-        $event = Event::findOrFail($validated['event_id']);
+        $user = $request->user();
+        $subscription = null;
 
-        // Check if user owns the event or is a collaborator
-        if ($event->user_id !== $request->user()->id) {
-            $isCollaborator = $event->collaborators()
-                ->where('user_id', $request->user()->id)
-                ->whereNotNull('accepted_at')
-                ->exists();
-
-            if (!$isCollaborator) {
+        // Handle account-level subscription (no event_id)
+        if (isset($validated['subscription_id'])) {
+            $subscription = Subscription::findOrFail($validated['subscription_id']);
+            
+            // Verify ownership
+            if ($subscription->user_id !== $user->id) {
                 return response()->json([
-                    'message' => 'Vous n\'avez pas accès à cet événement.',
+                    'message' => 'Vous n\'avez pas accès à cet abonnement.',
                 ], 403);
             }
+
+            // Verify it's an account-level subscription
+            if ($subscription->event_id !== null) {
+                return response()->json([
+                    'message' => 'Cet abonnement est lié à un événement. Utilisez event_id à la place.',
+                ], 422);
+            }
+        }
+        // Handle event-level subscription (with event_id)
+        elseif (isset($validated['event_id'])) {
+            $event = Event::findOrFail($validated['event_id']);
+
+            // Check if user owns the event or is a collaborator
+            if ($event->user_id !== $user->id) {
+                $isCollaborator = $event->collaborators()
+                    ->where('user_id', $user->id)
+                    ->whereNotNull('accepted_at')
+                    ->exists();
+
+                if (!$isCollaborator) {
+                    return response()->json([
+                        'message' => 'Vous n\'avez pas accès à cet événement.',
+                    ], 403);
+                }
+            }
+
+            // Accept both 'plan' and 'plan_type' from frontend
+            $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+
+            // Get or create subscription with proper pricing
+            $subscription = $event->subscription;
+            if (!$subscription) {
+                // Use expected_guests from event or default to 50
+                $guestCount = $event->expected_guests ?? 50;
+                $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Vous devez fournir soit event_id soit subscription_id.',
+            ], 422);
         }
 
         // Detect provider from phone number
@@ -70,17 +110,6 @@ class PaymentController extends Controller
             return response()->json([
                 'message' => 'Numéro de téléphone non reconnu. Utilisez un numéro MTN ou Airtel.',
             ], 422);
-        }
-
-        // Accept both 'plan' and 'plan_type' from frontend
-        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
-
-        // Get or create subscription with proper pricing
-        $subscription = $event->subscription;
-        if (!$subscription) {
-            // Use expected_guests from event or default to 50
-            $guestCount = $event->expected_guests ?? 50;
-            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
         }
 
         // Initiate payment based on provider
@@ -108,27 +137,57 @@ class PaymentController extends Controller
     public function initiateMtn(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
+            'subscription_id' => 'nullable|exists:subscriptions,id',
             'phone_number' => 'required|string',
             'plan' => 'sometimes|string|in:starter,pro',
             'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
+            'amount' => 'sometimes|numeric|min:0',
         ]);
 
-        $event = Event::findOrFail($validated['event_id']);
+        $user = $request->user();
+        $subscription = null;
 
-        if ($event->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Vous n\'avez pas accès à cet événement.',
-            ], 403);
+        // Handle account-level subscription (no event_id)
+        if (isset($validated['subscription_id'])) {
+            $subscription = Subscription::findOrFail($validated['subscription_id']);
+            
+            // Verify ownership
+            if ($subscription->user_id !== $user->id) {
+                return response()->json([
+                    'message' => 'Vous n\'avez pas accès à cet abonnement.',
+                ], 403);
+            }
+
+            // Verify it's an account-level subscription
+            if ($subscription->event_id !== null) {
+                return response()->json([
+                    'message' => 'Cet abonnement est lié à un événement. Utilisez event_id à la place.',
+                ], 422);
+            }
         }
+        // Handle event-level subscription (with event_id)
+        elseif (isset($validated['event_id'])) {
+            $event = Event::findOrFail($validated['event_id']);
 
-        // Accept both 'plan' and 'plan_type' from frontend
-        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+            if ($event->user_id !== $user->id) {
+                return response()->json([
+                    'message' => 'Vous n\'avez pas accès à cet événement.',
+                ], 403);
+            }
 
-        $subscription = $event->subscription;
-        if (!$subscription) {
-            $guestCount = $event->expected_guests ?? 50;
-            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+            // Accept both 'plan' and 'plan_type' from frontend
+            $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+
+            $subscription = $event->subscription;
+            if (!$subscription) {
+                $guestCount = $event->expected_guests ?? 50;
+                $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Vous devez fournir soit event_id soit subscription_id.',
+            ], 422);
         }
 
         $phone = $this->normalizePhone($validated['phone_number']);
@@ -153,27 +212,57 @@ class PaymentController extends Controller
     public function initiateAirtel(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'event_id' => 'required|exists:events,id',
+            'event_id' => 'nullable|exists:events,id',
+            'subscription_id' => 'nullable|exists:subscriptions,id',
             'phone_number' => 'required|string',
             'plan' => 'sometimes|string|in:starter,pro',
             'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
+            'amount' => 'sometimes|numeric|min:0',
         ]);
 
-        $event = Event::findOrFail($validated['event_id']);
+        $user = $request->user();
+        $subscription = null;
 
-        if ($event->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Vous n\'avez pas accès à cet événement.',
-            ], 403);
+        // Handle account-level subscription (no event_id)
+        if (isset($validated['subscription_id'])) {
+            $subscription = Subscription::findOrFail($validated['subscription_id']);
+            
+            // Verify ownership
+            if ($subscription->user_id !== $user->id) {
+                return response()->json([
+                    'message' => 'Vous n\'avez pas accès à cet abonnement.',
+                ], 403);
+            }
+
+            // Verify it's an account-level subscription
+            if ($subscription->event_id !== null) {
+                return response()->json([
+                    'message' => 'Cet abonnement est lié à un événement. Utilisez event_id à la place.',
+                ], 422);
+            }
         }
+        // Handle event-level subscription (with event_id)
+        elseif (isset($validated['event_id'])) {
+            $event = Event::findOrFail($validated['event_id']);
 
-        // Accept both 'plan' and 'plan_type' from frontend
-        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+            if ($event->user_id !== $user->id) {
+                return response()->json([
+                    'message' => 'Vous n\'avez pas accès à cet événement.',
+                ], 403);
+            }
 
-        $subscription = $event->subscription;
-        if (!$subscription) {
-            $guestCount = $event->expected_guests ?? 50;
-            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+            // Accept both 'plan' and 'plan_type' from frontend
+            $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+
+            $subscription = $event->subscription;
+            if (!$subscription) {
+                $guestCount = $event->expected_guests ?? 50;
+                $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Vous devez fournir soit event_id soit subscription_id.',
+            ], 422);
         }
 
         $phone = $this->normalizePhone($validated['phone_number']);
@@ -355,6 +444,12 @@ class PaymentController extends Controller
             return false;
         }
 
+        // For account-level subscriptions (no event), check if user owns the subscription
+        if ($subscription->event_id === null) {
+            return $subscription->user_id === $user->id;
+        }
+
+        // For event-level subscriptions, check event access
         $event = $subscription->event;
         if (!$event) {
             return false;

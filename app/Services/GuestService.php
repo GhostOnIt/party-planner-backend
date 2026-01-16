@@ -489,43 +489,62 @@ class GuestService
     }
 
     /**
-     * Check if event can add more guests (free tier limit).
+     * Check if event can add more guests.
+     * Uses max_guests_allowed stored on the event (set at creation time).
+     * This allows events created during an active subscription to keep their limits
+     * even after the subscription expires.
      */
     public function canAddGuest(Event $event): bool
     {
-        // Check if event has active subscription
-        $subscription = $event->subscription;
+        $currentCount = $event->guests()->count();
 
-        if ($subscription && $subscription->isActive()) {
-            // Paid plan - check plan limits
-            $planConfig = config("partyplanner.plans.{$subscription->plan_type}");
-            $maxGuests = $planConfig['included_guests'] ?? PHP_INT_MAX;
-
-            return $event->guests()->count() < $maxGuests;
+        // If event has max_guests_allowed set (from when it was created), use that
+        if ($event->max_guests_allowed !== null) {
+            return $currentCount < $event->max_guests_allowed;
         }
 
-        // Free tier
-        $maxGuests = config('partyplanner.free_tier.max_guests', 10);
+        // Fallback: check current subscription (for backward compatibility with old events)
+        $subscription = $event->user->getCurrentSubscription();
 
-        return $event->guests()->count() < $maxGuests;
+        if ($subscription && $subscription->isActive()) {
+            $plan = $subscription->plan;
+            if ($plan) {
+                $maxGuests = $plan->getGuestsLimit();
+                return $currentCount < $maxGuests;
+            }
+        }
+
+        // Free tier fallback
+        $maxGuests = config('partyplanner.free_tier.max_guests', 10);
+        return $currentCount < $maxGuests;
     }
 
     /**
      * Get remaining guest slots.
+     * Uses max_guests_allowed stored on the event.
      */
     public function getRemainingSlots(Event $event): int
     {
         $currentCount = $event->guests()->count();
 
-        $subscription = $event->subscription;
-
-        if ($subscription && $subscription->isActive()) {
-            $planConfig = config("partyplanner.plans.{$subscription->plan_type}");
-            $maxGuests = $planConfig['included_guests'] ?? PHP_INT_MAX;
-        } else {
-            $maxGuests = config('partyplanner.free_tier.max_guests', 10);
+        // If event has max_guests_allowed set, use that
+        if ($event->max_guests_allowed !== null) {
+            return max(0, $event->max_guests_allowed - $currentCount);
         }
 
+        // Fallback: check current subscription (for backward compatibility)
+        $subscription = $event->user->getCurrentSubscription();
+
+        if ($subscription && $subscription->isActive()) {
+            $plan = $subscription->plan;
+            if ($plan) {
+                $maxGuests = $plan->getGuestsLimit();
+                return max(0, $maxGuests - $currentCount);
+            }
+        }
+
+        // Free tier fallback
+        $maxGuests = config('partyplanner.free_tier.max_guests', 10);
         return max(0, $maxGuests - $currentCount);
     }
 

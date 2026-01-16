@@ -29,6 +29,10 @@ class Event extends Model
         'actual_budget',
         'theme',
         'expected_guests_count',
+        'max_guests_allowed',
+        'max_collaborators_allowed',
+        'max_photos_allowed',
+        'features_enabled',
         'status',
         'cover_photo_id',
     ];
@@ -46,6 +50,10 @@ class Event extends Model
             'estimated_budget' => 'decimal:2',
             'actual_budget' => 'decimal:2',
             'expected_guests_count' => 'integer',
+            'max_guests_allowed' => 'integer',
+            'max_collaborators_allowed' => 'integer',
+            'max_photos_allowed' => 'integer',
+            'features_enabled' => 'array',
         ];
     }
 
@@ -227,5 +235,24 @@ class Event extends Model
             ->where('user_id', $user->id)
             ->whereIn('role', ['owner', 'editor'])
             ->exists();
+    }
+
+    /**
+     * Check if a feature is enabled for this event.
+     * Uses features_enabled stored on the event (set at creation time).
+     */
+    public function hasFeature(string $feature): bool
+    {
+        if ($this->features_enabled !== null) {
+            return $this->features_enabled[$feature] ?? false;
+        }
+
+        // Fallback: check current subscription (for backward compatibility)
+        $subscription = $this->user->getCurrentSubscription();
+        if ($subscription && $subscription->plan) {
+            return $subscription->plan->hasFeature($feature);
+        }
+
+        return false;
     }
 }

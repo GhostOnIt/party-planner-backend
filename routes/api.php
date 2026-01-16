@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminPlanController;
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
@@ -265,6 +266,10 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::get('/check-limits', [SubscriptionController::class, 'checkLimits']);
     });
 
+    // Account-level subscription endpoints
+    Route::get('/user/subscription', [SubscriptionController::class, 'current']);
+    Route::get('/user/quota', [SubscriptionController::class, 'quota']);
+    Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe']);
     Route::get('/subscriptions', [SubscriptionController::class, 'index']);
 
     /*
@@ -354,6 +359,14 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/subscriptions/{subscription}/change-plan', [DashboardController::class, 'adminSubscriptionChangePlan']);
         Route::post('/subscriptions/{subscription}/cancel', [DashboardController::class, 'adminSubscriptionCancel']);
 
+        // Plans Management (Dynamic Subscription Plans)
+        Route::get('/plans', [AdminPlanController::class, 'index']);
+        Route::post('/plans', [AdminPlanController::class, 'store']);
+        Route::get('/plans/{plan}', [AdminPlanController::class, 'show']);
+        Route::put('/plans/{plan}', [AdminPlanController::class, 'update']);
+        Route::delete('/plans/{plan}', [AdminPlanController::class, 'destroy']);
+        Route::post('/plans/{plan}/toggle-active', [AdminPlanController::class, 'toggleActive']);
+
         // Activity Logs
         Route::get('/activity-logs', [DashboardController::class, 'adminActivityLogs']);
         Route::get('/activity-logs/stats', [DashboardController::class, 'adminActivityStats']);
@@ -365,4 +378,12 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::delete('/templates/{template}', [EventTemplateController::class, 'destroy']);
         Route::post('/templates/{template}/toggle-active', [EventTemplateController::class, 'toggleActive']);
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public Plans (for pricing page)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/plans', [AdminPlanController::class, 'publicIndex']);
+    Route::get('/plans/trial/available', [AdminPlanController::class, 'getAvailableTrial']);
 });

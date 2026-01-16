@@ -25,37 +25,46 @@ class CheckGuestLimit
         $event = $request->route('event');
 
         if (!$event instanceof Event) {
-            $event = Event::find($request->route('event'));
+            $eventId = $request->route('event');
+            // Skip if event ID is null or undefined
+            if ($eventId === null || $eventId === 'undefined' || $eventId === '') {
+                return $next($request);
+            }
+            $event = Event::find($eventId);
         }
 
         if (!$event) {
             return $next($request);
         }
 
-        $subscription = $event->subscription;
         $currentGuestCount = $event->guests()->count();
 
-        // Free tier limit (before subscription)
-        $freeLimit = 10;
-
-        if (!$subscription) {
-            if ($currentGuestCount >= $freeLimit) {
-                return $this->guestLimitResponse($request, $event, $freeLimit);
+        // Use max_guests_allowed stored on the event (set at creation time)
+        // This allows events created during an active subscription to keep their limits
+        // even after the subscription expires.
+        if ($event->max_guests_allowed !== null) {
+            if ($currentGuestCount >= $event->max_guests_allowed) {
+                return $this->guestLimitResponse($request, $event, $event->max_guests_allowed);
             }
             return $next($request);
         }
 
-        // Get plan limits
-        $planType = PlanType::tryFrom($subscription->plan_type);
-        $maxGuests = $planType ? $planType->includedGuests() : $freeLimit;
+        // Fallback: check current subscription (for backward compatibility with old events)
+        $subscription = $event->user->getCurrentSubscription();
+        $freeLimit = config('partyplanner.free_tier.max_guests', 10);
 
-        // For paid plans, allow exceeding included guests (will be charged extra)
-        // Just warn if exceeding included amount
-        if ($subscription->isActive()) {
-            return $next($request);
+        if ($subscription && $subscription->isActive()) {
+            $plan = $subscription->plan;
+            if ($plan) {
+                $maxGuests = $plan->getGuestsLimit();
+                if ($currentGuestCount >= $maxGuests) {
+                    return $this->guestLimitResponse($request, $event, $maxGuests);
+                }
+                return $next($request);
+            }
         }
 
-        // If subscription not active, apply free limit
+        // Free tier limit
         if ($currentGuestCount >= $freeLimit) {
             return $this->guestLimitResponse($request, $event, $freeLimit);
         }
