@@ -32,7 +32,24 @@ class PlanService
                 }
 
                 // Check if user has already used this plan
-                return !$this->hasUserUsedPlan($user, $plan);
+                $hasUsed = $this->hasUserUsedPlan($user, $plan);
+                
+                // Debug logging (remove in production)
+                if ($plan->is_trial) {
+                    \Log::info('Trial plan check', [
+                        'plan_id' => $plan->id,
+                        'plan_name' => $plan->name,
+                        'is_one_time_use' => $plan->is_one_time_use,
+                        'user_id' => $user->id,
+                        'has_used' => $hasUsed,
+                        'subscriptions_count' => $user->subscriptions()
+                            ->where('plan_id', $plan->id)
+                            ->whereNull('event_id')
+                            ->count(),
+                    ]);
+                }
+                
+                return !$hasUsed;
             });
         }
 
@@ -48,10 +65,29 @@ class PlanService
             return false; // Not a one-time-use plan
         }
 
-        // Check if user has any subscription (past or present) for this plan
-        return $user->subscriptions()
+        // For one-time-use plans (like trial), check account-level subscriptions only
+        // (where event_id is null) since these are account-level subscriptions
+        $hasUsed = $user->subscriptions()
             ->where('plan_id', $plan->id)
+            ->whereNull('event_id') // Account-level subscriptions only
             ->exists();
+        
+        // Debug logging
+        if ($plan->is_trial && $hasUsed) {
+            $subscriptions = $user->subscriptions()
+                ->where('plan_id', $plan->id)
+                ->whereNull('event_id')
+                ->get(['id', 'plan_id', 'event_id', 'status', 'payment_status', 'expires_at']);
+            
+            \Log::info('User has used trial plan', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'plan_name' => $plan->name,
+                'subscriptions' => $subscriptions->toArray(),
+            ]);
+        }
+        
+        return $hasUsed;
     }
 
     /**

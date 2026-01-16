@@ -70,20 +70,20 @@ class PaymentController extends Controller
         }
         // Handle event-level subscription (with event_id)
         elseif (isset($validated['event_id'])) {
-            $event = Event::findOrFail($validated['event_id']);
+        $event = Event::findOrFail($validated['event_id']);
 
-            // Check if user owns the event or is a collaborator
+        // Check if user owns the event or is a collaborator
             if ($event->user_id !== $user->id) {
-                $isCollaborator = $event->collaborators()
+            $isCollaborator = $event->collaborators()
                     ->where('user_id', $user->id)
-                    ->whereNotNull('accepted_at')
-                    ->exists();
+                ->whereNotNull('accepted_at')
+                ->exists();
 
-                if (!$isCollaborator) {
-                    return response()->json([
-                        'message' => 'Vous n\'avez pas accès à cet événement.',
-                    ], 403);
-                }
+            if (!$isCollaborator) {
+                return response()->json([
+                    'message' => 'Vous n\'avez pas accès à cet événement.',
+                ], 403);
+            }
             }
 
             // Accept both 'plan' and 'plan_type' from frontend
@@ -168,21 +168,21 @@ class PaymentController extends Controller
         }
         // Handle event-level subscription (with event_id)
         elseif (isset($validated['event_id'])) {
-            $event = Event::findOrFail($validated['event_id']);
+        $event = Event::findOrFail($validated['event_id']);
 
             if ($event->user_id !== $user->id) {
-                return response()->json([
-                    'message' => 'Vous n\'avez pas accès à cet événement.',
-                ], 403);
-            }
+            return response()->json([
+                'message' => 'Vous n\'avez pas accès à cet événement.',
+            ], 403);
+        }
 
-            // Accept both 'plan' and 'plan_type' from frontend
-            $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+        // Accept both 'plan' and 'plan_type' from frontend
+        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
 
-            $subscription = $event->subscription;
-            if (!$subscription) {
-                $guestCount = $event->expected_guests ?? 50;
-                $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+        $subscription = $event->subscription;
+        if (!$subscription) {
+            $guestCount = $event->expected_guests ?? 50;
+            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
             }
         } else {
             return response()->json([
@@ -243,21 +243,21 @@ class PaymentController extends Controller
         }
         // Handle event-level subscription (with event_id)
         elseif (isset($validated['event_id'])) {
-            $event = Event::findOrFail($validated['event_id']);
+        $event = Event::findOrFail($validated['event_id']);
 
             if ($event->user_id !== $user->id) {
-                return response()->json([
-                    'message' => 'Vous n\'avez pas accès à cet événement.',
-                ], 403);
-            }
+            return response()->json([
+                'message' => 'Vous n\'avez pas accès à cet événement.',
+            ], 403);
+        }
 
-            // Accept both 'plan' and 'plan_type' from frontend
-            $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+        // Accept both 'plan' and 'plan_type' from frontend
+        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
 
-            $subscription = $event->subscription;
-            if (!$subscription) {
-                $guestCount = $event->expected_guests ?? 50;
-                $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+        $subscription = $event->subscription;
+        if (!$subscription) {
+            $guestCount = $event->expected_guests ?? 50;
+            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
             }
         } else {
             return response()->json([
