@@ -248,7 +248,8 @@ class Event extends Model
         }
 
         // Fallback: check current subscription (for backward compatibility)
-        $subscription = $this->user->getCurrentSubscription();
+        $subscriptionService = app(\App\Services\SubscriptionService::class);
+        $subscription = $subscriptionService->getUserActiveSubscription($this->user);
         if ($subscription && $subscription->plan) {
             return $subscription->plan->hasFeature($feature);
         }

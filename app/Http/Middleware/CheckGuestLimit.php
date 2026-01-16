@@ -4,12 +4,16 @@ namespace App\Http\Middleware;
 
 use App\Enums\PlanType;
 use App\Models\Event;
+use App\Services\SubscriptionService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckGuestLimit
 {
+    public function __construct(
+        protected SubscriptionService $subscriptionService
+    ) {}
     /**
      * Handle an incoming request.
      *
@@ -50,7 +54,7 @@ class CheckGuestLimit
         }
 
         // Fallback: check current subscription (for backward compatibility with old events)
-        $subscription = $event->user->getCurrentSubscription();
+        $subscription = $this->subscriptionService->getUserActiveSubscription($event->user);
         $freeLimit = config('partyplanner.free_tier.max_guests', 10);
 
         if ($subscription && $subscription->isActive()) {

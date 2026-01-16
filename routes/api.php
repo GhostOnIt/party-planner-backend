@@ -269,8 +269,12 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     // Account-level subscription endpoints
     Route::get('/user/subscription', [SubscriptionController::class, 'current']);
     Route::get('/user/quota', [SubscriptionController::class, 'quota']);
+    Route::get('/user/entitlements', [SubscriptionController::class, 'entitlements']);
     Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe']);
     Route::get('/subscriptions', [SubscriptionController::class, 'index']);
+
+    // Event-level entitlements (for collaborators)
+    Route::get('/events/{event}/entitlements', [SubscriptionController::class, 'eventEntitlements']);
 
     /*
     |--------------------------------------------------------------------------

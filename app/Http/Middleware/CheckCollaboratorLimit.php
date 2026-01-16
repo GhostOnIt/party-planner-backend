@@ -4,12 +4,16 @@ namespace App\Http\Middleware;
 
 use App\Enums\PlanType;
 use App\Models\Event;
+use App\Services\SubscriptionService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckCollaboratorLimit
 {
+    public function __construct(
+        protected SubscriptionService $subscriptionService
+    ) {}
     /**
      * Handle an incoming request.
      *
@@ -54,7 +58,7 @@ class CheckCollaboratorLimit
         }
 
         // Fallback: check current subscription (for backward compatibility with old events)
-        $subscription = $event->user->getCurrentSubscription();
+        $subscription = $this->subscriptionService->getUserActiveSubscription($event->user);
         $freeLimit = config('partyplanner.free_tier.max_collaborators', 1);
 
         if ($subscription && $subscription->isActive()) {

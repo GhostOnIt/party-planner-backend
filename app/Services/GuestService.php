@@ -16,6 +16,9 @@ use Illuminate\Support\Str;
 
 class GuestService
 {
+    public function __construct(
+        protected SubscriptionService $subscriptionService
+    ) {}
     /**
      * Create a new guest for an event.
      */
@@ -504,7 +507,7 @@ class GuestService
         }
 
         // Fallback: check current subscription (for backward compatibility with old events)
-        $subscription = $event->user->getCurrentSubscription();
+        $subscription = $this->subscriptionService->getUserActiveSubscription($event->user);
 
         if ($subscription && $subscription->isActive()) {
             $plan = $subscription->plan;
@@ -533,7 +536,7 @@ class GuestService
         }
 
         // Fallback: check current subscription (for backward compatibility)
-        $subscription = $event->user->getCurrentSubscription();
+        $subscription = $this->subscriptionService->getUserActiveSubscription($event->user);
 
         if ($subscription && $subscription->isActive()) {
             $plan = $subscription->plan;

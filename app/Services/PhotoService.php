@@ -361,7 +361,8 @@ class PhotoService
         }
 
         // Fallback: check current subscription (for backward compatibility with old events)
-        $subscription = $event->user->getCurrentSubscription();
+        $subscriptionService = app(\App\Services\SubscriptionService::class);
+        $subscription = $subscriptionService->getUserActiveSubscription($event->user);
 
         if ($subscription && $subscription->isActive()) {
             $plan = $subscription->plan;

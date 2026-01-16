@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Subscription\StoreSubscriptionRequest;
 use App\Models\Event;
+use App\Services\EntitlementService;
 use App\Services\QuotaService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,8 @@ class SubscriptionController extends Controller
 {
     public function __construct(
         protected SubscriptionService $subscriptionService,
-        protected QuotaService $quotaService
+        protected QuotaService $quotaService,
+        protected EntitlementService $entitlementService
     ) {}
 
     /**
@@ -212,6 +214,33 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Get event owner's entitlements (for collaborators to check if features are available).
+     */
+    public function eventEntitlements(Event $event): JsonResponse
+    {
+        // Check if user has access to this event (owner or collaborator)
+        $this->authorize('view', $event);
+
+        // Load the event owner if not already loaded
+        if (!$event->relationLoaded('user')) {
+            $event->load('user');
+        }
+
+        // Get entitlements of the event owner (not the current user)
+        $owner = $event->user;
+        
+        if (!$owner) {
+            return response()->json([
+                'message' => 'Propriétaire de l\'événement introuvable.',
+            ], 404);
+        }
+
+        $entitlements = $this->entitlementService->getEffectiveEntitlements($owner);
+
+        return response()->json($entitlements);
+    }
+
+    /**
      * Get user's quota information.
      */
     public function quota(Request $request): JsonResponse
@@ -224,6 +253,17 @@ class SubscriptionController extends Controller
             'quota' => $quota,
             'warning' => $warning,
         ]);
+    }
+
+    /**
+     * Get user's entitlements (limits and features from account-level subscription).
+     */
+    public function entitlements(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $entitlements = $this->entitlementService->getEffectiveEntitlements($user);
+
+        return response()->json($entitlements);
     }
 
     /**
