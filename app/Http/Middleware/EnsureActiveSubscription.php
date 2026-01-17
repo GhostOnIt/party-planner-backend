@@ -27,7 +27,12 @@ class EnsureActiveSubscription
         $event = $request->route('event');
 
         if (!$event instanceof Event) {
-            $event = Event::find($request->route('event'));
+            $eventId = $request->route('event');
+            // Skip if event ID is null or undefined
+            if ($eventId === null || $eventId === 'undefined' || $eventId === '') {
+                return $next($request);
+            }
+            $event = Event::find($eventId);
         }
 
         if (!$event) {

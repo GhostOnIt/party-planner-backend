@@ -48,6 +48,10 @@ class StoreEventRequest extends FormRequest
      */
     public function messages(): array
     {
+        $maxSize = config('partyplanner.uploads.photos.max_size', 5120);
+        $maxSizeMb = $maxSize / 1024;
+        $allowedTypes = config('partyplanner.uploads.photos.allowed_types', ['jpeg', 'jpg', 'png', 'gif', 'webp']);
+
         return [
             'title.required' => 'Le titre de l\'événement est requis.',
             'title.max' => 'Le titre ne peut pas dépasser 255 caractères.',
@@ -60,6 +64,9 @@ class StoreEventRequest extends FormRequest
             'estimated_budget.min' => 'Le budget ne peut pas être négatif.',
             'expected_guests_count.integer' => 'Le nombre d\'invités doit être un entier.',
             'expected_guests_count.min' => 'Le nombre d\'invités doit être au moins 1.',
+            'cover_photo.image' => 'Le fichier doit être une image.',
+            'cover_photo.mimes' => 'Le format de l\'image n\'est pas supporté. Formats acceptés : ' . implode(', ', $allowedTypes) . '.',
+            'cover_photo.max' => "La taille de l'image ne peut pas dépasser {$maxSizeMb} Mo.",
         ];
     }
 
@@ -80,6 +87,7 @@ class StoreEventRequest extends FormRequest
             'estimated_budget' => 'budget estimé',
             'theme' => 'thème',
             'expected_guests_count' => 'nombre d\'invités',
+            'cover_photo' => 'photo de couverture',
         ];
     }
 }

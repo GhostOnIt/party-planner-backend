@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest.limit' => \App\Http\Middleware\CheckGuestLimit::class,
             'collaborator.limit' => \App\Http\Middleware\CheckCollaboratorLimit::class,
             'invitation.track' => \App\Http\Middleware\TrackInvitationOpen::class,
+            'check.quota' => \App\Http\Middleware\CheckQuota::class,
         ]);
 
         // Disable CSRF verification for webhook routes

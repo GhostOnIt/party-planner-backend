@@ -19,6 +19,7 @@ class Subscription extends Model
     protected $fillable = [
         'user_id',
         'event_id',
+        'plan_id',
         'plan_type',
         'base_price',
         'guest_count',
@@ -27,6 +28,9 @@ class Subscription extends Model
         'payment_status',
         'payment_method',
         'payment_reference',
+        'creations_used',
+        'status',
+        'starts_at',
         'expires_at',
     ];
 
@@ -42,6 +46,8 @@ class Subscription extends Model
             'guest_price_per_unit' => 'decimal:2',
             'total_price' => 'decimal:2',
             'guest_count' => 'integer',
+            'creations_used' => 'integer',
+            'starts_at' => 'datetime',
             'expires_at' => 'datetime',
         ];
     }
@@ -63,11 +69,27 @@ class Subscription extends Model
     }
 
     /**
+     * Get the plan for this subscription.
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    /**
      * Get the payments for the subscription.
      */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get top-ups associated with this subscription.
+     */
+    public function topUps(): HasMany
+    {
+        return $this->hasMany(TopUp::class);
     }
 
     /**

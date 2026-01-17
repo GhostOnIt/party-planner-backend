@@ -14,11 +14,14 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     * 
+     * Only seeds essential data: Users (admins), Permissions, and Plans.
+     * All other data (events, guests, etc.) can be created via the platform.
      */
     public function run(): void
     {
-
-          User::firstOrCreate(
+        // Admin users
+        User::firstOrCreate(
             ['email' => 'pamarolic017@gmail.com'],
             [
                 'name' => 'Rolic PAMA',
@@ -27,7 +30,7 @@ class DatabaseSeeder extends Seeder
                 'role' => UserRole::ADMIN,
             ]
         );
-        // Utilisateur admin
+
         User::firstOrCreate(
             ['email' => 'alexsonicka@gmail.com'],
             [
@@ -38,36 +41,10 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Utilisateurs de test
-        User::firstOrCreate(
-            ['email' => 'jane@example.com'],
-            [
-                'name' => 'Jane Doe',
-                'password' => Hash::make('Test@1234'),
-                'email_verified_at' => now(),
-                'role' => UserRole::USER,
-            ]
-        );
-
-        User::firstOrCreate(
-            ['email' => 'john@example.com'],
-            [
-                'name' => 'John Doe',
-                'password' => Hash::make('Test@1234'),
-                'email_verified_at' => now(),
-                'role' => UserRole::USER,
-            ]
-        );
-
-        // Seed event templates (required for app functionality)
+        // Seed permissions and plans (essential for app functionality)
         $this->call([
-            EventTemplateSeeder::class,
-        ]);
-
-        // Comprehensive test data for development
-        $this->call([
-            ComprehensiveTestDataSeeder::class,
-            AdminActivityLogSeeder::class,
+            PermissionSeeder::class,
+            PlanSeeder::class,
         ]);
     }
 }

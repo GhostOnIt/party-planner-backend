@@ -8,10 +8,15 @@ use App\Events\EventCreated;
 use App\Models\Event;
 use App\Models\EventTemplate;
 use App\Models\User;
+use App\Services\EntitlementService;
 use Illuminate\Support\Facades\DB;
 
 class EventService
 {
+    public function __construct(
+        protected EntitlementService $entitlementService
+    ) {}
+
     /**
      * Default budget estimates by event type (in XAF).
      */
@@ -38,6 +43,24 @@ class EventService
             // Set default status
             if (empty($data['status'])) {
                 $data['status'] = config('partyplanner.events.default_status', 'upcoming');
+            }
+
+            // Set max_guests_allowed, max_collaborators_allowed, and max_photos_allowed based on current subscription
+            if (!isset($data['max_guests_allowed'])) {
+                $data['max_guests_allowed'] = $this->entitlementService->limit($user, 'guests.max_per_event');
+            }
+            if (!isset($data['max_collaborators_allowed'])) {
+                $data['max_collaborators_allowed'] = $this->entitlementService->limit($user, 'collaborators.max_per_event');
+            }
+            if (!isset($data['max_photos_allowed'])) {
+                $data['max_photos_allowed'] = $this->entitlementService->limit($user, 'photos.max_per_event');
+            }
+            
+            // Store enabled features at creation time (so they persist after subscription expires)
+            if (!isset($data['features_enabled'])) {
+                $entitlements = $this->entitlementService->getEffectiveEntitlements($user);
+                // Store only the features that are enabled (true)
+                $data['features_enabled'] = array_filter($entitlements['features'] ?? [], fn($value) => $value === true);
             }
 
             // Create the event
@@ -94,6 +117,43 @@ class EventService
                 'expected_guests_count' => $overrides['expected_guests_count'] ?? $event->expected_guests_count,
                 'status' => EventStatus::UPCOMING->value,
             ];
+
+            // Copy limits from original event, or set based on current subscription
+            if (isset($overrides['max_guests_allowed'])) {
+                $data['max_guests_allowed'] = $overrides['max_guests_allowed'];
+            } elseif ($event->max_guests_allowed !== null) {
+                // Copy from original event
+                $data['max_guests_allowed'] = $event->max_guests_allowed;
+            } else {
+                // Set based on current subscription
+                $data['max_guests_allowed'] = $this->entitlementService->limit($user, 'guests.max_per_event');
+            }
+
+            if (isset($overrides['max_collaborators_allowed'])) {
+                $data['max_collaborators_allowed'] = $overrides['max_collaborators_allowed'];
+            } elseif ($event->max_collaborators_allowed !== null) {
+                $data['max_collaborators_allowed'] = $event->max_collaborators_allowed;
+            } else {
+                $data['max_collaborators_allowed'] = $this->entitlementService->limit($user, 'collaborators.max_per_event');
+            }
+
+            if (isset($overrides['max_photos_allowed'])) {
+                $data['max_photos_allowed'] = $overrides['max_photos_allowed'];
+            } elseif ($event->max_photos_allowed !== null) {
+                $data['max_photos_allowed'] = $event->max_photos_allowed;
+            } else {
+                $data['max_photos_allowed'] = $this->entitlementService->limit($user, 'photos.max_per_event');
+            }
+
+            // Copy features_enabled from original event, or set based on current subscription
+            if (isset($overrides['features_enabled'])) {
+                $data['features_enabled'] = $overrides['features_enabled'];
+            } elseif ($event->features_enabled !== null) {
+                $data['features_enabled'] = $event->features_enabled;
+            } else {
+                $entitlements = $this->entitlementService->getEffectiveEntitlements($user);
+                $data['features_enabled'] = array_filter($entitlements['features'] ?? [], fn($value) => $value === true);
+            }
 
             // Create the duplicated event
             $newEvent = $user->events()->create($data);
