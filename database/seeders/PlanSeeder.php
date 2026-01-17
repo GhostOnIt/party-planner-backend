@@ -16,6 +16,7 @@ class PlanSeeder extends Seeder
             // Essai Gratuit - 14 jours
             [
                 'name' => 'Essai Gratuit',
+                'title' => 'Essayez Party Planner Pro gratuitement pendant 14 jours',
                 'slug' => 'essai-gratuit',
                 'description' => 'Découvrez Party Planner sans engagement',
                 'price' => 0,
@@ -57,6 +58,7 @@ class PlanSeeder extends Seeder
             // PRO - 10 000 FCFA / mois
             [
                 'name' => 'PRO',
+                'title' => 'Plan PRO - Pour organisateurs indépendants & freelances',
                 'slug' => 'pro',
                 'description' => 'Pour organisateurs indépendants & freelances',
                 'price' => 10000,
@@ -97,6 +99,7 @@ class PlanSeeder extends Seeder
             // AGENCE - 25 000 FCFA / mois
             [
                 'name' => 'AGENCE',
+                'title' => 'Plan AGENCE - Pour agences, églises, ONG, entreprises',
                 'slug' => 'agence',
                 'description' => 'Pour agences, églises, ONG, entreprises',
                 'price' => 25000,
