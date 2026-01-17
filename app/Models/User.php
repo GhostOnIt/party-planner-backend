@@ -63,6 +63,13 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['avatar_url'];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -77,6 +84,17 @@ class User extends Authenticatable implements MustVerifyEmail
             'otp_enabled' => 'boolean',
             'notification_preferences' => 'array',
         ];
+    }
+
+    /**
+     * Get the avatar URL attribute.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+        return '/storage/' . ltrim($this->avatar, '/');
     }
 
     /**

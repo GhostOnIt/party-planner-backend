@@ -76,11 +76,27 @@ class EventController extends Controller
         $perPage = $request->input('per_page', 10);
         $events = $query
             ->with([
-                'user:id,name',
+                'user:id,name,avatar',
                 'coverPhoto:id,event_id,url,thumbnail_url',
                 'featuredPhoto:id,event_id,url,thumbnail_url'
             ])
-            ->withCount(['guests', 'tasks'])
+            ->withCount([
+                'guests',
+                'guests as guests_confirmed_count' => function ($query) {
+                    $query->where('rsvp_status', 'accepted');
+                },
+                'guests as guests_declined_count' => function ($query) {
+                    $query->where('rsvp_status', 'declined');
+                },
+                'guests as guests_pending_count' => function ($query) {
+                    $query->where('rsvp_status', 'pending');
+                },
+                'tasks',
+                'tasks as tasks_completed_count' => function ($query) {
+                    $query->where('status', 'completed');
+                }
+            ])
+            ->withSum('budgetItems as budget_spent', 'actual_cost')
             ->paginate($perPage);
 
         return response()->json($events);
