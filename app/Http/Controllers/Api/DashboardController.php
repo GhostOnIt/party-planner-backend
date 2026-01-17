@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Guest;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\Task;
@@ -276,6 +277,83 @@ class DashboardController extends Controller
         $activities = $this->dashboardService->getUserRecentActivity($user, $limit);
 
         return response()->json($activities);
+    }
+
+    /**
+     * Global search for events and guests.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $query = $request->input('q', '');
+        $limit = (int) $request->input('limit', 10);
+
+        if (empty($query)) {
+            return response()->json([
+                'events' => [],
+                'guests' => [],
+            ]);
+        }
+
+        // Get all event IDs the user owns or collaborates on
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique();
+
+        // Search events
+        $events = Event::whereIn('id', $eventIds)
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'ilike', "%{$query}%")
+                  ->orWhere('type', 'ilike', "%{$query}%")
+                  ->orWhere('location', 'ilike', "%{$query}%");
+            })
+            ->select('id', 'title', 'type', 'date', 'location')
+            ->orderBy('date', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($event) {
+                return [
+                    'id' => $event->id,
+                    'name' => $event->title,
+                    'type' => $event->type,
+                    'date' => $event->date ? $event->date->format('Y-m-d') : null,
+                    'location' => $event->location,
+                ];
+            });
+
+        // Search guests
+        $guests = Guest::whereIn('event_id', $eventIds)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'ilike', "%{$query}%")
+                  ->orWhere('email', 'ilike', "%{$query}%")
+                  ->orWhere('phone', 'ilike', "%{$query}%");
+            })
+            ->with('event:id,title')
+            ->select('id', 'event_id', 'name', 'email', 'phone', 'rsvp_status')
+            ->orderBy('name')
+            ->limit($limit)
+            ->get()
+            ->map(function ($guest) {
+                return [
+                    'id' => $guest->id,
+                    'name' => $guest->name,
+                    'email' => $guest->email,
+                    'phone' => $guest->phone,
+                    'rsvp_status' => $guest->rsvp_status,
+                    'event' => [
+                        'id' => $guest->event->id,
+                        'title' => $guest->event->title,
+                    ],
+                ];
+            });
+
+        return response()->json([
+            'events' => $events,
+            'guests' => $guests,
+        ]);
     }
 
     /*

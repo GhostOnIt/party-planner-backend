@@ -306,6 +306,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     Route::get('/dashboard/confirmations', [DashboardController::class, 'confirmations']);
     Route::get('/dashboard/events-by-type', [DashboardController::class, 'eventsByType']);
     Route::get('/activities/recent', [DashboardController::class, 'recentActivity']);
+    Route::get('/search', [DashboardController::class, 'search']);
 
     /*
     |--------------------------------------------------------------------------
