@@ -12,6 +12,23 @@ use Illuminate\Support\Collection;
 class PermissionService
 {
     /**
+     * Get custom roles assigned to a collaborator (supports new pivot + legacy column).
+     */
+    private function getCollaboratorCustomRoles(Collaborator $collaborator): Collection
+    {
+        if ($collaborator->relationLoaded('customRoles')) {
+            return $collaborator->customRoles;
+        }
+
+        // Fallback: try legacy single custom role relationship
+        if ($collaborator->custom_role_id && $collaborator->relationLoaded('customRole') && $collaborator->customRole) {
+            return collect([$collaborator->customRole]);
+        }
+
+        return collect();
+    }
+
+    /**
      * Check if a user has a specific permission for an event.
      */
     public function userCan(User $user, Event $event, string $permission): bool
@@ -27,9 +44,11 @@ class PermissionService
             return false;
         }
 
-        // Check custom role permissions first
-        if ($collaborator->hasCustomRole() && $collaborator->customRole) {
-            return $collaborator->customRole->hasPermission($permission);
+        // Custom roles (multi) can grant permissions in addition to system roles.
+        foreach ($this->getCollaboratorCustomRoles($collaborator) as $customRole) {
+            if ($customRole->hasPermission($permission)) {
+                return true;
+            }
         }
 
         // Check system role permissions for all roles
@@ -58,9 +77,11 @@ class PermissionService
             return false;
         }
 
-        // Check custom role permissions first
-        if ($collaborator->hasCustomRole() && $collaborator->customRole) {
-            return $collaborator->customRole->hasAnyPermissionInModule($module);
+        // Custom roles (multi) can grant module permissions in addition to system roles.
+        foreach ($this->getCollaboratorCustomRoles($collaborator) as $customRole) {
+            if ($customRole->hasAnyPermissionInModule($module)) {
+                return true;
+            }
         }
 
         // Check system role permissions for all roles
@@ -89,14 +110,13 @@ class PermissionService
             return [];
         }
 
-        // Get custom role permissions
-        if ($collaborator->hasCustomRole() && $collaborator->customRole) {
-            return $collaborator->customRole->getPermissionNames();
-        }
-
-        // Get system role permissions (merge permissions from all roles)
+        // Merge permissions from custom role (if any) + system roles
         $roles = $collaborator->getRoleValues();
         $allPermissions = [];
+
+        foreach ($this->getCollaboratorCustomRoles($collaborator) as $customRole) {
+            $allPermissions = array_merge($allPermissions, $customRole->getPermissionNames());
+        }
 
         foreach ($roles as $role) {
             $rolePermissions = $this->getSystemRolePermissions($role);
@@ -183,6 +203,8 @@ class PermissionService
     private function getGuestManagerPermissions(): array
     {
         return [
+            // Always allow tasks read access by default for collaborators
+            'tasks.view',
             'guests.view', 'guests.create', 'guests.edit', 'guests.delete',
             'guests.import', 'guests.export', 'guests.send_invitations', 'guests.checkin',
         ];
@@ -205,6 +227,8 @@ class PermissionService
     private function getAccountantPermissions(): array
     {
         return [
+            // Always allow tasks read access by default for collaborators
+            'tasks.view',
             'budget.view', 'budget.create', 'budget.edit', 'budget.delete', 'budget.export',
         ];
     }
@@ -215,6 +239,8 @@ class PermissionService
     private function getPhotographerPermissions(): array
     {
         return [
+            // Always allow tasks read access by default for collaborators
+            'tasks.view',
             'photos.view', 'photos.upload', 'photos.delete', 'photos.set_featured',
         ];
     }

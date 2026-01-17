@@ -123,13 +123,22 @@ class PaymentService
             // Generate external ID (UUID)
             $externalId = Str::uuid()->toString();
 
+            // Build payment description
+            $description = "Paiement Party Planner";
+            if ($subscription->event) {
+                $description .= " - {$subscription->event->title}";
+            } else {
+                $planName = $subscription->plan?->name ?? $subscription->plan_type ?? 'Plan';
+                $description .= " - Abonnement {$planName}";
+            }
+
             // Create payment request using momo-api
             $paymentRequest = PaymentRequest::make(
                 $amount,
                 $formattedPhone,
                 $externalId,
                 $currency,
-                "Paiement Party Planner - {$subscription->event->title}",
+                $description,
                 "Subscription #{$subscription->id}"
             );
 

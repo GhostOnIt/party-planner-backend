@@ -25,26 +25,44 @@ class StoreCollaboratorRequest extends FormRequest
      */
     public function rules(): array
     {
+        $assignableRoleValues = collect(CollaboratorRole::assignableRoles())->map(fn ($r) => $r->value)->toArray();
+
         return [
             'email' => [
                 'required',
                 'email',
                 'exists:users,email',
             ],
+            // Backward compatibility: allow either `role` (single) or `roles` (multiple)
+            'role' => [
+                'required_without:roles',
+                'string',
+                Rule::in($assignableRoleValues),
+            ],
             'roles' => [
-                'required',
+                'required_without:role',
                 'array',
                 'min:1',
             ],
             'roles.*' => [
-                Rule::in(CollaboratorRole::values()),
+                Rule::in($assignableRoleValues),
             ],
-            'custom_role_id' => [
-                'nullable',
-                'integer',
-                'exists:custom_roles,id',
-            ],
+            // Legacy single custom role
+            'custom_role_id' => ['nullable', 'integer', 'exists:custom_roles,id'],
+            // New multi custom roles
+            'custom_role_ids' => ['nullable', 'array'],
+            'custom_role_ids.*' => ['integer', 'exists:custom_roles,id'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $customRoleIds = $this->input('custom_role_ids');
+        $legacy = $this->input('custom_role_id');
+
+        if (is_null($customRoleIds) && !is_null($legacy)) {
+            $this->merge(['custom_role_ids' => [$legacy]]);
+        }
     }
 
     /**

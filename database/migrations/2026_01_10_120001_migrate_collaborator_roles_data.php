@@ -11,9 +11,12 @@ return new class extends Migration
     public function up(): void
     {
         // Migrate existing role data to the new table
+        $driver = DB::getDriverName();
+        $now = $driver === 'sqlite' ? 'CURRENT_TIMESTAMP' : 'NOW()';
+
         DB::statement("
             INSERT INTO collaborator_roles (collaborator_id, role, created_at, updated_at)
-            SELECT id, role, NOW(), NOW()
+            SELECT id, role, {$now}, {$now}
             FROM collaborators
             WHERE role IS NOT NULL
         ");

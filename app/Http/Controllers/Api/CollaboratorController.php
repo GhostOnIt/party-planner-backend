@@ -68,11 +68,16 @@ class CollaboratorController extends Controller
             ], 422);
         }
 
+        $roles = $request->validated('roles');
+        if (!$roles || count($roles) === 0) {
+            $roles = [$request->validated('role')];
+        }
+
         $collaborator = $this->collaboratorService->inviteByEmailWithRoles(
             $event,
             $request->validated('email'),
-            $request->validated('roles'),
-            $request->validated('custom_role_id')
+            $roles,
+            $request->validated('custom_role_ids', [])
         );
 
         if (!$collaborator) {
@@ -83,7 +88,7 @@ class CollaboratorController extends Controller
 
         // Add roles to collaborator for frontend compatibility
         $collaborator->roles = $collaborator->getRoleValues();
-        $collaborator->load('user');
+        $collaborator->load(['user', 'customRoles']);
 
         return response()->json([
             'message' => 'Invitation envoyée.',
@@ -106,11 +111,20 @@ class CollaboratorController extends Controller
             return response()->json(['message' => 'Impossible de modifier le propriétaire.'], 422);
         }
 
-        $collaborator = $this->collaboratorService->updateRoles($collaborator, $request->validated('roles'));
+        $roles = $request->validated('roles');
+        if (!$roles || count($roles) === 0) {
+            $roles = [$request->validated('role')];
+        }
+
+        $collaborator = $this->collaboratorService->updateRoles(
+            $collaborator,
+            $roles,
+            $request->validated('custom_role_ids', [])
+        );
 
         // Add roles to collaborator for frontend compatibility
         $collaborator->roles = $collaborator->getRoleValues();
-        $collaborator->load('user');
+        $collaborator->load(['user', 'customRoles']);
 
         return response()->json([
             'message' => 'Rôle mis à jour.',

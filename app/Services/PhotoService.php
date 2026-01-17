@@ -59,10 +59,23 @@ class PhotoService
      */
     protected function storeFile(Event $event, UploadedFile $file): string
     {
+        // Vérifier que le fichier est valide
+        if (!$file->isValid()) {
+            throw new \RuntimeException('Le fichier uploadé n\'est pas valide.');
+        }
+
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = "events/{$event->id}/photos/{$filename}";
 
-        Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+        try {
+            $stored = Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+            
+            if (!$stored) {
+                throw new \RuntimeException('Impossible de stocker le fichier sur le disque.');
+            }
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Erreur lors du stockage du fichier: ' . $e->getMessage(), 0, $e);
+        }
 
         return $path;
     }
@@ -335,17 +348,22 @@ class PhotoService
 
     /**
      * Get maximum photos allowed.
+     * Uses "maximum généreux" approach: get effective limit using MAX between
+     * stored event limit and current account subscription limit.
      */
     public function getMaxPhotos(Event $event): int
     {
-        $subscription = $event->subscription;
+        $entitlementService = app(EntitlementService::class);
+        
+        // Get effective limit using MAX between stored and current subscription
+        $effectiveLimit = $entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'photos.max_per_event'
+        );
 
-        if (!$subscription || !$subscription->isActive()) {
-            return config('partyplanner.free_tier.max_photos', 5);
-        }
-
-        // Pro plans have unlimited photos
-        return $subscription->isPro() ? PHP_INT_MAX : config('partyplanner.plans.starter.max_photos', 50);
+        // -1 means unlimited, return PHP_INT_MAX for compatibility
+        return $effectiveLimit === -1 ? PHP_INT_MAX : $effectiveLimit;
     }
 
     /**

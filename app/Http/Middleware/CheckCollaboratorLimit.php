@@ -4,12 +4,18 @@ namespace App\Http\Middleware;
 
 use App\Enums\PlanType;
 use App\Models\Event;
+use App\Services\EntitlementService;
+use App\Services\SubscriptionService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckCollaboratorLimit
 {
+    public function __construct(
+        protected SubscriptionService $subscriptionService,
+        protected EntitlementService $entitlementService
+    ) {}
     /**
      * Handle an incoming request.
      *
@@ -25,32 +31,36 @@ class CheckCollaboratorLimit
         $event = $request->route('event');
 
         if (!$event instanceof Event) {
-            $event = Event::find($request->route('event'));
+            $eventId = $request->route('event');
+            // Skip if event ID is null or undefined
+            if ($eventId === null || $eventId === 'undefined' || $eventId === '') {
+                return $next($request);
+            }
+            $event = Event::find($eventId);
         }
 
         if (!$event) {
             return $next($request);
         }
 
-        $subscription = $event->subscription;
         $currentCollaboratorCount = $event->collaborators()->count();
 
-        // Free tier: 1 collaborator max
-        $freeLimit = 1;
+        // Use "maximum généreux" approach: get effective limit using MAX between
+        // stored event limit and current account subscription limit
+        $effectiveLimit = $this->entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'collaborators.max_per_event'
+        );
 
-        if (!$subscription || !$subscription->isActive()) {
-            if ($currentCollaboratorCount >= $freeLimit) {
-                return $this->collaboratorLimitResponse($request, $event, $freeLimit);
-            }
+        // -1 means unlimited
+        if ($effectiveLimit === -1) {
             return $next($request);
         }
 
-        // Get plan limits
-        $planType = PlanType::tryFrom($subscription->plan_type);
-        $maxCollaborators = $planType ? $planType->maxCollaborators() : $freeLimit;
-
-        if ($currentCollaboratorCount >= $maxCollaborators) {
-            return $this->collaboratorLimitResponse($request, $event, $maxCollaborators);
+        // Check if current count exceeds effective limit
+        if ($currentCollaboratorCount >= $effectiveLimit) {
+            return $this->collaboratorLimitResponse($request, $event, $effectiveLimit);
         }
 
         return $next($request);

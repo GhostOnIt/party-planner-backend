@@ -109,8 +109,6 @@ class TaskController extends Controller
      */
     public function update(Request $request, Event $event, Task $task): JsonResponse
     {
-        $this->authorize('update', $task);
-
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
@@ -137,6 +135,15 @@ class TaskController extends Controller
                 },
             ],
         ]);
+
+        // If this is a status-only update, allow assigned users to change status without full tasks.edit permission.
+        $keys = array_keys($validated);
+        $isStatusOnly = count($keys) === 1 && $keys[0] === 'status';
+        if ($isStatusOnly) {
+            $this->authorize('updateStatus', $task);
+        } else {
+            $this->authorize('update', $task);
+        }
 
         // Check assignment permission after validation
         if (isset($validated['assigned_to_user_id']) && $validated['assigned_to_user_id'] !== $task->assigned_to_user_id) {

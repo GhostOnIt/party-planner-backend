@@ -63,6 +63,15 @@ class Collaborator extends Model
     }
 
     /**
+     * Custom roles assigned to this collaborator (new multi-custom-role system).
+     */
+    public function customRoles(): BelongsToMany
+    {
+        return $this->belongsToMany(CustomRole::class, 'collaborator_custom_roles')
+            ->withTimestamps();
+    }
+
+    /**
      * Get the roles for this collaborator.
      */
     public function collaboratorRoles()
@@ -75,7 +84,12 @@ class Collaborator extends Model
      */
     public function getRoleValues(): array
     {
-        return $this->collaboratorRoles->pluck('role')->toArray();
+        if ($this->relationLoaded('collaboratorRoles') && $this->collaboratorRoles->isNotEmpty()) {
+            return $this->collaboratorRoles->pluck('role')->toArray();
+        }
+
+        // Fallback to legacy single role column for backward compatibility
+        return $this->role ? [$this->role] : [];
     }
 
     /**
@@ -124,6 +138,10 @@ class Collaborator extends Model
      */
     public function hasCustomRole(): bool
     {
+        if ($this->relationLoaded('customRoles')) {
+            return $this->customRoles->isNotEmpty();
+        }
+
         return $this->custom_role_id !== null;
     }
 
@@ -132,17 +150,30 @@ class Collaborator extends Model
      */
     public function getEffectiveRoleNames(): array
     {
-        if ($this->hasCustomRole() && $this->customRole) {
-            return [$this->customRole->name];
+        $names = [];
+
+        // Add custom role names (multi)
+        if ($this->relationLoaded('customRoles') && $this->customRoles->isNotEmpty()) {
+            $names = array_merge($names, $this->customRoles->pluck('name')->toArray());
+        } elseif ($this->custom_role_id && $this->customRole) {
+            // Legacy single custom role fallback
+            $names[] = $this->customRole->name;
         }
 
         if ($this->relationLoaded('collaboratorRoles') && $this->collaboratorRoles->isNotEmpty()) {
-            return $this->collaboratorRoles->map(function($collaboratorRole) {
-                return $this->getSystemRoleDisplayName($collaboratorRole->role);
-            })->toArray();
+            $names = array_merge(
+                $names,
+                $this->collaboratorRoles->map(function ($collaboratorRole) {
+                    return $this->getSystemRoleDisplayName($collaboratorRole->role);
+                })->toArray()
+            );
         }
 
-        return [$this->getSystemRoleDisplayName()];
+        if (empty($names)) {
+            $names[] = $this->getSystemRoleDisplayName();
+        }
+
+        return array_values(array_unique($names));
     }
 
     /**
@@ -180,17 +211,28 @@ class Collaborator extends Model
      */
     public function getRoleColors(): array
     {
-        if ($this->hasCustomRole() && $this->customRole) {
-            return [$this->customRole->getColorClass()];
+        $colors = [];
+
+        if ($this->relationLoaded('customRoles') && $this->customRoles->isNotEmpty()) {
+            $colors = array_merge($colors, $this->customRoles->map(fn ($r) => $r->getColorClass())->toArray());
+        } elseif ($this->custom_role_id && $this->customRole) {
+            $colors[] = $this->customRole->getColorClass();
         }
 
         if ($this->relationLoaded('collaboratorRoles') && $this->collaboratorRoles->isNotEmpty()) {
-            return $this->collaboratorRoles->map(function($collaboratorRole) {
-                return $this->getSystemRoleColor($collaboratorRole->role);
-            })->toArray();
+            $colors = array_merge(
+                $colors,
+                $this->collaboratorRoles->map(function ($collaboratorRole) {
+                    return $this->getSystemRoleColor($collaboratorRole->role);
+                })->toArray()
+            );
         }
 
-        return [$this->getSystemRoleColor()];
+        if (empty($colors)) {
+            $colors[] = $this->getSystemRoleColor();
+        }
+
+        return array_values(array_unique($colors));
     }
 
     /**
@@ -241,6 +283,15 @@ class Collaborator extends Model
         // Add roles array for API responses
         $array['roles'] = $this->getRoleValues();
 
+        // Add custom role ids for API responses (new multi-custom-role system)
+        if ($this->relationLoaded('customRoles')) {
+            $array['custom_role_ids'] = $this->customRoles->pluck('id')->toArray();
+        } elseif ($this->custom_role_id) {
+            $array['custom_role_ids'] = [$this->custom_role_id];
+        } else {
+            $array['custom_role_ids'] = [];
+        }
+
         return $array;
     }
 
@@ -250,7 +301,7 @@ class Collaborator extends Model
     protected static function booted()
     {
         static::addGlobalScope('withRoles', function ($builder) {
-            $builder->with('collaboratorRoles');
+            $builder->with(['collaboratorRoles', 'customRoles']);
         });
     }
 }

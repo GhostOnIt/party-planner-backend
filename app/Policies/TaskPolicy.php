@@ -59,6 +59,24 @@ class TaskPolicy
     }
 
     /**
+     * Determine whether the user can update the status of the task.
+     *
+     * Rules:
+     * - If the user can edit tasks => allowed
+     * - Otherwise, allow the assigned user to change status (UX-friendly) as long as they can view tasks.
+     */
+    public function updateStatus(User $user, Task $task): bool
+    {
+        if ($this->permissionService->userCan($user, $task->event, 'tasks.edit')) {
+            return true;
+        }
+
+        return !empty($task->assigned_to_user_id)
+            && (int) $task->assigned_to_user_id === (int) $user->id
+            && $this->permissionService->userCan($user, $task->event, 'tasks.view');
+    }
+
+    /**
      * Determine whether the user can delete the task.
      */
     public function delete(User $user, Task $task): bool

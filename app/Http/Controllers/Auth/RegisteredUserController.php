@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\SubscriptionService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,10 @@ use Illuminate\Validation\Rules;
 
 class RegisteredUserController extends Controller
 {
+    public function __construct(
+        protected SubscriptionService $subscriptionService
+    ) {}
+
     /**
      * Handle an incoming registration request.
      *
@@ -32,6 +37,10 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        // Auto-create trial subscription for new user - DISABLED as per requirements
+        // User must activate it manually
+        // $subscription = $this->subscriptionService->createTrialSubscription($user);
 
         // Create Sanctum token for immediate login
         $token = $user->createToken('auth-token')->plainTextToken;

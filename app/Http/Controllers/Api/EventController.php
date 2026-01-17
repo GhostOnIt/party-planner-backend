@@ -7,18 +7,29 @@ use App\Http\Requests\Event\StoreEventRequest;
 use App\Models\Event;
 use App\Services\PermissionService;
 use App\Services\PhotoService;
+use App\Services\QuotaService;
+use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
     protected PhotoService $photoService;
     protected PermissionService $permissionService;
+    protected QuotaService $quotaService;
+    protected SubscriptionService $subscriptionService;
 
-    public function __construct(PhotoService $photoService, PermissionService $permissionService)
-    {
+    public function __construct(
+        PhotoService $photoService, 
+        PermissionService $permissionService,
+        QuotaService $quotaService,
+        SubscriptionService $subscriptionService
+    ) {
         $this->photoService = $photoService;
         $this->permissionService = $permissionService;
+        $this->quotaService = $quotaService;
+        $this->subscriptionService = $subscriptionService;
     }
 
     /**
@@ -80,26 +91,112 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request): JsonResponse
     {
+        $user = $request->user();
+
+        // Vérifier le quota avant de créer l'événement
+        if (!$this->quotaService->canCreateEvent($user)) {
+            $quota = $this->quotaService->getCreationsQuota($user);
+            $subscription = $this->subscriptionService->getUserActiveSubscription($user);
+            
+            // Distinguer "pas d'abonnement" vs "quota atteint"
+            if (!$subscription) {
+                // Pas d'abonnement actif
+                return response()->json([
+                    'message' => 'Vous devez souscrire à un plan pour créer un événement.',
+                    'error' => 'no_subscription',
+                    'quota' => $quota,
+                    'actions' => [
+                        'subscribe' => [
+                            'label' => 'Voir les plans',
+                            'url' => '/plans',
+                        ],
+                    ],
+                ], 403);
+            } else {
+                // Abonnement actif mais quota atteint
+                return response()->json([
+                    'message' => 'Quota de création d\'événements atteint.',
+                    'error' => 'quota_exceeded',
+                    'quota' => $quota,
+                    'actions' => [
+                        'upgrade' => [
+                            'label' => 'Passer à un plan supérieur',
+                            'url' => '/plans',
+                        ],
+                        'topup' => [
+                            'label' => 'Acheter des crédits supplémentaires',
+                            'url' => '/top-up',
+                        ],
+                    ],
+                ], 403);
+            }
+        }
+
         $validated = $request->validated();
         $coverPhoto = $request->file('cover_photo');
+
+        // Debug: Log file information
+        if ($coverPhoto) {
+            Log::info('Cover photo received', [
+                'has_file' => $request->hasFile('cover_photo'),
+                'is_valid' => $coverPhoto->isValid(),
+                'size' => $coverPhoto->getSize(),
+                'mime_type' => $coverPhoto->getMimeType(),
+                'original_name' => $coverPhoto->getClientOriginalName(),
+                'extension' => $coverPhoto->getClientOriginalExtension(),
+            ]);
+        } else {
+            Log::info('No cover photo in request', [
+                'has_file' => $request->hasFile('cover_photo'),
+                'all_files' => array_keys($request->allFiles()),
+            ]);
+        }
 
         // Retirer cover_photo des données validées car ce n'est pas un champ du modèle Event
         unset($validated['cover_photo']);
 
         // Créer l'événement
-        $event = $request->user()->events()->create($validated);
+        $event = $user->events()->create($validated);
+
+        // Consommer un crédit de création d'événement
+        $this->quotaService->consumeCreation($user);
 
         // Si une photo de couverture est fournie, l'uploader et la marquer comme featured
         if ($coverPhoto) {
-            $photo = $this->photoService->upload(
-                $event,
-                $coverPhoto,
-                $request->user(),
-                'event_photo'
-            );
-            
-            // Marquer la photo comme featured (photo de couverture)
-            $this->photoService->setAsFeatured($photo);
+            try {
+                // Vérifier que le fichier est valide
+                if (!$coverPhoto->isValid()) {
+                    return response()->json([
+                        'message' => 'Le fichier photo de couverture n\'est pas valide.',
+                        'errors' => [
+                            'cover_photo' => ['Le fichier photo de couverture n\'est pas valide.']
+                        ]
+                    ], 422);
+                }
+
+                $photo = $this->photoService->upload(
+                    $event,
+                    $coverPhoto,
+                    $request->user(),
+                    'event_photo'
+                );
+                
+                // Marquer la photo comme featured (photo de couverture)
+                $this->photoService->setAsFeatured($photo);
+            } catch (\Exception $e) {
+                Log::error('Cover photo upload failed', [
+                    'event_id' => $event->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'message' => 'L\'upload de la photo de couverture a échoué.',
+                    'errors' => [
+                        'cover_photo' => ['L\'upload de la photo de couverture a échoué.']
+                    ]
+                ], 422);
+            }
         }
 
         // Charger les relations nécessaires
@@ -108,7 +205,13 @@ class EventController extends Controller
             'featuredPhoto:id,event_id,url,thumbnail_url'
         ]);
 
-        return response()->json($event, 201);
+        // Ajouter les infos de quota à la réponse
+        $quotaInfo = $this->quotaService->getCreationsQuota($request->user());
+
+        return response()->json([
+            'event' => $event,
+            'quota' => $quotaInfo,
+        ], 201);
     }
 
     /**

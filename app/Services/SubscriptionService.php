@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\PlanType;
 use App\Models\Event;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -173,37 +174,52 @@ class SubscriptionService
 
     /**
      * Check if event can add more guests.
+     * Uses "maximum généreux" approach: get effective limit using MAX between
+     * stored event limit and current account subscription limit.
      */
     public function canAddGuests(Event $event, int $additionalGuests = 1): bool
     {
-        $subscription = $event->subscription;
+        $entitlementService = app(EntitlementService::class);
+        
+        // Get effective limit using MAX between stored and current subscription
+        $effectiveLimit = $entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'guests.max_per_event'
+        );
 
-        if (!$subscription || !$subscription->isActive()) {
-            // Free tier limit
-            $freeLimit = config('partyplanner.free_tier.max_guests', 10);
-            return $event->guests()->count() + $additionalGuests <= $freeLimit;
+        // -1 means unlimited
+        if ($effectiveLimit === -1) {
+            return true;
         }
 
         $currentGuests = $event->guests()->count();
-        $maxGuests = $subscription->guest_count;
-
-        return $currentGuests + $additionalGuests <= $maxGuests;
+        return ($currentGuests + $additionalGuests) <= $effectiveLimit;
     }
 
     /**
      * Get remaining guest slots.
+     * Uses "maximum généreux" approach: get effective limit using MAX between
+     * stored event limit and current account subscription limit.
      */
     public function getRemainingGuestSlots(Event $event): int
     {
-        $subscription = $event->subscription;
-        $currentGuests = $event->guests()->count();
+        $entitlementService = app(EntitlementService::class);
+        
+        // Get effective limit using MAX between stored and current subscription
+        $effectiveLimit = $entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'guests.max_per_event'
+        );
 
-        if (!$subscription || !$subscription->isActive()) {
-            $freeLimit = config('partyplanner.free_tier.max_guests', 10);
-            return max(0, $freeLimit - $currentGuests);
+        // -1 means unlimited
+        if ($effectiveLimit === -1) {
+            return PHP_INT_MAX;
         }
 
-        return max(0, $subscription->guest_count - $currentGuests);
+        $currentGuests = $event->guests()->count();
+        return max(0, $effectiveLimit - $currentGuests);
     }
 
     /**
@@ -320,5 +336,143 @@ class SubscriptionService
             'by_plan' => $subscriptions->groupBy('plan_type')->map->count()->toArray(),
             'total_revenue' => $subscriptions->where('payment_status', 'paid')->sum('total_price'),
         ];
+    }
+
+    // ========================================
+    // Dynamic Plans Methods (New System)
+    // ========================================
+
+    /**
+     * Create a trial subscription for a new user.
+     */
+    public function createTrialSubscription(User $user): ?Subscription
+    {
+        // Check if user already has a subscription
+        $existingSubscription = $user->subscriptions()
+            ->whereNull('event_id')
+            ->first();
+
+        if ($existingSubscription) {
+            return null; // Already has an account-level subscription
+        }
+
+        // Get the trial plan
+        $trialPlan = Plan::active()->trial()->first();
+
+        if (!$trialPlan) {
+            return null; // No trial plan configured
+        }
+
+        return Subscription::create([
+            'user_id' => $user->id,
+            'event_id' => null, // Account-level subscription
+            'plan_id' => $trialPlan->id,
+            'plan_type' => $trialPlan->slug, // Use plan slug for consistency
+            'base_price' => 0,
+            'guest_count' => $trialPlan->getGuestsLimit(),
+            'guest_price_per_unit' => 0,
+            'total_price' => 0,
+            'payment_status' => 'paid', // Trial is immediately active
+            'creations_used' => 0,
+            'status' => 'trial',
+            'starts_at' => now(),
+            'expires_at' => now()->addDays($trialPlan->duration_days),
+        ]);
+    }
+
+    /**
+     * Create a subscription with a dynamic Plan.
+     */
+    public function createSubscriptionWithPlan(User $user, Plan $plan, ?Event $event = null): Subscription
+    {
+        $isAccountLevel = $event === null;
+
+        // Cancel any existing active subscription if account-level
+        if ($isAccountLevel) {
+            $user->subscriptions()
+                ->whereNull('event_id')
+                ->where('status', '!=', 'cancelled')
+                ->update(['status' => 'cancelled']);
+        }
+
+        return Subscription::create([
+            'user_id' => $user->id,
+            'event_id' => $event?->id,
+            'plan_id' => $plan->id,
+            'plan_type' => $plan->slug,
+            'base_price' => $plan->price,
+            'guest_count' => $plan->getGuestsLimit(),
+            'guest_price_per_unit' => 0,
+            'total_price' => $plan->price,
+            'payment_status' => $plan->is_trial ? 'paid' : 'pending',
+            'creations_used' => 0,
+            'status' => $plan->is_trial ? 'trial' : 'active',
+            'starts_at' => now(),
+            'expires_at' => now()->addDays($plan->duration_days),
+        ]);
+    }
+
+    /**
+     * Upgrade subscription to a new dynamic Plan.
+     */
+    public function upgradeToPlan(Subscription $subscription, Plan $newPlan): Subscription
+    {
+        $oldPlan = $subscription->plan;
+        $priceDifference = $newPlan->price - ($oldPlan?->price ?? 0);
+
+        // Keep creations_used for continuity
+        $subscription->update([
+            'plan_id' => $newPlan->id,
+            'plan_type' => $newPlan->slug,
+            'base_price' => $newPlan->price,
+            'guest_count' => $newPlan->getGuestsLimit(),
+            'total_price' => $newPlan->price,
+            'payment_status' => $priceDifference > 0 ? 'pending' : 'paid',
+            'status' => 'active',
+            'expires_at' => now()->addDays($newPlan->duration_days),
+        ]);
+
+        return $subscription->fresh();
+    }
+
+    /**
+     * Get user's active account-level subscription.
+     */
+    public function getUserActiveSubscription(User $user): ?Subscription
+    {
+        return $user->subscriptions()
+            ->whereNull('event_id')
+            ->where(function ($query) {
+                $query->where('status', 'active')
+                      ->orWhere('status', 'trial')
+                      ->orWhere('payment_status', 'paid');
+            })
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            })
+            ->with('plan')
+            ->latest()
+            ->first();
+    }
+
+    /**
+     * Handle expired subscriptions.
+     */
+    public function handleExpiration(): int
+    {
+        $count = Subscription::where('expires_at', '<', now())
+            ->whereNotIn('status', ['cancelled', 'expired'])
+            ->update(['status' => 'expired']);
+
+        return $count;
+    }
+
+    /**
+     * Reset creations_used at billing period start (for renewals).
+     */
+    public function resetCreationsUsed(Subscription $subscription): void
+    {
+        $subscription->update(['creations_used' => 0]);
     }
 }
