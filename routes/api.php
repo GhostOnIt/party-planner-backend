@@ -104,6 +104,8 @@ Route::middleware('auth:sanctum')->group(function () {
     | Events
     |--------------------------------------------------------------------------
     */
+    // Specific routes must be defined BEFORE the resource route to avoid conflicts
+    Route::get('events/upcoming', [DashboardController::class, 'upcoming']);
     Route::get('events/{event}/permissions', [EventController::class, 'getPermissions']);
     Route::apiResource('events', EventController::class);
 
@@ -300,6 +302,10 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
     Route::get('/dashboard/user-stats', [DashboardController::class, 'userStats']);
     Route::get('/dashboard/urgent-tasks', [DashboardController::class, 'urgentTasks']);
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/confirmations', [DashboardController::class, 'confirmations']);
+    Route::get('/dashboard/events-by-type', [DashboardController::class, 'eventsByType']);
+    Route::get('/activities/recent', [DashboardController::class, 'recentActivity']);
 
     /*
     |--------------------------------------------------------------------------

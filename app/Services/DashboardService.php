@@ -456,4 +456,525 @@ class DashboardService
             ])
             ->toArray();
     }
+
+    /**
+     * Get user events query (owned + collaborated).
+     */
+    protected function getUserEventsQuery(User $user)
+    {
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique();
+
+        return Event::whereIn('id', $eventIds);
+    }
+
+    /**
+     * Calculate period dates based on period string or custom range.
+     */
+    public function calculatePeriodDates(string $period, ?array $customRange = null): array
+    {
+        if ($period === 'custom' && $customRange) {
+            $start = $customRange['start'] instanceof Carbon 
+                ? $customRange['start']->copy()->startOfDay()
+                : Carbon::parse($customRange['start'])->startOfDay();
+            $end = $customRange['end'] instanceof Carbon 
+                ? $customRange['end']->copy()->endOfDay()
+                : Carbon::parse($customRange['end'])->endOfDay();
+            
+            return [
+                'start' => $start,
+                'end' => $end,
+            ];
+        }
+
+        $end = Carbon::now()->endOfDay();
+
+        $start = match ($period) {
+            '7days' => Carbon::now()->subDays(7)->startOfDay(),
+            '1month' => Carbon::now()->subMonth()->startOfDay(),
+            '3months' => Carbon::now()->subMonths(3)->startOfDay(),
+            default => Carbon::now()->subDays(7)->startOfDay(),
+        };
+
+        return [
+            'start' => $start,
+            'end' => $end,
+        ];
+    }
+
+    /**
+     * Calculate previous period dates (same duration as current period).
+     */
+    public function calculatePreviousPeriodDates(array $currentPeriod): array
+    {
+        $duration = $currentPeriod['end']->diffInDays($currentPeriod['start']);
+
+        return [
+            'start' => $currentPeriod['start']->copy()->subDays($duration + 1)->startOfDay(),
+            'end' => $currentPeriod['start']->copy()->subDay()->endOfDay(),
+        ];
+    }
+
+    /**
+     * Calculate trend (percentage change).
+     */
+    public function calculateTrend(float $current, float $previous): array
+    {
+        if ($previous == 0) {
+            return [
+                'value' => $current > 0 ? 100.0 : 0.0,
+                'isPositive' => $current > 0,
+                'previousValue' => 0.0,
+            ];
+        }
+
+        $percentage = (($current - $previous) / $previous) * 100;
+
+        return [
+            'value' => abs(round($percentage, 1)),
+            'isPositive' => $percentage >= 0,
+            'previousValue' => $previous,
+        ];
+    }
+
+    /**
+     * Get user stats with filters (period + event type) and trends.
+     */
+    public function getUserStatsWithFilters(User $user, string $period, ?string $eventType = 'all', ?array $customRange = null): array
+    {
+        // Calculate current and previous period dates
+        $currentPeriod = $this->calculatePeriodDates($period, $customRange);
+        $previousPeriod = $this->calculatePreviousPeriodDates($currentPeriod);
+
+        // Get events query
+        $eventsQuery = $this->getUserEventsQuery($user);
+
+        // Filter by event type if not 'all'
+        if ($eventType !== 'all') {
+            $eventsQuery->where('type', $eventType);
+        }
+
+        // Get events in current period with relations
+        $currentEvents = (clone $eventsQuery)
+            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
+            ->with(['guests', 'tasks', 'budgetItems'])
+            ->get();
+
+        // Get events in previous period with relations
+        $previousEvents = (clone $eventsQuery)
+            ->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])
+            ->with(['guests', 'tasks', 'budgetItems'])
+            ->get();
+
+        // Calculate current stats
+        $currentStats = $this->calculateStatsForEvents($currentEvents);
+
+        // Calculate previous stats
+        $previousStats = $this->calculateStatsForEvents($previousEvents);
+
+        // Calculate trends
+        $eventsTrend = $this->calculateTrend($currentStats['events']['total'], $previousStats['events']['total']);
+        $guestsTrend = $this->calculateTrend($currentStats['guests']['total'], $previousStats['guests']['total']);
+        $tasksTrend = $this->calculateTrend($currentStats['tasks']['total'], $previousStats['tasks']['total']);
+        $budgetTrend = $this->calculateTrend($currentStats['budget']['total'], $previousStats['budget']['total']);
+
+        return [
+            'events' => [
+                'total' => $currentStats['events']['total'],
+                'breakdown' => $currentStats['events']['breakdown'],
+                'trend' => $eventsTrend,
+            ],
+            'guests' => [
+                'total' => $currentStats['guests']['total'],
+                'breakdown' => $currentStats['guests']['breakdown'],
+                'trend' => $guestsTrend,
+            ],
+            'tasks' => [
+                'total' => $currentStats['tasks']['total'],
+                'breakdown' => $currentStats['tasks']['breakdown'],
+                'trend' => $tasksTrend,
+            ],
+            'budget' => [
+                'total' => $currentStats['budget']['total'],
+                'breakdown' => $currentStats['budget']['breakdown'],
+                'trend' => $budgetTrend,
+            ],
+        ];
+    }
+
+    /**
+     * Calculate stats for a collection of events.
+     */
+    protected function calculateStatsForEvents(Collection $events): array
+    {
+        $now = Carbon::now();
+
+        // Events breakdown
+        $eventsUpcoming = $events->filter(fn($e) => $e->date && $e->date->isFuture())->count();
+        $eventsInProgress = $events->filter(fn($e) => $e->date && $e->date->isPast() && $e->status === 'confirmed')->count();
+        $eventsCompleted = $events->filter(fn($e) => $e->status === 'completed')->count();
+
+        // Guests breakdown
+        $guestsAccepted = 0;
+        $guestsDeclined = 0;
+        $guestsPending = 0;
+        $totalGuests = 0;
+
+        foreach ($events as $event) {
+            $guests = $event->guests;
+            $totalGuests += $guests->count();
+            $guestsAccepted += $guests->where('rsvp_status', 'accepted')->count();
+            $guestsDeclined += $guests->where('rsvp_status', 'declined')->count();
+            $guestsPending += $guests->where('rsvp_status', 'pending')->count();
+        }
+
+        // Tasks breakdown
+        $tasksTodo = 0;
+        $tasksInProgress = 0;
+        $tasksCompleted = 0;
+        $totalTasks = 0;
+
+        foreach ($events as $event) {
+            $tasks = $event->tasks;
+            $totalTasks += $tasks->count();
+            $tasksTodo += $tasks->where('status', 'todo')->count();
+            $tasksInProgress += $tasks->where('status', 'in_progress')->count();
+            $tasksCompleted += $tasks->where('status', 'completed')->count();
+        }
+
+        // Budget breakdown
+        $totalBudget = 0;
+        $spentBudget = 0;
+
+        foreach ($events as $event) {
+            if ($event->estimated_budget && $event->estimated_budget > 0) {
+                $totalBudget += $event->estimated_budget;
+            } else {
+                $totalBudget += $event->budgetItems()->sum('estimated_cost');
+            }
+            $spentBudget += $event->budgetItems()->sum('actual_cost');
+        }
+
+        $remainingBudget = $totalBudget - $spentBudget;
+
+        return [
+            'events' => [
+                'total' => $events->count(),
+                'breakdown' => [
+                    ['label' => 'À venir', 'value' => $eventsUpcoming, 'color' => '#4F46E5'],
+                    ['label' => 'En cours', 'value' => $eventsInProgress, 'color' => '#F97316'],
+                    ['label' => 'Terminés', 'value' => $eventsCompleted, 'color' => '#10B981'],
+                ],
+            ],
+            'guests' => [
+                'total' => $totalGuests,
+                'breakdown' => [
+                    ['label' => 'Acceptés', 'value' => $guestsAccepted, 'color' => '#10B981'],
+                    ['label' => 'Déclinés', 'value' => $guestsDeclined, 'color' => '#EF4444'],
+                    ['label' => 'En attente', 'value' => $guestsPending, 'color' => '#F97316'],
+                ],
+            ],
+            'tasks' => [
+                'total' => $totalTasks,
+                'breakdown' => [
+                    ['label' => 'À faire', 'value' => $tasksTodo, 'color' => '#EF4444'],
+                    ['label' => 'En cours', 'value' => $tasksInProgress, 'color' => '#F97316'],
+                    ['label' => 'Terminées', 'value' => $tasksCompleted, 'color' => '#10B981'],
+                ],
+            ],
+            'budget' => [
+                'total' => $totalBudget,
+                'breakdown' => [
+                    ['label' => 'Dépensé', 'value' => $spentBudget, 'color' => '#EF4444'],
+                    ['label' => 'Restant', 'value' => max(0, $remainingBudget), 'color' => '#10B981'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Get confirmations data with filters, pagination, search and sort.
+     */
+    public function getConfirmationsData(User $user, string $period, ?string $eventType, array $filters): array
+    {
+        // Calculate period dates
+        $periodDates = $this->calculatePeriodDates($period);
+
+        // Get events query
+        $eventsQuery = $this->getUserEventsQuery($user)
+            ->whereBetween('created_at', [$periodDates['start'], $periodDates['end']]);
+
+        // Filter by event type if not 'all'
+        if ($eventType !== 'all') {
+            $eventsQuery->where('type', $eventType);
+        }
+
+        // Search filter
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $eventsQuery->where(function ($q) use ($search) {
+                $q->where('title', 'ilike', "%{$search}%")
+                  ->orWhere('type', 'ilike', "%{$search}%");
+            });
+        }
+
+        // Get all events for calculations with relations
+        $allEvents = $eventsQuery->with('guests')->get();
+
+        // Calculate confirmations for each event
+        $eventsData = $allEvents->map(function ($event) {
+            $guests = $event->guests;
+            $confirmed = $guests->where('rsvp_status', 'accepted')->count();
+            $declined = $guests->where('rsvp_status', 'declined')->count();
+            $pending = $guests->where('rsvp_status', 'pending')->count();
+            $total = $guests->count();
+            $confirmRate = $total > 0 ? round(($confirmed / $total) * 100) : 0;
+
+            return [
+                'id' => $event->id,
+                'name' => $event->title,
+                'type' => $event->type,
+                'month' => $event->date ? $event->date->format('M') : null,
+                'monthIndex' => $event->date ? (int) $event->date->format('n') : 0,
+                'confirmed' => $confirmed,
+                'declined' => $declined,
+                'pending' => $pending,
+                'total' => $total,
+                'confirmRate' => $confirmRate,
+            ];
+        });
+
+        // Sort
+        $sortBy = $filters['sort_by'] ?? 'confirmRate';
+        $sortOrder = $filters['sort_order'] ?? 'desc';
+
+        $eventsData = $eventsData->sortBy(function ($event) use ($sortBy, $sortOrder) {
+            $value = $event[$sortBy];
+            return $sortOrder === 'asc' ? $value : -$value;
+        })->values();
+
+        // Pagination
+        $page = $filters['page'] ?? 1;
+        $perPage = $filters['per_page'] ?? 5;
+        $total = $eventsData->count();
+        $offset = ($page - 1) * $perPage;
+        $paginatedEvents = $eventsData->slice($offset, $perPage)->values();
+
+        // Calculate totals
+        $totalConfirmed = $eventsData->sum('confirmed');
+        $totalDeclined = $eventsData->sum('declined');
+        $totalPending = $eventsData->sum('pending');
+        $totalInvites = $totalConfirmed + $totalDeclined + $totalPending;
+
+        return [
+            'events' => $paginatedEvents->toArray(),
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => ceil($total / $perPage),
+            ],
+            'summary' => [
+                'total_events' => $total,
+                'total_guests' => $totalInvites,
+            ],
+        ];
+    }
+
+    /**
+     * Get events by type data.
+     */
+    public function getEventsByTypeData(User $user, string $period, ?string $eventType): array
+    {
+        // Calculate period dates
+        $periodDates = $this->calculatePeriodDates($period);
+
+        // Get events query
+        $eventsQuery = $this->getUserEventsQuery($user)
+            ->whereBetween('created_at', [$periodDates['start'], $periodDates['end']]);
+
+        // Filter by event type if not 'all'
+        if ($eventType !== 'all') {
+            $eventsQuery->where('type', $eventType);
+        }
+
+        // Get events and group by type
+        $events = $eventsQuery->get();
+        $groupedByType = $events->groupBy('type');
+
+        // Type colors mapping
+        $typeColors = [
+            'mariage' => '#E91E8C',
+            'anniversaire' => '#4F46E5',
+            'conférence' => '#F59E0B',
+            'fête privée' => '#10B981',
+            'séminaire' => '#8B5CF6',
+            'baptême' => '#06B6D4',
+            'gala' => '#EC4899',
+            'baby_shower' => '#10B981',
+            'soiree' => '#F59E0B',
+            'brunch' => '#8B5CF6',
+            'autre' => '#6B7280',
+        ];
+
+        // Type labels mapping
+        $typeLabels = [
+            'mariage' => 'Mariage',
+            'anniversaire' => 'Anniversaire',
+            'conférence' => 'Conférence',
+            'fête privée' => 'Fête privée',
+            'séminaire' => 'Séminaire',
+            'baptême' => 'Baptême',
+            'gala' => 'Gala',
+            'baby_shower' => 'Baby Shower',
+            'soiree' => 'Soirée',
+            'brunch' => 'Brunch',
+            'autre' => 'Autre',
+        ];
+
+        $result = $groupedByType->map(function ($typeEvents, $type) use ($typeColors, $typeLabels) {
+            return [
+                'name' => $typeLabels[$type] ?? ucfirst($type),
+                'value' => $typeEvents->count(),
+                'color' => $typeColors[$type] ?? '#6B7280',
+            ];
+        })->values()->toArray();
+
+        // If filtering by specific type, return only that type
+        if ($eventType !== 'all' && $eventType) {
+            $result = array_filter($result, fn($item) => 
+                strtolower($item['name']) === strtolower($eventType) ||
+                strtolower($item['name']) === strtolower($typeLabels[$eventType] ?? $eventType)
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get recent activity for user.
+     */
+    public function getUserRecentActivity(User $user, int $limit = 6): array
+    {
+        $activities = collect();
+
+        // Get all user events (owned + collaborated) with relations
+        $eventsQuery = $this->getUserEventsQuery($user);
+        $events = $eventsQuery->with(['guests', 'tasks'])->get();
+
+        // Recent RSVP activities
+        foreach ($events as $event) {
+            $recentGuests = $event->guests()
+                ->whereNotNull('rsvp_status')
+                ->where('rsvp_status', '!=', 'pending')
+                ->latest('updated_at')
+                ->limit(3)
+                ->get();
+
+            foreach ($recentGuests as $guest) {
+                $activities->push([
+                    'id' => 'rsvp_' . $guest->id,
+                    'type' => 'rsvp',
+                    'message' => $guest->rsvp_status === 'accepted'
+                        ? "{$guest->name} a confirmé sa présence"
+                        : "{$guest->name} a décliné l'invitation",
+                    'event' => $event->title,
+                    'timestamp' => $guest->updated_at,
+                    'icon_type' => $guest->rsvp_status === 'accepted' ? 'UserPlus' : 'UserX',
+                ]);
+            }
+        }
+
+        // Recent task completions
+        foreach ($events as $event) {
+            $completedTasks = $event->tasks()
+                ->where('status', 'completed')
+                ->latest('updated_at')
+                ->limit(2)
+                ->get();
+
+            foreach ($completedTasks as $task) {
+                $activities->push([
+                    'id' => 'task_' . $task->id,
+                    'type' => 'task',
+                    'message' => "Tâche '{$task->title}' complétée",
+                    'event' => $event->title,
+                    'timestamp' => $task->updated_at,
+                    'icon_type' => 'CheckCircle',
+                ]);
+            }
+        }
+
+        // Recent payments (if Payment model has event relationship)
+        // This would require checking the Payment model structure
+
+        // Recent event creations
+        $recentEvents = $events->sortByDesc('created_at')->take(2);
+        foreach ($recentEvents as $event) {
+            $activities->push([
+                'id' => 'event_' . $event->id,
+                'type' => 'event',
+                'message' => "Nouvel événement créé",
+                'event' => $event->title,
+                'timestamp' => $event->created_at,
+                'icon_type' => 'Calendar',
+            ]);
+        }
+
+        // Sort by timestamp and limit
+        $activities = $activities->sortByDesc('timestamp')->take($limit)->values();
+
+        return $activities->map(function ($activity) {
+            $timestamp = $activity['timestamp'];
+            // Ensure it's a Carbon instance
+            if (!$timestamp instanceof Carbon) {
+                $timestamp = Carbon::parse($timestamp);
+            }
+            
+            return [
+                'id' => $activity['id'],
+                'type' => $activity['type'],
+                'message' => $activity['message'],
+                'event' => $activity['event'],
+                'time' => $this->formatRelativeTime($timestamp),
+                'icon_type' => $activity['icon_type'],
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Format timestamp to relative time (e.g., "Il y a 5 min").
+     */
+    protected function formatRelativeTime(Carbon $timestamp): string
+    {
+        $diff = $timestamp->diffForHumans(now(), true);
+
+        // Translate to French
+        $translations = [
+            'seconds' => 'secondes',
+            'second' => 'seconde',
+            'minutes' => 'minutes',
+            'minute' => 'minute',
+            'hours' => 'heures',
+            'hour' => 'heure',
+            'days' => 'jours',
+            'day' => 'jour',
+            'weeks' => 'semaines',
+            'week' => 'semaine',
+            'months' => 'mois',
+            'month' => 'mois',
+            'years' => 'années',
+            'year' => 'année',
+        ];
+
+        foreach ($translations as $en => $fr) {
+            $diff = str_replace($en, $fr, $diff);
+        }
+
+        return "Il y a {$diff}";
+    }
 }

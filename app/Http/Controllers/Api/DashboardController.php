@@ -164,6 +164,120 @@ class DashboardController extends Controller
         ];
     }
 
+    /**
+     * Get dashboard statistics with filters (period + event type).
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $period = $request->input('period', '7days');
+        $eventType = $request->input('type', 'all');
+        $customRange = null;
+
+        if ($period === 'custom') {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            if ($startDate && $endDate) {
+                $customRange = [
+                    'start' => \Carbon\Carbon::parse($startDate),
+                    'end' => \Carbon\Carbon::parse($endDate),
+                ];
+            }
+        }
+
+        $stats = $this->dashboardService->getUserStatsWithFilters($user, $period, $eventType, $customRange);
+
+        return response()->json($stats);
+    }
+
+    /**
+     * Get confirmations chart data with filters.
+     */
+    public function confirmations(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $period = $request->input('period', '7days');
+        $eventType = $request->input('type', 'all');
+        $page = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('per_page', 5);
+        $search = $request->input('search', '');
+        $sortBy = $request->input('sort_by', 'confirmRate');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $filters = [
+            'page' => $page,
+            'per_page' => $perPage,
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder,
+        ];
+
+        $data = $this->dashboardService->getConfirmationsData($user, $period, $eventType, $filters);
+
+        return response()->json($data);
+    }
+
+    /**
+     * Get events by type chart data.
+     */
+    public function eventsByType(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $period = $request->input('period', '7days');
+        $eventType = $request->input('type', 'all');
+
+        $data = $this->dashboardService->getEventsByTypeData($user, $period, $eventType);
+
+        return response()->json($data);
+    }
+
+    /**
+     * Get upcoming events.
+     */
+    public function upcoming(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $limit = (int) $request->input('limit', 4);
+
+        // Get all event IDs the user owns or collaborates on
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique();
+
+        $events = Event::whereIn('id', $eventIds)
+            ->where('date', '>=', now()->startOfDay())
+            ->orderBy('date', 'asc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($event) {
+                return [
+                    'id' => $event->id,
+                    'name' => $event->title,
+                    'type' => $event->type,
+                    'date' => $event->date ? $event->date->format('d M Y') : null,
+                    'location' => $event->location,
+                ];
+            });
+
+        return response()->json($events);
+    }
+
+    /**
+     * Get recent activity.
+     */
+    public function recentActivity(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $limit = (int) $request->input('limit', 6);
+
+        $activities = $this->dashboardService->getUserRecentActivity($user, $limit);
+
+        return response()->json($activities);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Admin Dashboard Methods
