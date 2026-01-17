@@ -22,7 +22,6 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use function fake;
 
 class ComprehensiveTestDataSeeder extends Seeder
 {
@@ -33,6 +32,9 @@ class ComprehensiveTestDataSeeder extends Seeder
      */
     public function run(): void
     {
+        // Set locale to French for fake() helper
+        fake()->locale('fr_FR');
+        
         $users = User::all();
 
         if ($users->isEmpty()) {
