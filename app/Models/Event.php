@@ -239,21 +239,12 @@ class Event extends Model
 
     /**
      * Check if a feature is enabled for this event.
-     * Uses features_enabled stored on the event (set at creation time).
+     * Uses "maximum généreux" approach: OR between stored event features and current account subscription.
+     * If feature is enabled in event OR in current account subscription, returns true.
      */
     public function hasFeature(string $feature): bool
     {
-        if ($this->features_enabled !== null) {
-            return $this->features_enabled[$feature] ?? false;
-        }
-
-        // Fallback: check current subscription (for backward compatibility)
-        $subscriptionService = app(\App\Services\SubscriptionService::class);
-        $subscription = $subscriptionService->getUserActiveSubscription($this->user);
-        if ($subscription && $subscription->plan) {
-            return $subscription->plan->hasFeature($feature);
-        }
-
-        return false;
+        $entitlementService = app(\App\Services\EntitlementService::class);
+        return $entitlementService->can($this->user, $feature, $this);
     }
 }

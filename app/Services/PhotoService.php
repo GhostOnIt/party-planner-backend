@@ -348,32 +348,22 @@ class PhotoService
 
     /**
      * Get maximum photos allowed.
-     * Uses max_photos_allowed stored on the event (set at creation time).
-     * This allows events created during an active subscription to keep their limits
-     * even after the subscription expires.
+     * Uses "maximum généreux" approach: get effective limit using MAX between
+     * stored event limit and current account subscription limit.
      */
     public function getMaxPhotos(Event $event): int
     {
-        // If event has max_photos_allowed set (from when it was created), use that
-        if ($event->max_photos_allowed !== null) {
-            // -1 represents unlimited
-            return $event->max_photos_allowed === -1 ? PHP_INT_MAX : $event->max_photos_allowed;
-        }
+        $entitlementService = app(EntitlementService::class);
+        
+        // Get effective limit using MAX between stored and current subscription
+        $effectiveLimit = $entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'photos.max_per_event'
+        );
 
-        // Fallback: check current subscription (for backward compatibility with old events)
-        $subscriptionService = app(\App\Services\SubscriptionService::class);
-        $subscription = $subscriptionService->getUserActiveSubscription($event->user);
-
-        if ($subscription && $subscription->isActive()) {
-            $plan = $subscription->plan;
-            if ($plan) {
-                $maxPhotos = $plan->getPhotosLimit();
-                return $maxPhotos === -1 ? PHP_INT_MAX : $maxPhotos;
-            }
-        }
-
-        // Free tier fallback
-        return config('partyplanner.free_tier.max_photos', 5);
+        // -1 means unlimited, return PHP_INT_MAX for compatibility
+        return $effectiveLimit === -1 ? PHP_INT_MAX : $effectiveLimit;
     }
 
     /**

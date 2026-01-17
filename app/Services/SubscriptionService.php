@@ -174,37 +174,52 @@ class SubscriptionService
 
     /**
      * Check if event can add more guests.
+     * Uses "maximum généreux" approach: get effective limit using MAX between
+     * stored event limit and current account subscription limit.
      */
     public function canAddGuests(Event $event, int $additionalGuests = 1): bool
     {
-        $subscription = $event->subscription;
+        $entitlementService = app(EntitlementService::class);
+        
+        // Get effective limit using MAX between stored and current subscription
+        $effectiveLimit = $entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'guests.max_per_event'
+        );
 
-        if (!$subscription || !$subscription->isActive()) {
-            // Free tier limit
-            $freeLimit = config('partyplanner.free_tier.max_guests', 10);
-            return $event->guests()->count() + $additionalGuests <= $freeLimit;
+        // -1 means unlimited
+        if ($effectiveLimit === -1) {
+            return true;
         }
 
         $currentGuests = $event->guests()->count();
-        $maxGuests = $subscription->guest_count;
-
-        return $currentGuests + $additionalGuests <= $maxGuests;
+        return ($currentGuests + $additionalGuests) <= $effectiveLimit;
     }
 
     /**
      * Get remaining guest slots.
+     * Uses "maximum généreux" approach: get effective limit using MAX between
+     * stored event limit and current account subscription limit.
      */
     public function getRemainingGuestSlots(Event $event): int
     {
-        $subscription = $event->subscription;
-        $currentGuests = $event->guests()->count();
+        $entitlementService = app(EntitlementService::class);
+        
+        // Get effective limit using MAX between stored and current subscription
+        $effectiveLimit = $entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'guests.max_per_event'
+        );
 
-        if (!$subscription || !$subscription->isActive()) {
-            $freeLimit = config('partyplanner.free_tier.max_guests', 10);
-            return max(0, $freeLimit - $currentGuests);
+        // -1 means unlimited
+        if ($effectiveLimit === -1) {
+            return PHP_INT_MAX;
         }
 
-        return max(0, $subscription->guest_count - $currentGuests);
+        $currentGuests = $event->guests()->count();
+        return max(0, $effectiveLimit - $currentGuests);
     }
 
     /**

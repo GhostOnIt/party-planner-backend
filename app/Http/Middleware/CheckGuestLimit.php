@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\PlanType;
 use App\Models\Event;
+use App\Services\EntitlementService;
 use App\Services\SubscriptionService;
 use Closure;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckGuestLimit
 {
     public function __construct(
-        protected SubscriptionService $subscriptionService
+        protected SubscriptionService $subscriptionService,
+        protected EntitlementService $entitlementService
     ) {}
     /**
      * Handle an incoming request.
@@ -43,34 +45,22 @@ class CheckGuestLimit
 
         $currentGuestCount = $event->guests()->count();
 
-        // Use max_guests_allowed stored on the event (set at creation time)
-        // This allows events created during an active subscription to keep their limits
-        // even after the subscription expires.
-        if ($event->max_guests_allowed !== null) {
-            if ($currentGuestCount >= $event->max_guests_allowed) {
-                return $this->guestLimitResponse($request, $event, $event->max_guests_allowed);
-            }
+        // Use "maximum généreux" approach: get effective limit using MAX between
+        // stored event limit and current account subscription limit
+        $effectiveLimit = $this->entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'guests.max_per_event'
+        );
+
+        // -1 means unlimited
+        if ($effectiveLimit === -1) {
             return $next($request);
         }
 
-        // Fallback: check current subscription (for backward compatibility with old events)
-        $subscription = $this->subscriptionService->getUserActiveSubscription($event->user);
-        $freeLimit = config('partyplanner.free_tier.max_guests', 10);
-
-        if ($subscription && $subscription->isActive()) {
-            $plan = $subscription->plan;
-            if ($plan) {
-                $maxGuests = $plan->getGuestsLimit();
-                if ($currentGuestCount >= $maxGuests) {
-                    return $this->guestLimitResponse($request, $event, $maxGuests);
-                }
-                return $next($request);
-            }
-        }
-
-        // Free tier limit
-        if ($currentGuestCount >= $freeLimit) {
-            return $this->guestLimitResponse($request, $event, $freeLimit);
+        // Check if current count exceeds effective limit
+        if ($currentGuestCount >= $effectiveLimit) {
+            return $this->guestLimitResponse($request, $event, $effectiveLimit);
         }
 
         return $next($request);

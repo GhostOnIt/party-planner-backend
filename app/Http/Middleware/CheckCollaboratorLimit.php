@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\PlanType;
 use App\Models\Event;
+use App\Services\EntitlementService;
 use App\Services\SubscriptionService;
 use Closure;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckCollaboratorLimit
 {
     public function __construct(
-        protected SubscriptionService $subscriptionService
+        protected SubscriptionService $subscriptionService,
+        protected EntitlementService $entitlementService
     ) {}
     /**
      * Handle an incoming request.
@@ -43,41 +45,22 @@ class CheckCollaboratorLimit
 
         $currentCollaboratorCount = $event->collaborators()->count();
 
-        // Use max_collaborators_allowed stored on the event (set at creation time)
-        // This allows events created during an active subscription to keep their limits
-        // even after the subscription expires.
-        if ($event->max_collaborators_allowed !== null) {
-            // -1 represents unlimited
-            if ($event->max_collaborators_allowed === -1) {
-                return $next($request); // Unlimited
-            }
-            if ($currentCollaboratorCount >= $event->max_collaborators_allowed) {
-                return $this->collaboratorLimitResponse($request, $event, $event->max_collaborators_allowed);
-            }
+        // Use "maximum généreux" approach: get effective limit using MAX between
+        // stored event limit and current account subscription limit
+        $effectiveLimit = $this->entitlementService->getEffectiveLimit(
+            $event,
+            $event->user,
+            'collaborators.max_per_event'
+        );
+
+        // -1 means unlimited
+        if ($effectiveLimit === -1) {
             return $next($request);
         }
 
-        // Fallback: check current subscription (for backward compatibility with old events)
-        $subscription = $this->subscriptionService->getUserActiveSubscription($event->user);
-        $freeLimit = config('partyplanner.free_tier.max_collaborators', 1);
-
-        if ($subscription && $subscription->isActive()) {
-            $plan = $subscription->plan;
-            if ($plan) {
-                $maxCollaborators = $plan->getCollaboratorsLimit();
-                if ($maxCollaborators === -1) {
-                    return $next($request); // Unlimited
-                }
-                if ($currentCollaboratorCount >= $maxCollaborators) {
-                    return $this->collaboratorLimitResponse($request, $event, $maxCollaborators);
-                }
-                return $next($request);
-            }
-        }
-
-        // Free tier limit
-        if ($currentCollaboratorCount >= $freeLimit) {
-            return $this->collaboratorLimitResponse($request, $event, $freeLimit);
+        // Check if current count exceeds effective limit
+        if ($currentCollaboratorCount >= $effectiveLimit) {
+            return $this->collaboratorLimitResponse($request, $event, $effectiveLimit);
         }
 
         return $next($request);
