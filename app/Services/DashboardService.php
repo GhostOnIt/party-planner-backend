@@ -26,6 +26,149 @@ class DashboardService
     }
 
     /**
+     * Get admin dashboard stats with filters and trends (like user dashboard).
+     */
+    public function getAdminDashboardStatsWithFilters(string $period, ?array $customRange = null): array
+    {
+        // Calculate current and previous period dates
+        $currentPeriod = $this->calculatePeriodDates($period, $customRange);
+        $previousPeriod = $this->calculatePreviousPeriodDates($currentPeriod);
+
+        // Users stats
+        $currentUsers = User::whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])->get();
+        $previousUsers = User::whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])->get();
+        
+        $usersActive = User::whereHas('events', function($q) use ($currentPeriod) {
+            $q->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        })->count();
+        $usersInactive = $currentUsers->count() - $usersActive;
+        $usersNew = $currentUsers->where('created_at', '>=', now()->startOfMonth())->count();
+
+        $usersTrend = $this->calculateTrend($currentUsers->count(), $previousUsers->count());
+        $usersBreakdown = [
+            ['label' => 'Actifs', 'value' => $usersActive, 'color' => '#10B981'],
+            ['label' => 'Inactifs', 'value' => $usersInactive, 'color' => '#6b7280'],
+            ['label' => 'Nouveaux', 'value' => $usersNew, 'color' => '#4F46E5'],
+        ];
+
+        // Events stats
+        $currentEvents = Event::whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])->get();
+        $previousEvents = Event::whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])->get();
+        
+        $eventsActive = $currentEvents->whereIn('status', ['upcoming', 'ongoing'])->count();
+        $eventsCompleted = $currentEvents->where('status', 'completed')->count();
+        $eventsOngoing = $currentEvents->where('status', 'ongoing')->count();
+
+        $eventsTrend = $this->calculateTrend($currentEvents->count(), $previousEvents->count());
+        $eventsBreakdown = [
+            ['label' => 'Actifs', 'value' => $eventsActive, 'color' => '#10B981'],
+            ['label' => 'Terminés', 'value' => $eventsCompleted, 'color' => '#6b7280'],
+            ['label' => 'En cours', 'value' => $eventsOngoing, 'color' => '#F59E0B'],
+        ];
+
+        // Subscriptions stats
+        $currentSubscriptions = Subscription::whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])->get();
+        $previousSubscriptions = Subscription::whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])->get();
+        
+        $subscriptionsActive = $currentSubscriptions->filter(fn($s) => $s->isActive())->count();
+        $subscriptionsTrial = $currentSubscriptions->where('plan_type', 'essai-gratuit')->count();
+        $subscriptionsPro = $currentSubscriptions->where('plan_type', 'pro')->count();
+        $subscriptionsAgence = $currentSubscriptions->where('plan_type', 'agence')->count();
+
+        $subscriptionsTrend = $this->calculateTrend($currentSubscriptions->count(), $previousSubscriptions->count());
+        $subscriptionsBreakdown = [
+            ['label' => 'Essai', 'value' => $subscriptionsTrial, 'color' => '#4F46E5'],
+            ['label' => 'Pro', 'value' => $subscriptionsPro, 'color' => '#10B981'],
+            ['label' => 'Agence', 'value' => $subscriptionsAgence, 'color' => '#7C3AED'],
+        ];
+
+        // Revenue stats
+        $currentPayments = Payment::where('status', 'completed')
+            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
+            ->get();
+        $previousPayments = Payment::where('status', 'completed')
+            ->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])
+            ->get();
+        
+        $revenueTotal = $currentPayments->sum('amount');
+        $revenuePaid = $currentPayments->sum('amount');
+        $revenuePending = Payment::where('status', 'pending')
+            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
+            ->sum('amount');
+        $revenueRefunded = Payment::where('status', 'refunded')
+            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
+            ->sum('amount');
+
+        $previousRevenue = $previousPayments->sum('amount');
+        $revenueTrend = $this->calculateTrend($revenueTotal, $previousRevenue);
+        $revenueBreakdown = [
+            ['label' => 'Payé', 'value' => $revenuePaid, 'color' => '#10B981'],
+            ['label' => 'En attente', 'value' => $revenuePending, 'color' => '#F59E0B'],
+            ['label' => 'Remboursé', 'value' => $revenueRefunded, 'color' => '#EF4444'],
+        ];
+
+        return [
+            'users' => [
+                'total' => $currentUsers->count(),
+                'breakdown' => $usersBreakdown,
+                'trend' => $usersTrend,
+            ],
+            'events' => [
+                'total' => $currentEvents->count(),
+                'breakdown' => $eventsBreakdown,
+                'trend' => $eventsTrend,
+            ],
+            'subscriptions' => [
+                'total' => $currentSubscriptions->count(),
+                'breakdown' => $subscriptionsBreakdown,
+                'trend' => $subscriptionsTrend,
+            ],
+            'revenue' => [
+                'total' => $revenueTotal,
+                'breakdown' => $revenueBreakdown,
+                'trend' => $revenueTrend,
+            ],
+        ];
+    }
+
+    /**
+     * Get plan distribution for admin dashboard.
+     */
+    public function getPlanDistribution(): array
+    {
+        $subscriptions = Subscription::where(function($q) {
+            $q->where('payment_status', 'paid')
+              ->orWhere(function($subQ) {
+                  $subQ->where('plan_type', 'essai-gratuit')
+                       ->whereNotNull('expires_at')
+                       ->where('expires_at', '>', now());
+              });
+        })->get();
+
+        $grouped = $subscriptions->groupBy('plan_type');
+
+        $planColors = [
+            'essai-gratuit' => '#4F46E5',
+            'pro' => '#10B981',
+            'agence' => '#7C3AED',
+        ];
+
+        $planLabels = [
+            'essai-gratuit' => 'Essai Gratuit',
+            'pro' => 'Pro',
+            'agence' => 'Agence',
+        ];
+
+        return $grouped->map(function ($group, $planType) use ($planColors, $planLabels) {
+            return [
+                'name' => $planLabels[$planType] ?? ucfirst($planType),
+                'value' => $group->count(),
+                'color' => $planColors[$planType] ?? '#6B7280',
+            ];
+        })->values()->toArray();
+    }
+
+    /**
      * Get user dashboard statistics.
      */
     public function getUserStats(?User $user = null): array

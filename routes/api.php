@@ -347,7 +347,9 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     Route::middleware('admin')->prefix('admin')->group(function () {
         // Dashboard & Statistics
         Route::get('/stats', [DashboardController::class, 'adminStats']);
+        Route::get('/dashboard/stats', [DashboardController::class, 'adminDashboardStats']);
         Route::get('/chart-data', [DashboardController::class, 'adminChartData']);
+        Route::get('/subscriptions/distribution', [DashboardController::class, 'adminPlanDistribution']);
 
         // Users Management
         Route::get('/users', [DashboardController::class, 'adminUsers']);
@@ -379,6 +381,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/plans/{plan}/toggle-active', [AdminPlanController::class, 'toggleActive']);
 
         // Activity Logs
+        Route::get('/activity', [DashboardController::class, 'adminRecentActivity']);
         Route::get('/activity-logs', [DashboardController::class, 'adminActivityLogs']);
         Route::get('/activity-logs/stats', [DashboardController::class, 'adminActivityStats']);
 

@@ -375,6 +375,40 @@ class DashboardController extends Controller
     }
 
     /**
+     * Get admin dashboard stats with filters and trends.
+     */
+    public function adminDashboardStats(Request $request): JsonResponse
+    {
+        $period = $request->input('period', '7days');
+        $customRange = null;
+
+        if ($period === 'custom') {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            if ($startDate && $endDate) {
+                $customRange = [
+                    'start' => \Carbon\Carbon::parse($startDate),
+                    'end' => \Carbon\Carbon::parse($endDate),
+                ];
+            }
+        }
+
+        $stats = $this->dashboardService->getAdminDashboardStatsWithFilters($period, $customRange);
+
+        return response()->json($stats);
+    }
+
+    /**
+     * Get plan distribution for admin dashboard.
+     */
+    public function adminPlanDistribution(): JsonResponse
+    {
+        $distribution = $this->dashboardService->getPlanDistribution();
+
+        return response()->json($distribution);
+    }
+
+    /**
      * Get admin chart data.
      */
     public function adminChartData(Request $request): JsonResponse
@@ -642,7 +676,7 @@ class DashboardController extends Controller
      */
     public function adminPayments(Request $request): JsonResponse
     {
-        $query = Payment::with(['subscription.event.user']);
+        $query = Payment::with(['subscription.user', 'subscription.event.user']);
 
         // Filter by status
         if ($status = $request->input('status')) {
@@ -852,5 +886,111 @@ class DashboardController extends Controller
         return response()->json([
             'stats' => $stats,
         ]);
+    }
+
+    /**
+     * Get recent platform activity for admin dashboard.
+     */
+    public function adminRecentActivity(Request $request): JsonResponse
+    {
+        $limit = (int) $request->input('limit', 10);
+        
+        $activities = [];
+        
+        // Get recent users
+        $recentUsers = User::orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentUsers as $user) {
+            $activities[] = [
+                'id' => 'user_' . $user->id,
+                'type' => 'user_registered',
+                'description' => "Nouvel utilisateur inscrit: {$user->name}",
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ],
+                'created_at' => $user->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Get recent events
+        $recentEvents = Event::with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentEvents as $event) {
+            $activities[] = [
+                'id' => 'event_' . $event->id,
+                'type' => 'event_created',
+                'description' => "Nouvel événement créé: {$event->title}",
+                'user' => $event->user ? [
+                    'id' => $event->user->id,
+                    'name' => $event->user->name,
+                ] : null,
+                'created_at' => $event->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Get recent completed payments
+        $recentPayments = Payment::with(['subscription.user', 'subscription.event.user'])
+            ->where('status', 'completed')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentPayments as $payment) {
+            // Try subscription.user first, then subscription.event.user
+            $user = $payment->subscription?->user 
+                ?? $payment->subscription?->event?->user 
+                ?? null;
+            $userName = $user?->name ?? 'Utilisateur inconnu';
+            $activities[] = [
+                'id' => 'payment_' . $payment->id,
+                'type' => 'payment_completed',
+                'description' => "Paiement complété: " . number_format($payment->amount, 0, ',', ' ') . " FCFA par {$userName}",
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ] : null,
+                'created_at' => $payment->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Get recent subscriptions
+        $recentSubscriptions = Subscription::with(['user', 'event.user'])
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentSubscriptions as $subscription) {
+            // Try subscription.user first, then subscription.event.user
+            $user = $subscription->user 
+                ?? $subscription->event?->user 
+                ?? null;
+            $userName = $user?->name ?? 'Utilisateur inconnu';
+            $planType = $subscription->plan_type === 'essai-gratuit' ? 'Essai gratuit' : ucfirst($subscription->plan_type);
+            $activities[] = [
+                'id' => 'subscription_' . $subscription->id,
+                'type' => 'subscription_created',
+                'description' => "Nouvel abonnement {$planType} créé pour {$userName}",
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ] : null,
+                'created_at' => $subscription->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Sort by created_at desc and limit
+        usort($activities, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+        
+        $activities = array_slice($activities, 0, $limit);
+        
+        return response()->json($activities);
     }
 }
