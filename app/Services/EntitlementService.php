@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Event;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
@@ -48,29 +47,25 @@ class EntitlementService
 
     /**
      * Check if user has a specific feature.
-     * Uses "maximum généreux" approach: OR between stored event features and current account subscription.
-     * If feature is enabled in event OR in current account subscription, returns true.
+     * For events, checks if the feature was enabled at event creation time.
      */
-    public function can(User $user, string $feature, ?Event $event = null): bool
+    public function can(User $user, string $feature, ?\App\Models\Event $event = null): bool
     {
-        // Get feature stored on the event (from creation time)
-        $storedFeature = false;
+        // If checking for a specific event, use features_enabled stored on the event
+        // This allows events created during an active subscription to keep their features
+        // even after the subscription expires.
         if ($event && $event->features_enabled !== null) {
-            $storedFeature = $event->features_enabled[$feature] ?? false;
+            return $event->features_enabled[$feature] ?? false;
         }
 
-        // Get feature from current account-level subscription
+        // Otherwise, check current subscription
         $subscription = $this->getActiveSubscription($user);
-        $currentFeature = false;
 
-        if ($subscription && $subscription->plan) {
-            $currentFeature = $subscription->plan->hasFeature($feature);
-        } else {
-            $currentFeature = $this->defaultFeatures[$feature] ?? false;
+        if (!$subscription || !$subscription->plan) {
+            return $this->defaultFeatures[$feature] ?? false;
         }
 
-        // OR: if enabled in event OR in current subscription, return true
-        return $storedFeature || $currentFeature;
+        return $subscription->plan->hasFeature($feature);
     }
 
     /**
@@ -86,34 +81,6 @@ class EntitlementService
         }
 
         return $subscription->plan->getLimit($limitKey, $this->defaultLimits[$limitKey] ?? 0);
-    }
-
-    /**
-     * Get effective limit for an event using "maximum généreux" approach.
-     * Returns the MAX between stored event limit and current account subscription limit.
-     * This ensures events benefit from account upgrades while keeping their original limits.
-     * Returns -1 for unlimited.
-     */
-    public function getEffectiveLimit(Event $event, User $user, string $limitKey): int
-    {
-        // Get limit stored on the event (from creation time)
-        $storedLimit = match($limitKey) {
-            'guests.max_per_event' => $event->max_guests_allowed ?? 0,
-            'collaborators.max_per_event' => $event->max_collaborators_allowed ?? 0,
-            'photos.max_per_event' => $event->max_photos_allowed ?? 0,
-            default => 0,
-        };
-
-        // Get limit from current account-level subscription
-        $currentLimit = $this->limit($user, $limitKey);
-
-        // MAX: take the best of both (generous approach)
-        // -1 means unlimited, so max(-1, anything) = -1 (unlimited)
-        if ($storedLimit === -1 || $currentLimit === -1) {
-            return -1;
-        }
-
-        return max($storedLimit, $currentLimit);
     }
 
     /**

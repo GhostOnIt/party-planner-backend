@@ -44,7 +44,6 @@ class PlanService
                         'has_used' => $hasUsed,
                         'subscriptions_count' => $user->subscriptions()
                             ->where('plan_id', $plan->id)
-                            ->whereNull('event_id')
                             ->count(),
                     ]);
                 }
@@ -65,25 +64,41 @@ class PlanService
             return false; // Not a one-time-use plan
         }
 
-        // For one-time-use plans (like trial), check account-level subscriptions only
-        // (where event_id is null) since these are account-level subscriptions
+        // Check if user has ANY subscription to this plan, regardless of event_id
+        // This ensures one-time-use restriction is strict across all usage types (account or event)
         $hasUsed = $user->subscriptions()
-            ->where('plan_id', $plan->id)
-            ->whereNull('event_id') // Account-level subscriptions only
+            ->where(function ($query) use ($plan) {
+                // Check by plan_id (new system)
+                $query->where('plan_id', $plan->id);
+                
+                // Also check by status='trial' for trial plans (legacy subscriptions without plan_id)
+                if ($plan->is_trial) {
+                    $query->orWhere(function ($q) {
+                        $q->where('status', 'trial')
+                          ->orWhere('plan_type', 'trial')
+                          ->orWhere('plan_type', 'essai-gratuit');
+                    });
+                }
+            })
             ->exists();
         
         // Debug logging
-        if ($plan->is_trial && $hasUsed) {
+        if ($plan->is_trial) {
             $subscriptions = $user->subscriptions()
-                ->where('plan_id', $plan->id)
-                ->whereNull('event_id')
-                ->get(['id', 'plan_id', 'event_id', 'status', 'payment_status', 'expires_at']);
+                ->where(function ($query) use ($plan) {
+                    $query->where('plan_id', $plan->id)
+                          ->orWhere('status', 'trial')
+                          ->orWhere('plan_type', 'trial')
+                          ->orWhere('plan_type', 'essai-gratuit');
+                })
+                ->get(['id', 'plan_id', 'event_id', 'status', 'plan_type', 'payment_status', 'expires_at']);
             
-            \Log::info('User has used trial plan', [
+            \Log::info('Trial plan check for user', [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'plan_name' => $plan->name,
-                'subscriptions' => $subscriptions->toArray(),
+                'has_used' => $hasUsed,
+                'matching_subscriptions' => $subscriptions->toArray(),
             ]);
         }
         
