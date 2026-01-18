@@ -196,5 +196,45 @@ class EntitlementService
         $subscription = $this->getActiveSubscription($user);
         return $subscription?->plan;
     }
+
+    /**
+     * Get effective limit using MAX between stored event limit and current subscription limit.
+     * This uses the "maximum généreux" approach: events keep their higher limit even if
+     * subscription changes later.
+     *
+     * @param \App\Models\Event $event
+     * @param User $user
+     * @param string $limitKey The limit key (e.g., 'photos.max_per_event')
+     * @return int The effective limit, or -1 for unlimited
+     */
+    public function getEffectiveLimit(\App\Models\Event $event, User $user, string $limitKey): int
+    {
+        // Get current subscription limit
+        $subscriptionLimit = $this->limit($user, $limitKey);
+
+        // Get stored event limit based on limit key
+        $eventLimit = null;
+        
+        if ($limitKey === 'photos.max_per_event') {
+            $eventLimit = $event->max_photos_allowed;
+        } elseif ($limitKey === 'guests.max_per_event') {
+            $eventLimit = $event->max_guests_allowed;
+        } elseif ($limitKey === 'collaborators.max_per_event') {
+            $eventLimit = $event->max_collaborators_allowed;
+        }
+
+        // Use MAX between stored and current subscription (if stored exists)
+        if ($eventLimit !== null && $eventLimit > 0) {
+            // If subscription is unlimited, return unlimited
+            if ($subscriptionLimit === -1) {
+                return -1;
+            }
+            // Return the maximum between stored and subscription
+            return max($eventLimit, $subscriptionLimit);
+        }
+
+        // If no stored limit, use subscription limit
+        return $subscriptionLimit;
+    }
 }
 
