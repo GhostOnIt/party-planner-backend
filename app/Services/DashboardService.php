@@ -35,12 +35,25 @@ class DashboardService
         $previousPeriod = $this->calculatePreviousPeriodDates($currentPeriod);
 
         // Users stats
-        $currentUsers = User::whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])->get();
-        $previousUsers = User::whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])->get();
+        $currentUsersQuery = User::query();
+        $previousUsersQuery = User::query();
         
-        $usersActive = User::whereHas('events', function($q) use ($currentPeriod) {
-            $q->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
-        })->count();
+        if ($currentPeriod !== null) {
+            $currentUsersQuery->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        }
+        $currentUsers = $currentUsersQuery->get();
+        
+        if ($previousPeriod !== null) {
+            $previousUsersQuery->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']]);
+        }
+        $previousUsers = $previousUsersQuery->get();
+        
+        $usersActiveQuery = User::whereHas('events', function($q) use ($currentPeriod) {
+            if ($currentPeriod !== null) {
+                $q->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+            }
+        });
+        $usersActive = $usersActiveQuery->count();
         $usersInactive = $currentUsers->count() - $usersActive;
         $usersNew = $currentUsers->where('created_at', '>=', now()->startOfMonth())->count();
 
@@ -52,8 +65,18 @@ class DashboardService
         ];
 
         // Events stats
-        $currentEvents = Event::whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])->get();
-        $previousEvents = Event::whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])->get();
+        $currentEventsQuery = Event::query();
+        $previousEventsQuery = Event::query();
+        
+        if ($currentPeriod !== null) {
+            $currentEventsQuery->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        }
+        $currentEvents = $currentEventsQuery->get();
+        
+        if ($previousPeriod !== null) {
+            $previousEventsQuery->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']]);
+        }
+        $previousEvents = $previousEventsQuery->get();
         
         $eventsActive = $currentEvents->whereIn('status', ['upcoming', 'ongoing'])->count();
         $eventsCompleted = $currentEvents->where('status', 'completed')->count();
@@ -67,8 +90,18 @@ class DashboardService
         ];
 
         // Subscriptions stats
-        $currentSubscriptions = Subscription::whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])->get();
-        $previousSubscriptions = Subscription::whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])->get();
+        $currentSubscriptionsQuery = Subscription::query();
+        $previousSubscriptionsQuery = Subscription::query();
+        
+        if ($currentPeriod !== null) {
+            $currentSubscriptionsQuery->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        }
+        $currentSubscriptions = $currentSubscriptionsQuery->get();
+        
+        if ($previousPeriod !== null) {
+            $previousSubscriptionsQuery->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']]);
+        }
+        $previousSubscriptions = $previousSubscriptionsQuery->get();
         
         $subscriptionsActive = $currentSubscriptions->filter(fn($s) => $s->isActive())->count();
         $subscriptionsTrial = $currentSubscriptions->where('plan_type', 'essai-gratuit')->count();
@@ -83,21 +116,33 @@ class DashboardService
         ];
 
         // Revenue stats
-        $currentPayments = Payment::where('status', 'completed')
-            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
-            ->get();
-        $previousPayments = Payment::where('status', 'completed')
-            ->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])
-            ->get();
+        $currentPaymentsQuery = Payment::where('status', 'completed');
+        $previousPaymentsQuery = Payment::where('status', 'completed');
+        
+        if ($currentPeriod !== null) {
+            $currentPaymentsQuery->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        }
+        $currentPayments = $currentPaymentsQuery->get();
+        
+        if ($previousPeriod !== null) {
+            $previousPaymentsQuery->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']]);
+        }
+        $previousPayments = $previousPaymentsQuery->get();
         
         $revenueTotal = $currentPayments->sum('amount');
         $revenuePaid = $currentPayments->sum('amount');
-        $revenuePending = Payment::where('status', 'pending')
-            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
-            ->sum('amount');
-        $revenueRefunded = Payment::where('status', 'refunded')
-            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
-            ->sum('amount');
+        
+        $revenuePendingQuery = Payment::where('status', 'pending');
+        if ($currentPeriod !== null) {
+            $revenuePendingQuery->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        }
+        $revenuePending = $revenuePendingQuery->sum('amount');
+        
+        $revenueRefundedQuery = Payment::where('status', 'refunded');
+        if ($currentPeriod !== null) {
+            $revenueRefundedQuery->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        }
+        $revenueRefunded = $revenueRefundedQuery->sum('amount');
 
         $previousRevenue = $previousPayments->sum('amount');
         $revenueTrend = $this->calculateTrend($revenueTotal, $previousRevenue);
@@ -618,8 +663,13 @@ class DashboardService
     /**
      * Calculate period dates based on period string or custom range.
      */
-    public function calculatePeriodDates(string $period, ?array $customRange = null): array
+    public function calculatePeriodDates(string $period, ?array $customRange = null): ?array
     {
+        // Return null for "all" to indicate no date filter
+        if ($period === 'all') {
+            return null;
+        }
+
         if ($period === 'custom' && $customRange) {
             $start = $customRange['start'] instanceof Carbon 
                 ? $customRange['start']->copy()->startOfDay()
@@ -652,8 +702,13 @@ class DashboardService
     /**
      * Calculate previous period dates (same duration as current period).
      */
-    public function calculatePreviousPeriodDates(array $currentPeriod): array
+    public function calculatePreviousPeriodDates(?array $currentPeriod): ?array
     {
+        // If no current period (all data), return null for previous period too
+        if ($currentPeriod === null) {
+            return null;
+        }
+
         $duration = $currentPeriod['end']->diffInDays($currentPeriod['start']);
 
         return [
@@ -702,16 +757,18 @@ class DashboardService
         }
 
         // Get events in current period with relations
-        $currentEvents = (clone $eventsQuery)
-            ->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']])
-            ->with(['guests', 'tasks', 'budgetItems'])
-            ->get();
+        $currentEventsQuery = (clone $eventsQuery)->with(['guests', 'tasks', 'budgetItems']);
+        if ($currentPeriod !== null) {
+            $currentEventsQuery->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
+        }
+        $currentEvents = $currentEventsQuery->get();
 
         // Get events in previous period with relations
-        $previousEvents = (clone $eventsQuery)
-            ->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']])
-            ->with(['guests', 'tasks', 'budgetItems'])
-            ->get();
+        $previousEventsQuery = (clone $eventsQuery)->with(['guests', 'tasks', 'budgetItems']);
+        if ($previousPeriod !== null) {
+            $previousEventsQuery->whereBetween('created_at', [$previousPeriod['start'], $previousPeriod['end']]);
+        }
+        $previousEvents = $previousEventsQuery->get();
 
         // Calculate current stats
         $currentStats = $this->calculateStatsForEvents($currentEvents);
@@ -848,8 +905,12 @@ class DashboardService
         $periodDates = $this->calculatePeriodDates($period);
 
         // Get events query
-        $eventsQuery = $this->getUserEventsQuery($user)
-            ->whereBetween('created_at', [$periodDates['start'], $periodDates['end']]);
+        $eventsQuery = $this->getUserEventsQuery($user);
+        
+        // Apply date filter only if period is not "all"
+        if ($periodDates !== null) {
+            $eventsQuery->whereBetween('created_at', [$periodDates['start'], $periodDates['end']]);
+        }
 
         // Filter by event type if not 'all'
         if ($eventType !== 'all') {
@@ -937,8 +998,12 @@ class DashboardService
         $periodDates = $this->calculatePeriodDates($period);
 
         // Get events query
-        $eventsQuery = $this->getUserEventsQuery($user)
-            ->whereBetween('created_at', [$periodDates['start'], $periodDates['end']]);
+        $eventsQuery = $this->getUserEventsQuery($user);
+        
+        // Apply date filter only if period is not "all"
+        if ($periodDates !== null) {
+            $eventsQuery->whereBetween('created_at', [$periodDates['start'], $periodDates['end']]);
+        }
 
         // Filter by event type if not 'all'
         if ($eventType !== 'all') {

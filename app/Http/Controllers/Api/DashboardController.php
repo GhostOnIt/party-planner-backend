@@ -171,7 +171,7 @@ class DashboardController extends Controller
     public function stats(Request $request): JsonResponse
     {
         $user = $request->user();
-        $period = $request->input('period', '7days');
+        $period = $request->input('period', 'all');
         $eventType = $request->input('type', 'all');
         $customRange = null;
 
@@ -197,7 +197,7 @@ class DashboardController extends Controller
     public function confirmations(Request $request): JsonResponse
     {
         $user = $request->user();
-        $period = $request->input('period', '7days');
+        $period = $request->input('period', 'all');
         $eventType = $request->input('type', 'all');
         $page = (int) $request->input('page', 1);
         $perPage = (int) $request->input('per_page', 5);
@@ -224,7 +224,7 @@ class DashboardController extends Controller
     public function eventsByType(Request $request): JsonResponse
     {
         $user = $request->user();
-        $period = $request->input('period', '7days');
+        $period = $request->input('period', 'all');
         $eventType = $request->input('type', 'all');
 
         $data = $this->dashboardService->getEventsByTypeData($user, $period, $eventType);
@@ -379,7 +379,7 @@ class DashboardController extends Controller
      */
     public function adminDashboardStats(Request $request): JsonResponse
     {
-        $period = $request->input('period', '7days');
+        $period = $request->input('period', 'all');
         $customRange = null;
 
         if ($period === 'custom') {
