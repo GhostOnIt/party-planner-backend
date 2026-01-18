@@ -191,7 +191,7 @@ return [
         'max_title_length' => 255,
         'max_description_length' => 5000,
         'allow_past_dates' => false, // For editing existing events
-        'default_status' => 'draft',
+        'default_status' => 'upcoming',
     ],
 
     /*

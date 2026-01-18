@@ -140,6 +140,24 @@ class EventTemplateController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Decode JSON strings from FormData if present
+        $data = $request->all();
+        if ($request->has('default_tasks') && is_string($request->input('default_tasks'))) {
+            $data['default_tasks'] = json_decode($request->input('default_tasks'), true);
+        }
+        if ($request->has('default_budget_categories') && is_string($request->input('default_budget_categories'))) {
+            $data['default_budget_categories'] = json_decode($request->input('default_budget_categories'), true);
+        }
+        if ($request->has('suggested_themes') && is_string($request->input('suggested_themes'))) {
+            $data['suggested_themes'] = json_decode($request->input('suggested_themes'), true);
+        }
+        if ($request->has('is_active') && is_string($request->input('is_active'))) {
+            $data['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Merge decoded data back into request
+        $request->merge($data);
+
         $validated = $request->validate([
             'event_type' => 'required|in:mariage,anniversaire,baby_shower,soiree,brunch,autre',
             'name' => 'required|string|max:255',
@@ -154,8 +172,20 @@ class EventTemplateController extends Controller
             'default_budget_categories.*.estimated_cost' => 'nullable|numeric|min:0',
             'suggested_themes' => 'nullable|array',
             'suggested_themes.*' => 'string|max:255',
+            'cover_photo' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'is_active' => 'boolean',
         ]);
+
+        // Handle cover photo upload
+        if ($request->hasFile('cover_photo')) {
+            $file = $request->file('cover_photo');
+            $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('templates/cover_photos', $filename, 'public');
+            $validated['cover_photo_url'] = '/storage/' . $path;
+        }
+
+        // Remove cover_photo from validated data as it's not a database field
+        unset($validated['cover_photo']);
 
         $template = EventTemplate::create($validated);
 
@@ -178,6 +208,24 @@ class EventTemplateController extends Controller
      */
     public function update(Request $request, EventTemplate $template): JsonResponse
     {
+        // Decode JSON strings from FormData if present
+        $data = $request->all();
+        if ($request->has('default_tasks') && is_string($request->input('default_tasks'))) {
+            $data['default_tasks'] = json_decode($request->input('default_tasks'), true);
+        }
+        if ($request->has('default_budget_categories') && is_string($request->input('default_budget_categories'))) {
+            $data['default_budget_categories'] = json_decode($request->input('default_budget_categories'), true);
+        }
+        if ($request->has('suggested_themes') && is_string($request->input('suggested_themes'))) {
+            $data['suggested_themes'] = json_decode($request->input('suggested_themes'), true);
+        }
+        if ($request->has('is_active') && is_string($request->input('is_active'))) {
+            $data['is_active'] = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Merge decoded data back into request
+        $request->merge($data);
+
         $validated = $request->validate([
             'event_type' => 'required|in:mariage,anniversaire,baby_shower,soiree,brunch,autre',
             'name' => 'required|string|max:255',
@@ -192,8 +240,26 @@ class EventTemplateController extends Controller
             'default_budget_categories.*.estimated_cost' => 'nullable|numeric|min:0',
             'suggested_themes' => 'nullable|array',
             'suggested_themes.*' => 'string|max:255',
+            'cover_photo' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'is_active' => 'boolean',
         ]);
+
+        // Handle cover photo upload
+        if ($request->hasFile('cover_photo')) {
+            // Delete old cover photo if exists
+            if ($template->cover_photo_url) {
+                $oldPath = str_replace('/storage/', '', $template->cover_photo_url);
+                \Storage::disk('public')->delete($oldPath);
+            }
+            
+            $file = $request->file('cover_photo');
+            $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('templates/cover_photos', $filename, 'public');
+            $validated['cover_photo_url'] = '/storage/' . $path;
+        }
+
+        // Remove cover_photo from validated data as it's not a database field
+        unset($validated['cover_photo']);
 
         $oldValues = $template->toArray();
         $template->update($validated);

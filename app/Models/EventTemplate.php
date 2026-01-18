@@ -21,6 +21,7 @@ class EventTemplate extends Model
         'default_tasks',
         'default_budget_categories',
         'suggested_themes',
+        'cover_photo_url',
         'is_active',
     ];
 

@@ -66,13 +66,18 @@ class EventService
             // Create the event
             $event = $user->events()->create($data);
 
+            // Check if user provided a cover photo
+            $hasUserCoverPhoto = isset($data['_has_cover_photo']) && $data['_has_cover_photo'];
+            unset($data['_has_cover_photo']);
+
             // Apply template if provided
-            if ($templateId) {
-                $this->applyTemplate($event, $templateId);
-            } else {
-                // Auto-apply template based on event type
-                $this->autoApplyTemplate($event);
+            if ($templateId && $templateId > 0) {
+                $this->applyTemplate($event, $templateId, $hasUserCoverPhoto);
+            } elseif ($templateId === null) {
+                // Auto-apply template based on event type only if templateId is null (not explicitly set to -1)
+                $this->autoApplyTemplate($event, $hasUserCoverPhoto);
             }
+            // If templateId is -1, skip both manual and auto template application
 
             // Dispatch event created event
             EventCreated::dispatch($event);
@@ -191,7 +196,7 @@ class EventService
     /**
      * Apply a template to an event.
      */
-    public function applyTemplate(Event $event, int $templateId): void
+    public function applyTemplate(Event $event, int $templateId, bool $hasUserCoverPhoto = false): void
     {
         $template = EventTemplate::findOrFail($templateId);
 
@@ -205,12 +210,18 @@ class EventService
         if (empty($event->theme) && !empty($template->suggested_themes)) {
             $event->update(['theme' => $template->suggested_themes[0]]);
         }
+
+        // Store template cover photo URL for later use if user didn't provide one
+        // This will be used in EventController after event creation
+        if (!$hasUserCoverPhoto && !empty($template->cover_photo_url)) {
+            $event->setAttribute('_template_cover_photo_url', $template->cover_photo_url);
+        }
     }
 
     /**
      * Auto-apply template based on event type.
      */
-    public function autoApplyTemplate(Event $event): void
+    public function autoApplyTemplate(Event $event, bool $hasUserCoverPhoto = false): void
     {
         $template = EventTemplate::active()
             ->ofType($event->type)
@@ -222,6 +233,11 @@ class EventService
 
             if (empty($event->theme) && !empty($template->suggested_themes)) {
                 $event->update(['theme' => $template->suggested_themes[0]]);
+            }
+
+            // Store template cover photo URL for later use if user didn't provide one
+            if (!$hasUserCoverPhoto && !empty($template->cover_photo_url)) {
+                $event->setAttribute('_template_cover_photo_url', $template->cover_photo_url);
             }
         }
     }
