@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-<<<<<<< HEAD
-=======
 use Spatie\Prometheus\Collectors\Horizon\CurrentMasterSupervisorCollector;
 use Spatie\Prometheus\Collectors\Horizon\CurrentProcessesPerQueueCollector;
 use Spatie\Prometheus\Collectors\Horizon\CurrentWorkloadCollector;
@@ -17,54 +15,10 @@ use Spatie\Prometheus\Collectors\Queue\QueueOldestPendingJobCollector;
 use Spatie\Prometheus\Collectors\Queue\QueuePendingJobsCollector;
 use Spatie\Prometheus\Collectors\Queue\QueueReservedJobsCollector;
 use Spatie\Prometheus\Collectors\Queue\QueueSizeCollector;
->>>>>>> e17e8ac (add changes)
 use Spatie\Prometheus\Facades\Prometheus;
 
 class PrometheusServiceProvider extends ServiceProvider
 {
-<<<<<<< HEAD
-    /**
-     * Register services.
-     */
-    public function register(): void
-    {
-        //
-    }
-
-    /**
-     * Bootstrap services.
-     *
-     * Enregistre les métriques Prometheus par défaut pour l'API Laravel.
-     */
-    public function boot(): void
-    {
-        // Métriques HTTP par défaut (requêtes, durée, erreurs)
-        // Ces métriques sont automatiquement collectées par le middleware du package
-
-        // Métrique de mémoire PHP
-        Prometheus::addGauge(
-            label: 'php_memory_usage_bytes',
-            value: fn () => memory_get_usage(true),
-            helpText: 'Mémoire PHP utilisée en bytes'
-        );
-
-        Prometheus::addGauge(
-            label: 'php_memory_peak_bytes',
-            value: fn () => memory_get_peak_usage(true),
-            helpText: 'Pic de mémoire PHP en bytes'
-        );
-
-        // Métrique de temps d'exécution PHP
-        Prometheus::addGauge(
-            label: 'php_execution_time_seconds',
-            value: fn () => defined('LARAVEL_START') ? microtime(true) - LARAVEL_START : 0,
-            helpText: 'Temps d\'exécution PHP en secondes'
-        );
-
-        // Note: Les métriques HTTP (requêtes, durée, erreurs) sont automatiquement
-        // collectées par le middleware du package spatie/laravel-prometheus
-        // lorsqu'il est activé dans le kernel HTTP.
-=======
     public function register()
     {
         /*
@@ -115,6 +69,5 @@ class PrometheusServiceProvider extends ServiceProvider
         ], compact('connection', 'queues'));
 
         return $this;
->>>>>>> e17e8ac (add changes)
     }
 }

@@ -6,9 +6,6 @@ use App\Http\Controllers\Webhooks\TwilioWebhookController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Prometheus\Http\Controllers\MetricsController;
-
-Route::get('/metrics', MetricsController::class);
 
 /*
 |--------------------------------------------------------------------------
