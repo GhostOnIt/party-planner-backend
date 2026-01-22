@@ -7,12 +7,17 @@ return [
      * The urls that will return metrics.
      */
     'urls' => [
+<<<<<<< HEAD
         'default' => 'metrics',
+=======
+        'default' => 'prometheus',
+>>>>>>> e17e8ac (add changes)
     ],
 
     /*
      * Only these IP's will be allowed to visit the above urls.
      * All IP's are allowed when empty.
+<<<<<<< HEAD
      * 
      * Pour la production, ajoutez les IPs de votre serveur Prometheus :
      * 'allowed_ips' => [
@@ -24,6 +29,12 @@ return [
      * 'allowed_ips' => array_filter(explode(',', env('PROMETHEUS_ALLOWED_IPS', ''))),
      */
     'allowed_ips' => array_filter(explode(',', env('PROMETHEUS_ALLOWED_IPS', ''))),
+=======
+     */
+    'allowed_ips' => [
+        // '1.2.3.4',
+    ],
+>>>>>>> e17e8ac (add changes)
 
     /*
      * This is the default namespace that will be
