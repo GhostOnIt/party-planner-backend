@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Middleware global pour collecter les métriques Prometheus
+        $middleware->append(\App\Http\Middleware\CollectPrometheusMetrics::class);
+        
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'event.access' => \App\Http\Middleware\EnsureEventAccess::class,
