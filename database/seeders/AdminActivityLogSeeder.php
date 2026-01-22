@@ -7,6 +7,7 @@ use App\Models\AdminActivityLog;
 use App\Models\Event;
 use App\Models\EventTemplate;
 use App\Models\User;
+use Faker\Factory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -14,11 +15,15 @@ class AdminActivityLogSeeder extends Seeder
 {
     use WithoutModelEvents;
 
+
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        $this->faker = Factory::create('fr_FR');
+
         $admins = User::where('role', UserRole::ADMIN)->get();
 
         if ($admins->isEmpty()) {
@@ -51,7 +56,7 @@ class AdminActivityLogSeeder extends Seeder
         $templates
     ): void {
         // Create 50-100 logs over the last 30 days
-        $logCount = fake()->numberBetween(50, 100);
+        $logCount = $this->faker->numberBetween(50, 100);
         $logs = [];
 
         for ($i = 0; $i < $logCount; $i++) {
@@ -74,8 +79,6 @@ class AdminActivityLogSeeder extends Seeder
         $events,
         $templates
     ): ?array {
-        $logTypes = ['login', 'user_view', 'user_update', 'user_delete', 'event_view', 'template_create', 'template_update', 'template_toggle'];
-
         // Weight login more heavily
         $weights = [
             'login' => 25,
@@ -89,7 +92,7 @@ class AdminActivityLogSeeder extends Seeder
         ];
 
         $type = $this->weightedRandom($weights);
-        $createdAt = fake()->dateTimeBetween('-30 days', 'now');
+        $createdAt = $this->faker->dateTimeBetween('-30 days', 'now');
 
         return match ($type) {
             'login' => $this->createLoginLog($admin, $createdAt),
@@ -117,8 +120,8 @@ class AdminActivityLogSeeder extends Seeder
             'description' => "Connexion de l'administrateur {$admin->name}",
             'old_values' => null,
             'new_values' => null,
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -129,7 +132,9 @@ class AdminActivityLogSeeder extends Seeder
      */
     protected function createUserViewLog(User $admin, $users, \DateTimeInterface $createdAt): ?array
     {
-        if ($users->isEmpty()) return null;
+        if ($users->isEmpty()) {
+            return null;
+        }
 
         $targetUser = $users->random();
 
@@ -141,8 +146,8 @@ class AdminActivityLogSeeder extends Seeder
             'description' => "Consultation du profil de {$targetUser->name}",
             'old_values' => null,
             'new_values' => null,
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -153,7 +158,9 @@ class AdminActivityLogSeeder extends Seeder
      */
     protected function createUserUpdateLog(User $admin, $users, \DateTimeInterface $createdAt): ?array
     {
-        if ($users->isEmpty()) return null;
+        if ($users->isEmpty()) {
+            return null;
+        }
 
         $targetUser = $users->random();
 
@@ -164,9 +171,9 @@ class AdminActivityLogSeeder extends Seeder
             'model_id' => $targetUser->id,
             'description' => "Changement de rôle de {$targetUser->name}",
             'old_values' => json_encode(['role' => 'user']),
-            'new_values' => json_encode(['role' => fake()->randomElement(['user', 'admin'])]),
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'new_values' => json_encode(['role' => $this->faker->randomElement(['user', 'admin'])]),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -177,7 +184,9 @@ class AdminActivityLogSeeder extends Seeder
      */
     protected function createUserDeleteLog(User $admin, $users, \DateTimeInterface $createdAt): ?array
     {
-        if ($users->isEmpty()) return null;
+        if ($users->isEmpty()) {
+            return null;
+        }
 
         $targetUser = $users->random();
 
@@ -189,8 +198,8 @@ class AdminActivityLogSeeder extends Seeder
             'description' => "Suppression de l'utilisateur {$targetUser->name}",
             'old_values' => json_encode(['id' => $targetUser->id, 'name' => $targetUser->name, 'email' => $targetUser->email]),
             'new_values' => null,
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -201,7 +210,9 @@ class AdminActivityLogSeeder extends Seeder
      */
     protected function createEventViewLog(User $admin, $events, \DateTimeInterface $createdAt): ?array
     {
-        if ($events->isEmpty()) return null;
+        if ($events->isEmpty()) {
+            return null;
+        }
 
         $event = $events->random();
 
@@ -213,8 +224,8 @@ class AdminActivityLogSeeder extends Seeder
             'description' => "Consultation de l'événement {$event->title}",
             'old_values' => null,
             'new_values' => null,
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -225,7 +236,9 @@ class AdminActivityLogSeeder extends Seeder
      */
     protected function createTemplateCreateLog(User $admin, $templates, \DateTimeInterface $createdAt): ?array
     {
-        if ($templates->isEmpty()) return null;
+        if ($templates->isEmpty()) {
+            return null;
+        }
 
         $template = $templates->random();
 
@@ -237,8 +250,8 @@ class AdminActivityLogSeeder extends Seeder
             'description' => "Création du template {$template->name}",
             'old_values' => null,
             'new_values' => json_encode(['name' => $template->name, 'event_type' => $template->event_type]),
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -249,7 +262,9 @@ class AdminActivityLogSeeder extends Seeder
      */
     protected function createTemplateUpdateLog(User $admin, $templates, \DateTimeInterface $createdAt): ?array
     {
-        if ($templates->isEmpty()) return null;
+        if ($templates->isEmpty()) {
+            return null;
+        }
 
         $template = $templates->random();
 
@@ -261,8 +276,8 @@ class AdminActivityLogSeeder extends Seeder
             'description' => "Modification du template {$template->name}",
             'old_values' => json_encode(['name' => 'Ancien nom']),
             'new_values' => json_encode(['name' => $template->name]),
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -273,10 +288,12 @@ class AdminActivityLogSeeder extends Seeder
      */
     protected function createTemplateToggleLog(User $admin, $templates, \DateTimeInterface $createdAt): ?array
     {
-        if ($templates->isEmpty()) return null;
+        if ($templates->isEmpty()) {
+            return null;
+        }
 
         $template = $templates->random();
-        $newStatus = fake()->boolean();
+        $newStatus = $this->faker->boolean();
 
         return [
             'admin_id' => $admin->id,
@@ -288,8 +305,8 @@ class AdminActivityLogSeeder extends Seeder
                 : "Désactivation du template {$template->name}",
             'old_values' => json_encode(['is_active' => !$newStatus]),
             'new_values' => json_encode(['is_active' => $newStatus]),
-            'ip_address' => fake()->ipv4(),
-            'user_agent' => fake()->userAgent(),
+            'ip_address' => $this->faker->ipv4(),
+            'user_agent' => $this->faker->userAgent(),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ];
@@ -301,7 +318,7 @@ class AdminActivityLogSeeder extends Seeder
     protected function weightedRandom(array $weights): string
     {
         $total = array_sum($weights);
-        $random = fake()->numberBetween(1, $total);
+        $random = $this->faker->numberBetween(1, $total);
         $cumulative = 0;
 
         foreach ($weights as $key => $weight) {
