@@ -305,15 +305,34 @@ class EventController extends Controller
     {
         $this->authorize('view', $event);
 
+        // Charger les relations avec les statistiques
         $event->load([
-            'guests',
-            'tasks',
-            'budgetItems',
-            'photos',
-            'coverPhoto',
-            'featuredPhoto',
-            'collaborators.user',
+            'user:id,name,avatar',
+            'coverPhoto:id,event_id,url,thumbnail_url',
+            'featuredPhoto:id,event_id,url,thumbnail_url',
+            'collaborators.user:id,name,avatar',
         ]);
+
+        // Ajouter les compteurs de statistiques
+        $event->loadCount([
+            'guests',
+            'guests as guests_confirmed_count' => function ($query) {
+                $query->where('rsvp_status', 'accepted');
+            },
+            'guests as guests_declined_count' => function ($query) {
+                $query->where('rsvp_status', 'declined');
+            },
+            'guests as guests_pending_count' => function ($query) {
+                $query->where('rsvp_status', 'pending');
+            },
+            'tasks',
+            'tasks as tasks_completed_count' => function ($query) {
+                $query->where('status', 'completed');
+            }
+        ]);
+
+        // Ajouter la somme du budget dépensé
+        $event->loadSum('budgetItems as budget_spent', 'actual_cost');
 
         return response()->json($event);
     }

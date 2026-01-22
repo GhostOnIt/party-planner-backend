@@ -249,10 +249,12 @@ class SubscriptionService
 
     /**
      * Get user's subscriptions.
+     * Excludes pending subscriptions (payment_status = 'pending').
      */
     public function getUserSubscriptions(User $user): Collection
     {
         return $user->subscriptions()
+            ->where('payment_status', '!=', 'pending')
             ->with('event')
             ->orderBy('created_at', 'desc')
             ->get();
