@@ -1,0 +1,4 @@
+# Place your logo file here (e.g., logo.png, logo.svg)
+# The logo will be accessible at: {APP_URL}/images/logo.png
+# Configure the URL in your .env file: MAIL_LOGO_URL=https://yourdomain.com/images/logo.png
+

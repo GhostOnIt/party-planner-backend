@@ -107,3 +107,24 @@ Route::get('/storage/{path}', function (string $path) {
         'Cache-Control' => 'public, max-age=31536000',
     ]);
 })->where('path', '.*')->name('storage.serve');
+
+/*
+|--------------------------------------------------------------------------
+| Static Assets (Images, etc.)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/images/{filename}', function (string $filename) {
+    $filePath = public_path("images/{$filename}");
+    
+    if (!file_exists($filePath)) {
+        abort(404, 'Image not found');
+    }
+    
+    $mimeType = \Illuminate\Support\Facades\File::mimeType($filePath);
+
+    return response()->file($filePath, [
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('filename', '.*')->name('images.serve');
