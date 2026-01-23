@@ -359,7 +359,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/users/{user}', [DashboardController::class, 'adminUserUpdateRole']);
         Route::put('/users/{user}/role', [DashboardController::class, 'adminUserUpdateRole']);
         Route::post('/users/{user}/toggle-active', [DashboardController::class, 'adminUserToggleActive']);
-        Route::delete('/users/{user}', [DashboardController::class, 'adminUserDestroy']);
+        Route::post('/users/{user}/send-password-reset', [DashboardController::class, 'adminUserSendPasswordReset']);
 
         // Events Management
         Route::get('/events', [DashboardController::class, 'adminEvents']);
