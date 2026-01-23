@@ -4,11 +4,23 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Spatie\Prometheus\Facades\Prometheus;
+use Prometheus\CollectorRegistry;
+use Prometheus\Counter;
+use Prometheus\Histogram;
 use Symfony\Component\HttpFoundation\Response;
 
 class CollectPrometheusMetrics
 {
+    protected CollectorRegistry $registry;
+    protected ?Counter $httpRequestsCounter = null;
+    protected ?Histogram $httpRequestDuration = null;
+    protected ?Counter $httpErrorsCounter = null;
+
+    public function __construct(CollectorRegistry $registry)
+    {
+        $this->registry = $registry;
+    }
+
     /**
      * Handle an incoming request.
      *
@@ -29,28 +41,25 @@ class CollectPrometheusMetrics
             $duration = microtime(true) - $startTime;
 
             // Compter les requêtes totales
-            Prometheus::addCounter('http_requests_total')
-                ->help('Nombre total de requêtes HTTP')
-                ->label('method', $method)
-                ->label('route', $this->sanitizeRoute($route))
-                ->label('status', (string) $statusCode)
-                ->inc();
+            $this->getHttpRequestsCounter()->incBy(1, [
+                'method' => $method,
+                'route' => $this->sanitizeRoute($route),
+                'status' => (string) $statusCode,
+            ]);
 
             // Enregistrer la durée
-            Prometheus::addHistogram('http_request_duration_seconds')
-                ->help('Durée des requêtes HTTP en secondes')
-                ->label('method', $method)
-                ->label('route', $this->sanitizeRoute($route))
-                ->observe($duration);
+            $this->getHttpRequestDuration()->observe($duration, [
+                'method' => $method,
+                'route' => $this->sanitizeRoute($route),
+            ]);
 
             // Compter les erreurs
             if ($statusCode >= 400) {
-                Prometheus::addCounter('http_errors_total')
-                    ->help('Nombre total d\'erreurs HTTP')
-                    ->label('method', $method)
-                    ->label('route', $this->sanitizeRoute($route))
-                    ->label('status', (string) $statusCode)
-                    ->inc();
+                $this->getHttpErrorsCounter()->incBy(1, [
+                    'method' => $method,
+                    'route' => $this->sanitizeRoute($route),
+                    'status' => (string) $statusCode,
+                ]);
             }
 
             return $response;
@@ -58,22 +67,72 @@ class CollectPrometheusMetrics
             $duration = microtime(true) - $startTime;
 
             // Enregistrer l'erreur
-            Prometheus::addCounter('http_errors_total')
-                ->help('Nombre total d\'erreurs HTTP')
-                ->label('method', $method)
-                ->label('route', $this->sanitizeRoute($route))
-                ->label('status', '500')
-                ->inc();
+            $this->getHttpErrorsCounter()->incBy(1, [
+                'method' => $method,
+                'route' => $this->sanitizeRoute($route),
+                'status' => '500',
+            ]);
 
-            Prometheus::addCounter('http_requests_total')
-                ->help('Nombre total de requêtes HTTP')
-                ->label('method', $method)
-                ->label('route', $this->sanitizeRoute($route))
-                ->label('status', '500')
-                ->inc();
+            $this->getHttpRequestsCounter()->incBy(1, [
+                'method' => $method,
+                'route' => $this->sanitizeRoute($route),
+                'status' => '500',
+            ]);
 
             throw $e;
         }
+    }
+
+    /**
+     * Obtient ou crée le counter pour les requêtes HTTP totales.
+     */
+    protected function getHttpRequestsCounter(): Counter
+    {
+        if ($this->httpRequestsCounter === null) {
+            $this->httpRequestsCounter = $this->registry->getOrRegisterCounter(
+                namespace: 'app',
+                name: 'http_requests_total',
+                help: 'Nombre total de requêtes HTTP',
+                labels: ['method', 'route', 'status']
+            );
+        }
+
+        return $this->httpRequestsCounter;
+    }
+
+    /**
+     * Obtient ou crée l'histogram pour la durée des requêtes HTTP.
+     */
+    protected function getHttpRequestDuration(): Histogram
+    {
+        if ($this->httpRequestDuration === null) {
+            $this->httpRequestDuration = $this->registry->getOrRegisterHistogram(
+                namespace: 'app',
+                name: 'http_request_duration_seconds',
+                help: 'Durée des requêtes HTTP en secondes',
+                labels: ['method', 'route'],
+                buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+            );
+        }
+
+        return $this->httpRequestDuration;
+    }
+
+    /**
+     * Obtient ou crée le counter pour les erreurs HTTP.
+     */
+    protected function getHttpErrorsCounter(): Counter
+    {
+        if ($this->httpErrorsCounter === null) {
+            $this->httpErrorsCounter = $this->registry->getOrRegisterCounter(
+                namespace: 'app',
+                name: 'http_errors_total',
+                help: 'Nombre total d\'erreurs HTTP',
+                labels: ['method', 'route', 'status']
+            );
+        }
+
+        return $this->httpErrorsCounter;
     }
 
     /**

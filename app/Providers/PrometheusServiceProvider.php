@@ -22,13 +22,20 @@ class PrometheusServiceProvider extends ServiceProvider
     public function register()
     {
         /*
-         * Here you can register all the exporters that you
-         * want to export to prometheus
+         * Les métriques HTTP sont collectées automatiquement par le middleware
+         * CollectPrometheusMetrics (enregistré dans bootstrap/app.php)
+         *
+         * Pour ajouter des métriques personnalisées, utilisez :
+         * Prometheus::addGauge('my_metric')
+         *     ->value(function() {
+         *         return 123.45;
+         *     });
+         *
+         * Prometheus::addCounter('my_counter')
+         *     ->value(function() {
+         *         return 42;
+         *     });
          */
-        Prometheus::addGauge('My gauge')
-            ->value(function() {
-                return 123.45;
-            });
 
         /*
          * Uncomment this line if you want to export
