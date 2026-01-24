@@ -62,6 +62,11 @@ class QuotaService
      */
     public function canCreateEvent(User $user): bool
     {
+        // Les admins peuvent toujours créer des événements
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
         $quota = $this->getCreationsQuota($user);
         return $quota['can_create'];
     }
@@ -71,6 +76,11 @@ class QuotaService
      */
     public function consumeCreation(User $user): bool
     {
+        // Les admins ne consomment pas de crédit
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
         $subscription = $this->getActiveSubscription($user);
 
         if (!$subscription) {

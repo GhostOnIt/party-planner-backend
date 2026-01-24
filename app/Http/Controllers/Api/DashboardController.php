@@ -740,15 +740,23 @@ class DashboardController extends Controller
      */
     public function adminSubscriptions(Request $request): JsonResponse
     {
-        $query = Subscription::with(['event', 'event.user']);
+        $query = Subscription::with(['user', 'event', 'event.user']);
+
+        // Search (case-insensitive) - search by user name or email
+        if ($search = $request->input('search')) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('email', 'ilike', "%{$search}%");
+            });
+        }
 
         // Filter by plan
-        if ($plan = $request->input('plan')) {
+        if ($plan = $request->input('plan_type')) {
             $query->where('plan_type', $plan);
         }
 
         // Filter by status
-        if ($status = $request->input('status')) {
+        if ($status = $request->input('payment_status')) {
             $query->where('payment_status', $status);
         }
 
@@ -758,6 +766,20 @@ class DashboardController extends Controller
         $query->orderBy($sortBy, $sortDir);
 
         $subscriptions = $query->paginate($request->input('per_page', 15));
+
+        // Add events count for each subscription
+        $subscriptions->getCollection()->transform(function ($subscription) {
+            $startDate = $subscription->created_at;
+            $endDate = $subscription->expires_at ?? now();
+            
+            // Count events created by the user during the subscription period
+            $eventsCount = \App\Models\Event::where('user_id', $subscription->user_id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+            
+            $subscription->events_count = $eventsCount;
+            return $subscription;
+        });
 
         return response()->json($subscriptions);
     }

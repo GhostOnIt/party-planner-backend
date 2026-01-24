@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -244,6 +245,27 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::delete('/clear-read', [NotificationController::class, 'clearRead']);
         Route::get('/settings', [NotificationController::class, 'settings']);
         Route::put('/settings', [NotificationController::class, 'updateSettings']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Settings (Event Types & Collaborator Roles)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('settings')->group(function () {
+        // Event Types
+        Route::get('/event-types', [SettingsController::class, 'getEventTypes']);
+        Route::post('/event-types', [SettingsController::class, 'createEventType']);
+        Route::put('/event-types/{eventType}', [SettingsController::class, 'updateEventType']);
+        Route::delete('/event-types/{eventType}', [SettingsController::class, 'deleteEventType']);
+        Route::post('/event-types/reorder', [SettingsController::class, 'reorderEventTypes']);
+
+        // Collaborator Roles
+        Route::get('/collaborator-roles', [SettingsController::class, 'getCollaboratorRoles']);
+        Route::post('/collaborator-roles', [SettingsController::class, 'createCollaboratorRole']);
+        Route::put('/collaborator-roles/{role}', [SettingsController::class, 'updateCollaboratorRole']);
+        Route::delete('/collaborator-roles/{role}', [SettingsController::class, 'deleteCollaboratorRole']);
+        Route::post('/collaborator-roles/reorder', [SettingsController::class, 'reorderCollaboratorRoles']);
     });
 
     /*

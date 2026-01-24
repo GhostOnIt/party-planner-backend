@@ -25,14 +25,21 @@ class StoreEventRequest extends FormRequest
     {
         $maxSize = config('partyplanner.uploads.photos.max_size', 5120);
         $allowedTypes = config('partyplanner.uploads.photos.allowed_types', ['jpeg', 'jpg', 'png', 'gif', 'webp']);
+        $user = $this->user();
+
+        // Get user's event type slugs
+        $userEventTypeSlugs = $user->eventTypes()->pluck('slug')->toArray();
+        // Also include default enum values for backward compatibility
+        $defaultTypeSlugs = array_column(\App\Enums\EventType::cases(), 'value');
+        $allowedTypeSlugs = array_merge($userEventTypeSlugs, $defaultTypeSlugs);
 
         return [
             'title' => ['required', 'string', 'max:255'],
-            'type' => ['required', Rule::enum(EventType::class)],
+            'type' => ['required', 'string', Rule::in($allowedTypeSlugs)],
             'description' => ['nullable', 'string', 'max:5000'],
             'date' => ['required', 'date', 'after_or_equal:today'],
-            'time' => ['nullable', 'date_format:H:i'],
-            'location' => ['nullable', 'string', 'max:255'],
+            'time' => ['required', 'date_format:H:i'],
+            'location' => ['required', 'string', 'max:255'],
             'estimated_budget' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
             'theme' => ['nullable', 'string', 'max:255'],
             'expected_guests_count' => ['nullable', 'integer', 'min:1', 'max:10000'],
@@ -56,10 +63,13 @@ class StoreEventRequest extends FormRequest
             'title.required' => 'Le titre de l\'événement est requis.',
             'title.max' => 'Le titre ne peut pas dépasser 255 caractères.',
             'type.required' => 'Le type d\'événement est requis.',
-            'type.enum' => 'Le type d\'événement sélectionné est invalide.',
+            'type.in' => 'Le type d\'événement sélectionné est invalide.',
             'date.required' => 'La date de l\'événement est requise.',
             'date.after_or_equal' => 'La date doit être aujourd\'hui ou dans le futur.',
+            'time.required' => 'L\'heure de l\'événement est requise.',
             'time.date_format' => 'Le format de l\'heure est invalide (HH:MM).',
+            'location.required' => 'Le lieu de l\'événement est requis.',
+            'location.max' => 'Le lieu ne peut pas dépasser 255 caractères.',
             'estimated_budget.numeric' => 'Le budget doit être un nombre.',
             'estimated_budget.min' => 'Le budget ne peut pas être négatif.',
             'expected_guests_count.integer' => 'Le nombre d\'invités doit être un entier.',

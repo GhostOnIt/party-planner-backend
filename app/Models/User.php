@@ -242,4 +242,20 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->preferred_otp_channel ?? Otp::CHANNEL_EMAIL;
     }
+
+    /**
+     * Get the event types for the user.
+     */
+    public function eventTypes(): HasMany
+    {
+        return $this->hasMany(UserEventType::class);
+    }
+
+    /**
+     * Get the collaborator roles for the user.
+     */
+    public function collaboratorRoles(): HasMany
+    {
+        return $this->hasMany(UserCollaboratorRole::class);
+    }
 }
