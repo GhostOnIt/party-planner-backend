@@ -23,20 +23,8 @@ class PaymentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        
-        // Get payments for:
-        // 1. Event-level subscriptions (where user owns the event)
-        // 2. Account-level subscriptions (where user owns the subscription directly)
-        $payments = Payment::whereHas('subscription', function ($query) use ($user) {
-            $query->where(function ($q) use ($user) {
-                // Account-level subscriptions (no event_id, user owns subscription)
-                $q->whereNull('event_id')
-                  ->where('user_id', $user->id);
-            })->orWhereHas('event', function ($q) use ($user) {
-                // Event-level subscriptions (user owns the event)
-                $q->where('user_id', $user->id);
-            });
+        $payments = Payment::whereHas('subscription.event', function ($query) use ($request) {
+            $query->where('user_id', $request->user()->id);
         })
             ->with(['subscription.event:id,title'])
             ->orderBy('created_at', 'desc')

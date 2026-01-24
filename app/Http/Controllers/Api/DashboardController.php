@@ -13,7 +13,6 @@ use App\Services\AdminActivityService;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 
 class DashboardController extends Controller
 {
@@ -613,30 +612,6 @@ class DashboardController extends Controller
             'user' => $user,
             'is_active' => $newStatus,
         ]);
-    }
-
-    /**
-     * Send password reset link to user (admin only).
-     */
-    public function adminUserSendPasswordReset(Request $request, User $user): JsonResponse
-    {
-        $status = Password::sendResetLink(
-            ['email' => $user->email]
-        );
-
-        if ($status == Password::RESET_LINK_SENT) {
-            $this->activityService->logUserAction('send_password_reset', $user, [
-                'description' => 'Lien de réinitialisation de mot de passe envoyé par l\'admin',
-            ]);
-
-            return response()->json([
-                'message' => 'Lien de réinitialisation envoyé avec succès.',
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Impossible d\'envoyer le lien de réinitialisation.',
-        ], 422);
     }
 
     /**

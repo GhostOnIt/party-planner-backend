@@ -1,13 +1,11 @@
 <?php
 
-use App\Http\Controllers\Api\AdminFaqController;
 use App\Http\Controllers\Api\AdminPlanController;
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EventController;
-use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\GuestController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\NotificationController;
@@ -359,7 +357,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/users/{user}', [DashboardController::class, 'adminUserUpdateRole']);
         Route::put('/users/{user}/role', [DashboardController::class, 'adminUserUpdateRole']);
         Route::post('/users/{user}/toggle-active', [DashboardController::class, 'adminUserToggleActive']);
-        Route::post('/users/{user}/send-password-reset', [DashboardController::class, 'adminUserSendPasswordReset']);
+        Route::delete('/users/{user}', [DashboardController::class, 'adminUserDestroy']);
 
         // Events Management
         Route::get('/events', [DashboardController::class, 'adminEvents']);
@@ -393,12 +391,6 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/templates/{template}', [EventTemplateController::class, 'update']);
         Route::delete('/templates/{template}', [EventTemplateController::class, 'destroy']);
         Route::post('/templates/{template}/toggle-active', [EventTemplateController::class, 'toggleActive']);
-
-        // FAQs Management
-        Route::get('/faqs', [AdminFaqController::class, 'index']);
-        Route::post('/faqs', [AdminFaqController::class, 'store']);
-        Route::put('/faqs/{faq}', [AdminFaqController::class, 'update']);
-        Route::delete('/faqs/{faq}', [AdminFaqController::class, 'destroy']);
     });
 
     /*
@@ -408,11 +400,4 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     */
     Route::get('/plans', [AdminPlanController::class, 'publicIndex']);
     Route::get('/plans/trial/available', [AdminPlanController::class, 'getAvailableTrial']);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Public FAQs
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/faqs', [FaqController::class, 'index']);
 });

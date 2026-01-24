@@ -114,17 +114,4 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Email Logo URL
-    |--------------------------------------------------------------------------
-    |
-    | This option controls the logo URL that will be displayed in email
-    | templates. If not set, the application name will be displayed as text.
-    | The logo should be placed in the public/images directory.
-    |
-    */
-
-    'logo_url' => env('MAIL_LOGO_URL', null),
-
 ];
