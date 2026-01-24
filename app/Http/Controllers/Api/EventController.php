@@ -212,7 +212,7 @@ class EventController extends Controller
 
         // Consommer un crédit de création d'événement (sauf pour les admins)
         if (!$user->isAdmin()) {
-            $this->quotaService->consumeCreation($user);
+        $this->quotaService->consumeCreation($user);
         }
 
         // Si une photo de couverture est fournie par l'utilisateur, l'uploader et la marquer comme featured

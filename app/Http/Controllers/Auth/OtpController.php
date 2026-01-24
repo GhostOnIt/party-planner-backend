@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\SendOtpRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Models\Otp;
 use App\Models\User;
+use App\Rules\StrongPassword;
 use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -238,7 +239,7 @@ class OtpController extends Controller
         $request->validate([
             'identifier' => ['required', 'string'],
             'reset_token' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', new StrongPassword(), 'confirmed'],
         ]);
 
         $identifier = strtolower($request->identifier);
