@@ -2,9 +2,11 @@
 
 namespace App\Observers;
 
+use App\Enums\BudgetCategory;
 use App\Enums\CollaboratorRole;
 use App\Enums\EventType;
 use App\Models\User;
+use App\Models\UserBudgetCategory;
 use App\Models\UserCollaboratorRole;
 use App\Models\UserEventType;
 use App\Services\PermissionService;
@@ -89,6 +91,63 @@ class UserObserver
                 'permissions' => $permissionService->getSystemRolePermissions($role->value),
                 'is_default' => true,
                 'order' => $order++,
+            ]);
+        }
+
+        // Create default budget categories
+        $defaultBudgetCategories = [
+            [
+                'slug' => BudgetCategory::LOCATION->value,
+                'name' => BudgetCategory::LOCATION->label(),
+                'color' => BudgetCategory::LOCATION->color(),
+                'order' => 1,
+            ],
+            [
+                'slug' => BudgetCategory::CATERING->value,
+                'name' => BudgetCategory::CATERING->label(),
+                'color' => BudgetCategory::CATERING->color(),
+                'order' => 2,
+            ],
+            [
+                'slug' => BudgetCategory::DECORATION->value,
+                'name' => BudgetCategory::DECORATION->label(),
+                'color' => BudgetCategory::DECORATION->color(),
+                'order' => 3,
+            ],
+            [
+                'slug' => BudgetCategory::ENTERTAINMENT->value,
+                'name' => BudgetCategory::ENTERTAINMENT->label(),
+                'color' => BudgetCategory::ENTERTAINMENT->color(),
+                'order' => 4,
+            ],
+            [
+                'slug' => BudgetCategory::PHOTOGRAPHY->value,
+                'name' => BudgetCategory::PHOTOGRAPHY->label(),
+                'color' => BudgetCategory::PHOTOGRAPHY->color(),
+                'order' => 5,
+            ],
+            [
+                'slug' => BudgetCategory::TRANSPORTATION->value,
+                'name' => BudgetCategory::TRANSPORTATION->label(),
+                'color' => BudgetCategory::TRANSPORTATION->color(),
+                'order' => 6,
+            ],
+            [
+                'slug' => BudgetCategory::OTHER->value,
+                'name' => BudgetCategory::OTHER->label(),
+                'color' => BudgetCategory::OTHER->color(),
+                'order' => 7,
+            ],
+        ];
+
+        foreach ($defaultBudgetCategories as $category) {
+            UserBudgetCategory::create([
+                'user_id' => $user->id,
+                'slug' => $category['slug'],
+                'name' => $category['name'],
+                'color' => $category['color'],
+                'is_default' => true,
+                'order' => $category['order'],
             ]);
         }
     }

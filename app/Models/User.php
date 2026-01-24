@@ -258,4 +258,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(UserCollaboratorRole::class);
     }
+
+    /**
+     * Get the budget categories for the user.
+     */
+    public function budgetCategories(): HasMany
+    {
+        return $this->hasMany(UserBudgetCategory::class);
+    }
 }

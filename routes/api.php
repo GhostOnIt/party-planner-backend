@@ -266,6 +266,13 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/collaborator-roles/{role}', [SettingsController::class, 'updateCollaboratorRole']);
         Route::delete('/collaborator-roles/{role}', [SettingsController::class, 'deleteCollaboratorRole']);
         Route::post('/collaborator-roles/reorder', [SettingsController::class, 'reorderCollaboratorRoles']);
+
+        // Budget Categories
+        Route::get('/budget-categories', [SettingsController::class, 'getBudgetCategories']);
+        Route::post('/budget-categories', [SettingsController::class, 'createBudgetCategory']);
+        Route::put('/budget-categories/{category}', [SettingsController::class, 'updateBudgetCategory']);
+        Route::delete('/budget-categories/{category}', [SettingsController::class, 'deleteBudgetCategory']);
+        Route::post('/budget-categories/reorder', [SettingsController::class, 'reorderBudgetCategories']);
     });
 
     /*

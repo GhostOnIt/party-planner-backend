@@ -25,8 +25,19 @@ class StoreBudgetItemRequest extends FormRequest
      */
     public function rules(): array
     {
+        $user = $this->user();
+        
+        // Get user's budget categories slugs
+        $userCategorySlugs = $user->budgetCategories()->pluck('slug')->toArray();
+        
+        // Also allow default enum categories for backward compatibility
+        $defaultCategorySlugs = array_column(BudgetCategory::cases(), 'value');
+        
+        // Combine both
+        $allowedCategories = array_merge($userCategorySlugs, $defaultCategorySlugs);
+        
         return [
-            'category' => ['required', Rule::enum(BudgetCategory::class)],
+            'category' => ['required', 'string', Rule::in($allowedCategories)],
             'name' => ['required', 'string', 'max:255'],
             'estimated_cost' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
             'actual_cost' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],

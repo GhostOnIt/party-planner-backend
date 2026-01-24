@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             UserEventTypesSeeder::class,
             UserCollaboratorRolesSeeder::class,
+            UserBudgetCategoriesSeeder::class,
         ]);
     }
 }

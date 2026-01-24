@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('user_budget_categories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('slug');
+            $table->string('color')->nullable();
+            $table->boolean('is_default')->default(false);
+            $table->integer('order')->default(0);
             $table->timestamps();
+            
+            $table->unique(['user_id', 'slug']);
+            $table->index(['user_id', 'order']);
         });
     }
 

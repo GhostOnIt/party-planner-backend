@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BudgetItem;
 use App\Models\Event;
+use App\Models\UserBudgetCategory;
 use App\Models\UserCollaboratorRole;
 use App\Models\UserEventType;
 use Illuminate\Http\JsonResponse;
@@ -329,7 +331,170 @@ class SettingsController extends Controller
         }
 
         return response()->json([
-            'message' => 'Ordre des rôles mis à jour.',
+            'message' =>             'Ordre des rôles mis à jour.',
+        ]);
+    }
+
+    /**
+     * Get user's budget categories.
+     */
+    public function getBudgetCategories(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $categories = $user->budgetCategories()->ordered()->get();
+
+        return response()->json([
+            'data' => $categories,
+        ]);
+    }
+
+    /**
+     * Create a new budget category.
+     */
+    public function createBudgetCategory(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9_-]+$/',
+                Rule::unique('user_budget_categories')->where('user_id', $user->id),
+            ],
+            'color' => 'nullable|string|max:50',
+        ]);
+
+        // Generate slug from name if not provided
+        if (empty($validated['slug'])) {
+            $validated['slug'] = Str::slug($validated['name']);
+        }
+
+        // Get max order
+        $maxOrder = $user->budgetCategories()->max('order') ?? 0;
+
+        $category = UserBudgetCategory::create([
+            'user_id' => $user->id,
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'color' => $validated['color'] ?? 'gray',
+            'is_default' => false,
+            'order' => $maxOrder + 1,
+        ]);
+
+        return response()->json([
+            'message' => 'Catégorie de budget créée avec succès.',
+            'data' => $category,
+        ], 201);
+    }
+
+    /**
+     * Update a budget category.
+     */
+    public function updateBudgetCategory(Request $request, UserBudgetCategory $category): JsonResponse
+    {
+        $user = $request->user();
+
+        // Ensure the category belongs to the user
+        if ($category->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Catégorie de budget non trouvée.',
+            ], 404);
+        }
+
+        // Prevent editing default categories
+        if ($category->is_default) {
+            return response()->json([
+                'message' => 'Les catégories par défaut ne peuvent pas être modifiées.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9_-]+$/',
+                Rule::unique('user_budget_categories')->where('user_id', $user->id)->ignore($category->id),
+            ],
+            'color' => 'nullable|string|max:50',
+            'order' => 'nullable|integer|min:0',
+        ]);
+
+        $category->update($validated);
+
+        return response()->json([
+            'message' => 'Catégorie de budget modifiée avec succès.',
+            'data' => $category->fresh(),
+        ]);
+    }
+
+    /**
+     * Delete a budget category.
+     */
+    public function deleteBudgetCategory(Request $request, UserBudgetCategory $category): JsonResponse
+    {
+        $user = $request->user();
+
+        // Ensure the category belongs to the user
+        if ($category->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Catégorie de budget non trouvée.',
+            ], 404);
+        }
+
+        // Prevent deleting default categories
+        if ($category->is_default) {
+            return response()->json([
+                'message' => 'Les catégories par défaut ne peuvent pas être supprimées.',
+            ], 403);
+        }
+
+        // Check if category is used in any budget items
+        $budgetItemsCount = BudgetItem::whereHas('event', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
+            ->where('category', $category->slug)
+            ->count();
+
+        if ($budgetItemsCount > 0) {
+            return response()->json([
+                'message' => 'Cette catégorie est utilisée dans ' . $budgetItemsCount . ' élément(s) de budget. Veuillez modifier ou supprimer ces éléments avant de supprimer la catégorie.',
+            ], 422);
+        }
+
+        $category->delete();
+
+        return response()->json([
+            'message' => 'Catégorie de budget supprimée avec succès.',
+        ]);
+    }
+
+    /**
+     * Reorder budget categories.
+     */
+    public function reorderBudgetCategories(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'order' => 'required|array',
+            'order.*.id' => 'required|exists:user_budget_categories,id',
+            'order.*.order' => 'required|integer|min:0',
+        ]);
+
+        foreach ($validated['order'] as $item) {
+            $category = UserBudgetCategory::find($item['id']);
+            if ($category && $category->user_id === $user->id) {
+                $category->update(['order' => $item['order']]);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Ordre des catégories de budget mis à jour.',
         ]);
     }
 }
