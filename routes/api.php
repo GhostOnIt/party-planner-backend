@@ -85,6 +85,13 @@ Route::prefix('events/{event}/photos/public/{token}')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Communication Spots - Public Routes (for login/register pages)
+|--------------------------------------------------------------------------
+*/
+Route::get('/communication/active', [CommunicationSpotController::class, 'active']);
+
+/*
+|--------------------------------------------------------------------------
 | API Routes - Authenticated
 |--------------------------------------------------------------------------
 */
@@ -375,7 +382,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     |--------------------------------------------------------------------------
     */
     Route::prefix('communication')->group(function () {
-        Route::get('/active', [CommunicationSpotController::class, 'active']);
+        // Note: GET /active is defined as a public route outside auth middleware
         Route::post('/{id}/view', [CommunicationSpotController::class, 'trackView']);
         Route::post('/{id}/click', [CommunicationSpotController::class, 'trackClick']);
         Route::post('/{id}/vote', [CommunicationSpotController::class, 'vote']);

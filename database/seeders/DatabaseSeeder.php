@@ -48,6 +48,7 @@ class DatabaseSeeder extends Seeder
             UserEventTypesSeeder::class,
             UserCollaboratorRolesSeeder::class,
             UserBudgetCategoriesSeeder::class,
+            CommunicationSpotSeeder::class,
         ]);
     }
 }

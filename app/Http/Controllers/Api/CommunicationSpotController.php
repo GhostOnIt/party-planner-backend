@@ -214,13 +214,18 @@ class CommunicationSpotController extends Controller
             $data['isActive'] = filter_var($data['isActive'], FILTER_VALIDATE_BOOLEAN);
         }
         
+        // Remove image from data if it's a string URL (existing image, not a new upload)
+        if (isset($data['image']) && is_string($data['image']) && !$request->hasFile('image')) {
+            unset($data['image']);
+        }
+        
         $request->merge($data);
 
-        $validated = $request->validate([
+        // Build validation rules - only validate image if it's a file upload
+        $rules = [
             'type' => 'sometimes|in:banner,poll',
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:5120',
             'badge' => 'nullable|string|max:50',
             'badgeType' => 'nullable|in:live,new,promo',
             'primaryButton' => 'nullable|array',
@@ -240,7 +245,14 @@ class CommunicationSpotController extends Controller
             'endDate' => 'nullable|date',
             'targetRoles' => 'nullable|array',
             'targetRoles.*' => 'string',
-        ]);
+        ];
+        
+        // Only validate image if a file is being uploaded
+        if ($request->hasFile('image')) {
+            $rules['image'] = 'nullable|image|max:5120';
+        }
+        
+        $validated = $request->validate($rules);
 
         // Handle image upload
         if ($request->hasFile('image')) {
