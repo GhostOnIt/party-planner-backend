@@ -7,6 +7,8 @@ use App\Listeners\CreateSystemRolesForEvent;
 use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\Payment;
+use App\Models\User;
+use App\Observers\UserObserver;
 use App\Policies\AdminPolicy;
 use App\Policies\CollaboratorPolicy;
 use App\Policies\EventPolicy;
@@ -50,5 +52,8 @@ class AppServiceProvider extends ServiceProvider
             EventCreated::class,
             CreateSystemRolesForEvent::class
         );
+
+        // Register observers
+        User::observe(UserObserver::class);
     }
 }

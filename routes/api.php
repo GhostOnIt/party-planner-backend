@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AdminLegalPageController;
 use App\Http\Controllers\Api\AdminPlanController;
+use App\Http\Controllers\Api\CommunicationSpotController;
+use App\Http\Controllers\Api\LegalPageController;
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
@@ -12,6 +15,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -83,6 +87,20 @@ Route::prefix('events/{event}/photos/public/{token}')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Communication Spots - Public Routes (for login/register pages)
+|--------------------------------------------------------------------------
+*/
+Route::get('/communication/active', [CommunicationSpotController::class, 'active']);
+
+/*
+|--------------------------------------------------------------------------
+| Legal Pages - Public Routes (terms, privacy policy, etc.)
+|--------------------------------------------------------------------------
+*/
+Route::get('/legal/{slug}', [LegalPageController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
 | API Routes - Authenticated
 |--------------------------------------------------------------------------
 */
@@ -104,6 +122,8 @@ Route::middleware('auth:sanctum')->group(function () {
     | Events
     |--------------------------------------------------------------------------
     */
+    // Specific routes must be defined BEFORE the resource route to avoid conflicts
+    Route::get('events/upcoming', [DashboardController::class, 'upcoming']);
     Route::get('events/{event}/permissions', [EventController::class, 'getPermissions']);
     Route::apiResource('events', EventController::class);
 
@@ -246,6 +266,34 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
 
     /*
     |--------------------------------------------------------------------------
+    | Settings (Event Types & Collaborator Roles)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('settings')->group(function () {
+        // Event Types
+        Route::get('/event-types', [SettingsController::class, 'getEventTypes']);
+        Route::post('/event-types', [SettingsController::class, 'createEventType']);
+        Route::put('/event-types/{eventType}', [SettingsController::class, 'updateEventType']);
+        Route::delete('/event-types/{eventType}', [SettingsController::class, 'deleteEventType']);
+        Route::post('/event-types/reorder', [SettingsController::class, 'reorderEventTypes']);
+
+        // Collaborator Roles
+        Route::get('/collaborator-roles', [SettingsController::class, 'getCollaboratorRoles']);
+        Route::post('/collaborator-roles', [SettingsController::class, 'createCollaboratorRole']);
+        Route::put('/collaborator-roles/{role}', [SettingsController::class, 'updateCollaboratorRole']);
+        Route::delete('/collaborator-roles/{role}', [SettingsController::class, 'deleteCollaboratorRole']);
+        Route::post('/collaborator-roles/reorder', [SettingsController::class, 'reorderCollaboratorRoles']);
+
+        // Budget Categories
+        Route::get('/budget-categories', [SettingsController::class, 'getBudgetCategories']);
+        Route::post('/budget-categories', [SettingsController::class, 'createBudgetCategory']);
+        Route::put('/budget-categories/{category}', [SettingsController::class, 'updateBudgetCategory']);
+        Route::delete('/budget-categories/{category}', [SettingsController::class, 'deleteBudgetCategory']);
+        Route::post('/budget-categories/reorder', [SettingsController::class, 'reorderBudgetCategories']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
     | Device Tokens (for push notifications)
     |--------------------------------------------------------------------------
     */
@@ -300,6 +348,11 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
     Route::get('/dashboard/user-stats', [DashboardController::class, 'userStats']);
     Route::get('/dashboard/urgent-tasks', [DashboardController::class, 'urgentTasks']);
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/confirmations', [DashboardController::class, 'confirmations']);
+    Route::get('/dashboard/events-by-type', [DashboardController::class, 'eventsByType']);
+    Route::get('/activities/recent', [DashboardController::class, 'recentActivity']);
+    Route::get('/search', [DashboardController::class, 'search']);
 
     /*
     |--------------------------------------------------------------------------
@@ -334,13 +387,27 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
 
     /*
     |--------------------------------------------------------------------------
+    | Communication Spots (public for authenticated users)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('communication')->group(function () {
+        // Note: GET /active is defined as a public route outside auth middleware
+        Route::post('/{id}/view', [CommunicationSpotController::class, 'trackView']);
+        Route::post('/{id}/click', [CommunicationSpotController::class, 'trackClick']);
+        Route::post('/{id}/vote', [CommunicationSpotController::class, 'vote']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin Routes (require admin role)
     |--------------------------------------------------------------------------
     */
     Route::middleware('admin')->prefix('admin')->group(function () {
         // Dashboard & Statistics
         Route::get('/stats', [DashboardController::class, 'adminStats']);
+        Route::get('/dashboard/stats', [DashboardController::class, 'adminDashboardStats']);
         Route::get('/chart-data', [DashboardController::class, 'adminChartData']);
+        Route::get('/subscriptions/distribution', [DashboardController::class, 'adminPlanDistribution']);
 
         // Users Management
         Route::get('/users', [DashboardController::class, 'adminUsers']);
@@ -372,6 +439,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/plans/{plan}/toggle-active', [AdminPlanController::class, 'toggleActive']);
 
         // Activity Logs
+        Route::get('/activity', [DashboardController::class, 'adminRecentActivity']);
         Route::get('/activity-logs', [DashboardController::class, 'adminActivityLogs']);
         Route::get('/activity-logs/stats', [DashboardController::class, 'adminActivityStats']);
 
@@ -381,6 +449,26 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/templates/{template}', [EventTemplateController::class, 'update']);
         Route::delete('/templates/{template}', [EventTemplateController::class, 'destroy']);
         Route::post('/templates/{template}/toggle-active', [EventTemplateController::class, 'toggleActive']);
+
+        // Communication Spots Management
+        Route::get('/communication', [CommunicationSpotController::class, 'index']);
+        Route::post('/communication', [CommunicationSpotController::class, 'store']);
+        Route::get('/communication/{id}', [CommunicationSpotController::class, 'show']);
+        Route::put('/communication/{id}', [CommunicationSpotController::class, 'update']);
+        Route::post('/communication/{id}', [CommunicationSpotController::class, 'update']); // For FormData
+        Route::delete('/communication/{id}', [CommunicationSpotController::class, 'destroy']);
+        Route::patch('/communication/{id}/toggle', [CommunicationSpotController::class, 'toggle']);
+        Route::get('/communication/{id}/results', [CommunicationSpotController::class, 'results']);
+        Route::post('/communication/{id}/reset-votes', [CommunicationSpotController::class, 'resetVotes']);
+        Route::post('/communication/{id}/close', [CommunicationSpotController::class, 'close']);
+        Route::get('/communication/{id}/export', [CommunicationSpotController::class, 'export']);
+
+        // Legal Pages Management
+        Route::get('/legal-pages', [AdminLegalPageController::class, 'index']);
+        Route::post('/legal-pages', [AdminLegalPageController::class, 'store']);
+        Route::get('/legal-pages/{id}', [AdminLegalPageController::class, 'show']);
+        Route::put('/legal-pages/{id}', [AdminLegalPageController::class, 'update']);
+        Route::delete('/legal-pages/{id}', [AdminLegalPageController::class, 'destroy']);
     });
 
     /*

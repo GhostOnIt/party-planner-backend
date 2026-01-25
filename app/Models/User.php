@@ -63,6 +63,13 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['avatar_url'];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -77,6 +84,17 @@ class User extends Authenticatable implements MustVerifyEmail
             'otp_enabled' => 'boolean',
             'notification_preferences' => 'array',
         ];
+    }
+
+    /**
+     * Get the avatar URL attribute.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+        return '/storage/' . ltrim($this->avatar, '/');
     }
 
     /**
@@ -223,5 +241,29 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getPreferredOtpChannel(): string
     {
         return $this->preferred_otp_channel ?? Otp::CHANNEL_EMAIL;
+    }
+
+    /**
+     * Get the event types for the user.
+     */
+    public function eventTypes(): HasMany
+    {
+        return $this->hasMany(UserEventType::class);
+    }
+
+    /**
+     * Get the collaborator roles for the user.
+     */
+    public function collaboratorRoles(): HasMany
+    {
+        return $this->hasMany(UserCollaboratorRole::class);
+    }
+
+    /**
+     * Get the budget categories for the user.
+     */
+    public function budgetCategories(): HasMany
+    {
+        return $this->hasMany(UserBudgetCategory::class);
     }
 }

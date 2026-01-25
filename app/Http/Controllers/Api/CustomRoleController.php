@@ -103,12 +103,15 @@ class CustomRoleController extends Controller
     }
 
     /**
-     * Get available roles (system roles that can be assigned).
+     * Get available roles (system roles + user's custom roles that can be assigned).
      */
-    public function availableRoles(): JsonResponse
+    public function availableRoles(Request $request): JsonResponse
     {
+        $user = $request->user();
         $systemRoles = [];
+        $customRoles = [];
 
+        // Get system roles
         foreach (\App\Enums\CollaboratorRole::assignableRoles() as $roleEnum) {
             $systemRoles[] = [
                 'value' => $roleEnum->value,
@@ -116,11 +119,26 @@ class CustomRoleController extends Controller
                 'description' => $roleEnum->description(),
                 'color' => $roleEnum->color(),
                 'icon' => $roleEnum->icon(),
+                'is_system' => true,
+            ];
+        }
+
+        // Get user's custom roles
+        $userRoles = $user->collaboratorRoles()->ordered()->get();
+        foreach ($userRoles as $role) {
+            $customRoles[] = [
+                'value' => $role->slug,
+                'label' => $role->name,
+                'description' => $role->description,
+                'color' => 'blue', // Default color for custom roles
+                'icon' => 'user', // Default icon for custom roles
+                'is_system' => false,
+                'id' => $role->id,
             ];
         }
 
         return response()->json([
-            'roles' => $systemRoles,
+            'roles' => array_merge($systemRoles, $customRoles),
         ]);
     }
 }

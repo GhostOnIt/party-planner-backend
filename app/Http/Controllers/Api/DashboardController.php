@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Guest;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\Task;
@@ -164,6 +165,197 @@ class DashboardController extends Controller
         ];
     }
 
+    /**
+     * Get dashboard statistics with filters (period + event type).
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $period = $request->input('period', 'all');
+        $eventType = $request->input('type', 'all');
+        $customRange = null;
+
+        if ($period === 'custom') {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            if ($startDate && $endDate) {
+                $customRange = [
+                    'start' => \Carbon\Carbon::parse($startDate),
+                    'end' => \Carbon\Carbon::parse($endDate),
+                ];
+            }
+        }
+
+        $stats = $this->dashboardService->getUserStatsWithFilters($user, $period, $eventType, $customRange);
+
+        return response()->json($stats);
+    }
+
+    /**
+     * Get confirmations chart data with filters.
+     */
+    public function confirmations(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $period = $request->input('period', 'all');
+        $eventType = $request->input('type', 'all');
+        $page = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('per_page', 5);
+        $search = $request->input('search', '');
+        $sortBy = $request->input('sort_by', 'confirmRate');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $filters = [
+            'page' => $page,
+            'per_page' => $perPage,
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder,
+        ];
+
+        $data = $this->dashboardService->getConfirmationsData($user, $period, $eventType, $filters);
+
+        return response()->json($data);
+    }
+
+    /**
+     * Get events by type chart data.
+     */
+    public function eventsByType(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $period = $request->input('period', 'all');
+        $eventType = $request->input('type', 'all');
+
+        $data = $this->dashboardService->getEventsByTypeData($user, $period, $eventType);
+
+        return response()->json($data);
+    }
+
+    /**
+     * Get upcoming events.
+     */
+    public function upcoming(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $limit = (int) $request->input('limit', 4);
+
+        // Get all event IDs the user owns or collaborates on
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique();
+
+        $events = Event::whereIn('id', $eventIds)
+            ->where('date', '>=', now()->startOfDay())
+            ->orderBy('date', 'asc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($event) {
+                return [
+                    'id' => $event->id,
+                    'name' => $event->title,
+                    'type' => $event->type,
+                    'date' => $event->date ? $event->date->format('d M Y') : null,
+                    'location' => $event->location,
+                ];
+            });
+
+        return response()->json($events);
+    }
+
+    /**
+     * Get recent activity.
+     */
+    public function recentActivity(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $limit = (int) $request->input('limit', 6);
+
+        $activities = $this->dashboardService->getUserRecentActivity($user, $limit);
+
+        return response()->json($activities);
+    }
+
+    /**
+     * Global search for events and guests.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $query = $request->input('q', '');
+        $limit = (int) $request->input('limit', 10);
+
+        if (empty($query)) {
+            return response()->json([
+                'events' => [],
+                'guests' => [],
+            ]);
+        }
+
+        // Get all event IDs the user owns or collaborates on
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique();
+
+        // Search events
+        $events = Event::whereIn('id', $eventIds)
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'ilike', "%{$query}%")
+                  ->orWhere('type', 'ilike', "%{$query}%")
+                  ->orWhere('location', 'ilike', "%{$query}%");
+            })
+            ->select('id', 'title', 'type', 'date', 'location')
+            ->orderBy('date', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function ($event) {
+                return [
+                    'id' => $event->id,
+                    'name' => $event->title,
+                    'type' => $event->type,
+                    'date' => $event->date ? $event->date->format('Y-m-d') : null,
+                    'location' => $event->location,
+                ];
+            });
+
+        // Search guests
+        $guests = Guest::whereIn('event_id', $eventIds)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'ilike', "%{$query}%")
+                  ->orWhere('email', 'ilike', "%{$query}%")
+                  ->orWhere('phone', 'ilike', "%{$query}%");
+            })
+            ->with('event:id,title')
+            ->select('id', 'event_id', 'name', 'email', 'phone', 'rsvp_status')
+            ->orderBy('name')
+            ->limit($limit)
+            ->get()
+            ->map(function ($guest) {
+                return [
+                    'id' => $guest->id,
+                    'name' => $guest->name,
+                    'email' => $guest->email,
+                    'phone' => $guest->phone,
+                    'rsvp_status' => $guest->rsvp_status,
+                    'event' => [
+                        'id' => $guest->event->id,
+                        'title' => $guest->event->title,
+                    ],
+                ];
+            });
+
+        return response()->json([
+            'events' => $events,
+            'guests' => $guests,
+        ]);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Admin Dashboard Methods
@@ -180,6 +372,40 @@ class DashboardController extends Controller
         return response()->json([
             'stats' => $stats,
         ]);
+    }
+
+    /**
+     * Get admin dashboard stats with filters and trends.
+     */
+    public function adminDashboardStats(Request $request): JsonResponse
+    {
+        $period = $request->input('period', 'all');
+        $customRange = null;
+
+        if ($period === 'custom') {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            if ($startDate && $endDate) {
+                $customRange = [
+                    'start' => \Carbon\Carbon::parse($startDate),
+                    'end' => \Carbon\Carbon::parse($endDate),
+                ];
+            }
+        }
+
+        $stats = $this->dashboardService->getAdminDashboardStatsWithFilters($period, $customRange);
+
+        return response()->json($stats);
+    }
+
+    /**
+     * Get plan distribution for admin dashboard.
+     */
+    public function adminPlanDistribution(): JsonResponse
+    {
+        $distribution = $this->dashboardService->getPlanDistribution();
+
+        return response()->json($distribution);
     }
 
     /**
@@ -450,7 +676,7 @@ class DashboardController extends Controller
      */
     public function adminPayments(Request $request): JsonResponse
     {
-        $query = Payment::with(['subscription.event.user']);
+        $query = Payment::with(['subscription.user', 'subscription.event.user']);
 
         // Filter by status
         if ($status = $request->input('status')) {
@@ -514,15 +740,23 @@ class DashboardController extends Controller
      */
     public function adminSubscriptions(Request $request): JsonResponse
     {
-        $query = Subscription::with(['event', 'event.user']);
+        $query = Subscription::with(['user', 'event', 'event.user']);
+
+        // Search (case-insensitive) - search by user name or email
+        if ($search = $request->input('search')) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('email', 'ilike', "%{$search}%");
+            });
+        }
 
         // Filter by plan
-        if ($plan = $request->input('plan')) {
+        if ($plan = $request->input('plan_type')) {
             $query->where('plan_type', $plan);
         }
 
         // Filter by status
-        if ($status = $request->input('status')) {
+        if ($status = $request->input('payment_status')) {
             $query->where('payment_status', $status);
         }
 
@@ -532,6 +766,20 @@ class DashboardController extends Controller
         $query->orderBy($sortBy, $sortDir);
 
         $subscriptions = $query->paginate($request->input('per_page', 15));
+
+        // Add events count for each subscription
+        $subscriptions->getCollection()->transform(function ($subscription) {
+            $startDate = $subscription->created_at;
+            $endDate = $subscription->expires_at ?? now();
+            
+            // Count events created by the user during the subscription period
+            $eventsCount = \App\Models\Event::where('user_id', $subscription->user_id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+            
+            $subscription->events_count = $eventsCount;
+            return $subscription;
+        });
 
         return response()->json($subscriptions);
     }
@@ -660,5 +908,111 @@ class DashboardController extends Controller
         return response()->json([
             'stats' => $stats,
         ]);
+    }
+
+    /**
+     * Get recent platform activity for admin dashboard.
+     */
+    public function adminRecentActivity(Request $request): JsonResponse
+    {
+        $limit = (int) $request->input('limit', 10);
+        
+        $activities = [];
+        
+        // Get recent users
+        $recentUsers = User::orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentUsers as $user) {
+            $activities[] = [
+                'id' => 'user_' . $user->id,
+                'type' => 'user_registered',
+                'description' => "Nouvel utilisateur inscrit: {$user->name}",
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ],
+                'created_at' => $user->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Get recent events
+        $recentEvents = Event::with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentEvents as $event) {
+            $activities[] = [
+                'id' => 'event_' . $event->id,
+                'type' => 'event_created',
+                'description' => "Nouvel événement créé: {$event->title}",
+                'user' => $event->user ? [
+                    'id' => $event->user->id,
+                    'name' => $event->user->name,
+                ] : null,
+                'created_at' => $event->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Get recent completed payments
+        $recentPayments = Payment::with(['subscription.user', 'subscription.event.user'])
+            ->where('status', 'completed')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentPayments as $payment) {
+            // Try subscription.user first, then subscription.event.user
+            $user = $payment->subscription?->user 
+                ?? $payment->subscription?->event?->user 
+                ?? null;
+            $userName = $user?->name ?? 'Utilisateur inconnu';
+            $activities[] = [
+                'id' => 'payment_' . $payment->id,
+                'type' => 'payment_completed',
+                'description' => "Paiement complété: " . number_format($payment->amount, 0, ',', ' ') . " FCFA par {$userName}",
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ] : null,
+                'created_at' => $payment->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Get recent subscriptions
+        $recentSubscriptions = Subscription::with(['user', 'event.user'])
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+        
+        foreach ($recentSubscriptions as $subscription) {
+            // Try subscription.user first, then subscription.event.user
+            $user = $subscription->user 
+                ?? $subscription->event?->user 
+                ?? null;
+            $userName = $user?->name ?? 'Utilisateur inconnu';
+            $planType = $subscription->plan_type === 'essai-gratuit' ? 'Essai gratuit' : ucfirst($subscription->plan_type);
+            $activities[] = [
+                'id' => 'subscription_' . $subscription->id,
+                'type' => 'subscription_created',
+                'description' => "Nouvel abonnement {$planType} créé pour {$userName}",
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ] : null,
+                'created_at' => $subscription->created_at->toIso8601String(),
+            ];
+        }
+        
+        // Sort by created_at desc and limit
+        usort($activities, function($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+        
+        $activities = array_slice($activities, 0, $limit);
+        
+        return response()->json($activities);
     }
 }

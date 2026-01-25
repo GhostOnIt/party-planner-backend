@@ -79,6 +79,7 @@ class AdminPlanController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:plans,slug'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'integer', 'min:0'],
@@ -146,6 +147,7 @@ class AdminPlanController extends Controller
     {
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
             'slug' => ['sometimes', 'string', 'max:255', Rule::unique('plans', 'slug')->ignore($plan->id)],
             'description' => ['nullable', 'string'],
             'price' => ['sometimes', 'integer', 'min:0'],
@@ -297,6 +299,7 @@ class AdminPlanController extends Controller
             'data' => [
                 'id' => $trialPlan->id,
                 'name' => $trialPlan->name,
+                'title' => $trialPlan->title,
                 'slug' => $trialPlan->slug,
                 'description' => $trialPlan->description,
                 'price' => $trialPlan->price,
