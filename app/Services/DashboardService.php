@@ -55,13 +55,14 @@ class DashboardService
         });
         $usersActive = $usersActiveQuery->count();
         $usersInactive = $currentUsers->count() - $usersActive;
-        $usersNew = $currentUsers->where('created_at', '>=', now()->startOfMonth())->count();
+        // Count users created in the last 48 hours
+        $usersNew = User::where('created_at', '>=', now()->subHours(48))->count();
 
         $usersTrend = $this->calculateTrend($currentUsers->count(), $previousUsers->count());
         $usersBreakdown = [
             ['label' => 'Actifs', 'value' => $usersActive, 'color' => '#10B981'],
             ['label' => 'Inactifs', 'value' => $usersInactive, 'color' => '#6b7280'],
-            ['label' => 'Nouveaux', 'value' => $usersNew, 'color' => '#4F46E5'],
+            ['label' => 'Nouveaux (48h)', 'value' => $usersNew, 'color' => '#4F46E5'],
         ];
 
         // Events stats
@@ -811,12 +812,12 @@ class DashboardService
      */
     protected function calculateStatsForEvents(Collection $events): array
     {
-        $now = Carbon::now();
-
-        // Events breakdown
-        $eventsUpcoming = $events->filter(fn($e) => $e->date && $e->date->isFuture())->count();
-        $eventsInProgress = $events->filter(fn($e) => $e->date && $e->date->isPast() && $e->status === 'confirmed')->count();
+        // Events breakdown - use status field directly (managed by cron job)
+        // Status values: 'upcoming', 'ongoing', 'completed', 'cancelled'
+        $eventsUpcoming = $events->filter(fn($e) => $e->status === 'upcoming')->count();
+        $eventsOngoing = $events->filter(fn($e) => $e->status === 'ongoing')->count();
         $eventsCompleted = $events->filter(fn($e) => $e->status === 'completed')->count();
+        $eventsCancelled = $events->filter(fn($e) => $e->status === 'cancelled')->count();
 
         // Guests breakdown
         $guestsAccepted = 0;
@@ -866,8 +867,9 @@ class DashboardService
                 'total' => $events->count(),
                 'breakdown' => [
                     ['label' => 'À venir', 'value' => $eventsUpcoming, 'color' => '#4F46E5'],
-                    ['label' => 'En cours', 'value' => $eventsInProgress, 'color' => '#F97316'],
+                    ['label' => 'En cours', 'value' => $eventsOngoing, 'color' => '#F97316'],
                     ['label' => 'Terminés', 'value' => $eventsCompleted, 'color' => '#10B981'],
+                    ['label' => 'Annulés', 'value' => $eventsCancelled, 'color' => '#EF4444'],
                 ],
             ],
             'guests' => [

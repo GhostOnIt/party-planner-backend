@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminPlanController;
+use App\Http\Controllers\Api\CommunicationSpotController;
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
@@ -370,6 +371,18 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
 
     /*
     |--------------------------------------------------------------------------
+    | Communication Spots (public for authenticated users)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('communication')->group(function () {
+        Route::get('/active', [CommunicationSpotController::class, 'active']);
+        Route::post('/{id}/view', [CommunicationSpotController::class, 'trackView']);
+        Route::post('/{id}/click', [CommunicationSpotController::class, 'trackClick']);
+        Route::post('/{id}/vote', [CommunicationSpotController::class, 'vote']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin Routes (require admin role)
     |--------------------------------------------------------------------------
     */
@@ -420,6 +433,19 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/templates/{template}', [EventTemplateController::class, 'update']);
         Route::delete('/templates/{template}', [EventTemplateController::class, 'destroy']);
         Route::post('/templates/{template}/toggle-active', [EventTemplateController::class, 'toggleActive']);
+
+        // Communication Spots Management
+        Route::get('/communication', [CommunicationSpotController::class, 'index']);
+        Route::post('/communication', [CommunicationSpotController::class, 'store']);
+        Route::get('/communication/{id}', [CommunicationSpotController::class, 'show']);
+        Route::put('/communication/{id}', [CommunicationSpotController::class, 'update']);
+        Route::post('/communication/{id}', [CommunicationSpotController::class, 'update']); // For FormData
+        Route::delete('/communication/{id}', [CommunicationSpotController::class, 'destroy']);
+        Route::patch('/communication/{id}/toggle', [CommunicationSpotController::class, 'toggle']);
+        Route::get('/communication/{id}/results', [CommunicationSpotController::class, 'results']);
+        Route::post('/communication/{id}/reset-votes', [CommunicationSpotController::class, 'resetVotes']);
+        Route::post('/communication/{id}/close', [CommunicationSpotController::class, 'close']);
+        Route::get('/communication/{id}/export', [CommunicationSpotController::class, 'export']);
     });
 
     /*
