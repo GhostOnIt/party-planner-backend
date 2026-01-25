@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
             UserCollaboratorRolesSeeder::class,
             UserBudgetCategoriesSeeder::class,
             CommunicationSpotSeeder::class,
+            LegalPageSeeder::class,
         ]);
     }
 }

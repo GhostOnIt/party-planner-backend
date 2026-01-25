@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AdminLegalPageController;
 use App\Http\Controllers\Api\AdminPlanController;
 use App\Http\Controllers\Api\CommunicationSpotController;
+use App\Http\Controllers\Api\LegalPageController;
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
@@ -89,6 +91,13 @@ Route::prefix('events/{event}/photos/public/{token}')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::get('/communication/active', [CommunicationSpotController::class, 'active']);
+
+/*
+|--------------------------------------------------------------------------
+| Legal Pages - Public Routes (terms, privacy policy, etc.)
+|--------------------------------------------------------------------------
+*/
+Route::get('/legal/{slug}', [LegalPageController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------
@@ -453,6 +462,13 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/communication/{id}/reset-votes', [CommunicationSpotController::class, 'resetVotes']);
         Route::post('/communication/{id}/close', [CommunicationSpotController::class, 'close']);
         Route::get('/communication/{id}/export', [CommunicationSpotController::class, 'export']);
+
+        // Legal Pages Management
+        Route::get('/legal-pages', [AdminLegalPageController::class, 'index']);
+        Route::post('/legal-pages', [AdminLegalPageController::class, 'store']);
+        Route::get('/legal-pages/{id}', [AdminLegalPageController::class, 'show']);
+        Route::put('/legal-pages/{id}', [AdminLegalPageController::class, 'update']);
+        Route::delete('/legal-pages/{id}', [AdminLegalPageController::class, 'destroy']);
     });
 
     /*
