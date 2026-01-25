@@ -25,14 +25,24 @@ class UpdateCollaboratorRequest extends FormRequest
      */
     public function rules(): array
     {
+        $event = $this->route('event');
+        $eventOwner = $event->user;
+        
+        // Get system assignable roles
         $assignableRoleValues = collect(CollaboratorRole::assignableRoles())->map(fn ($r) => $r->value)->toArray();
+        
+        // Get event owner's custom role slugs
+        $customRoleSlugs = $eventOwner->collaboratorRoles()->pluck('slug')->toArray();
+        
+        // Combine system roles and custom roles
+        $allowedRoleValues = array_merge($assignableRoleValues, $customRoleSlugs);
 
         return [
             // Backward compatibility: allow either `role` (single) or `roles` (multiple)
             'role' => [
                 'required_without:roles',
                 'string',
-                Rule::in($assignableRoleValues),
+                Rule::in($allowedRoleValues),
             ],
             'roles' => [
                 'required_without:role',
@@ -40,7 +50,7 @@ class UpdateCollaboratorRequest extends FormRequest
                 'min:1',
             ],
             'roles.*' => [
-                Rule::in($assignableRoleValues),
+                Rule::in($allowedRoleValues),
             ],
             // Legacy single custom role
             'custom_role_id' => ['nullable', 'integer', 'exists:custom_roles,id'],

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\StoreEventRequest;
 use App\Models\Event;
+use App\Services\EventService;
 use App\Services\PermissionService;
 use App\Services\PhotoService;
 use App\Services\QuotaService;
@@ -19,17 +20,20 @@ class EventController extends Controller
     protected PermissionService $permissionService;
     protected QuotaService $quotaService;
     protected SubscriptionService $subscriptionService;
+    protected EventService $eventService;
 
     public function __construct(
         PhotoService $photoService, 
         PermissionService $permissionService,
         QuotaService $quotaService,
-        SubscriptionService $subscriptionService
+        SubscriptionService $subscriptionService,
+        EventService $eventService
     ) {
         $this->photoService = $photoService;
         $this->permissionService = $permissionService;
         $this->quotaService = $quotaService;
         $this->subscriptionService = $subscriptionService;
+        $this->eventService = $eventService;
     }
 
     /**
@@ -76,11 +80,27 @@ class EventController extends Controller
         $perPage = $request->input('per_page', 10);
         $events = $query
             ->with([
-                'user:id,name',
+                'user:id,name,avatar',
                 'coverPhoto:id,event_id,url,thumbnail_url',
                 'featuredPhoto:id,event_id,url,thumbnail_url'
             ])
-            ->withCount(['guests', 'tasks'])
+            ->withCount([
+                'guests',
+                'guests as guests_confirmed_count' => function ($query) {
+                    $query->where('rsvp_status', 'accepted');
+                },
+                'guests as guests_declined_count' => function ($query) {
+                    $query->where('rsvp_status', 'declined');
+                },
+                'guests as guests_pending_count' => function ($query) {
+                    $query->where('rsvp_status', 'pending');
+                },
+                'tasks',
+                'tasks as tasks_completed_count' => function ($query) {
+                    $query->where('status', 'completed');
+                }
+            ])
+            ->withSum('budgetItems as budget_spent', 'actual_cost')
             ->paginate($perPage);
 
         return response()->json($events);
@@ -93,8 +113,9 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        // Vérifier le quota avant de créer l'événement
-        if (!$this->quotaService->canCreateEvent($user)) {
+        // Les admins n'ont pas besoin d'abonnement pour créer un événement
+        // Vérifier le quota avant de créer l'événement (sauf pour les admins)
+        if (!$user->isAdmin() && !$this->quotaService->canCreateEvent($user)) {
             $quota = $this->quotaService->getCreationsQuota($user);
             $subscription = $this->subscriptionService->getUserActiveSubscription($user);
             
@@ -134,6 +155,12 @@ class EventController extends Controller
 
         $validated = $request->validated();
         $coverPhoto = $request->file('cover_photo');
+        // Récupérer template_id depuis les données validées
+        // Si présent et > 0, on l'utilise
+        // Si présent et null, on ne fait pas d'auto-application
+        // Si absent, on laisse null pour l'auto-application
+        $templateId = $validated['template_id'] ?? null;
+        $hasUserCoverPhoto = $request->hasFile('cover_photo') && $coverPhoto && $coverPhoto->isValid();
 
         // Debug: Log file information
         if ($coverPhoto) {
@@ -152,17 +179,45 @@ class EventController extends Controller
             ]);
         }
 
-        // Retirer cover_photo des données validées car ce n'est pas un champ du modèle Event
+        // Retirer cover_photo et template_id des données validées car ce ne sont pas des champs du modèle Event
         unset($validated['cover_photo']);
+        unset($validated['template_id']);
+        
+        // Indiquer si l'utilisateur a fourni une photo de couverture
+        $validated['_has_cover_photo'] = $hasUserCoverPhoto;
 
-        // Créer l'événement
-        $event = $user->events()->create($validated);
+        // Créer l'événement via EventService qui gère l'application des templates
+        // Si template_id est null et présent dans la requête, on passe -1 pour indiquer "pas d'auto-application"
+        // Si template_id est absent de la requête, on passe null pour l'auto-application
+        $finalTemplateId = ($request->has('template_id') && $templateId === null) ? -1 : $templateId;
+        $event = $this->eventService->create($user, $validated, $finalTemplateId);
+        
+        // Récupérer l'URL de la photo de couverture du template si elle existe
+        // L'EventService stocke cette info dans un attribut temporaire
+        $templateCoverPhotoUrl = null;
+        if ($finalTemplateId && $finalTemplateId > 0) {
+            $template = \App\Models\EventTemplate::find($finalTemplateId);
+            if ($template && $template->cover_photo_url) {
+                $templateCoverPhotoUrl = $template->cover_photo_url;
+            }
+        } elseif ($finalTemplateId === null) {
+            // Auto-application : récupérer le template appliqué automatiquement
+            $template = \App\Models\EventTemplate::active()
+                ->ofType($event->type)
+                ->first();
+            if ($template && $template->cover_photo_url) {
+                $templateCoverPhotoUrl = $template->cover_photo_url;
+            }
+        }
 
-        // Consommer un crédit de création d'événement
+        // Consommer un crédit de création d'événement (sauf pour les admins)
+        if (!$user->isAdmin()) {
         $this->quotaService->consumeCreation($user);
+        }
 
-        // Si une photo de couverture est fournie, l'uploader et la marquer comme featured
-        if ($coverPhoto) {
+        // Si une photo de couverture est fournie par l'utilisateur, l'uploader et la marquer comme featured
+        // Sinon, si le template a une photo de couverture, l'utiliser
+        if ($hasUserCoverPhoto && $coverPhoto) {
             try {
                 // Vérifier que le fichier est valide
                 if (!$coverPhoto->isValid()) {
@@ -197,6 +252,38 @@ class EventController extends Controller
                     ]
                 ], 422);
             }
+        } elseif ($templateCoverPhotoUrl && !$hasUserCoverPhoto) {
+            // Si le template a une photo de couverture et que l'utilisateur n'en a pas fourni, copier la photo du template
+            try {
+                // Copier la photo du template vers l'événement
+                $sourcePath = str_replace('/storage/', '', $templateCoverPhotoUrl);
+                $destinationPath = "events/{$event->id}/photos/" . basename($sourcePath);
+                
+                if (\Storage::disk('public')->exists($sourcePath)) {
+                    $fileContent = \Storage::disk('public')->get($sourcePath);
+                    \Storage::disk('public')->put($destinationPath, $fileContent);
+                    
+                    $photoUrl = '/storage/' . $destinationPath;
+                    
+                    // Créer l'entrée Photo pour l'événement
+                    $photo = $event->photos()->create([
+                        'uploaded_by_user_id' => $request->user()->id,
+                        'type' => 'event_photo',
+                        'url' => $photoUrl,
+                        'thumbnail_url' => $photoUrl, // Will be updated by job if needed
+                        'is_featured' => true,
+                    ]);
+                    
+                    $this->photoService->setAsFeatured($photo);
+                }
+            } catch (\Exception $e) {
+                Log::error('Template cover photo copy failed', [
+                    'event_id' => $event->id,
+                    'template_photo_url' => $templateCoverPhotoUrl,
+                    'error' => $e->getMessage(),
+                ]);
+                // Ne pas échouer la création de l'événement si la copie de la photo échoue
+            }
         }
 
         // Charger les relations nécessaires
@@ -221,15 +308,34 @@ class EventController extends Controller
     {
         $this->authorize('view', $event);
 
+        // Charger les relations avec les statistiques
         $event->load([
-            'guests',
-            'tasks',
-            'budgetItems',
-            'photos',
-            'coverPhoto',
-            'featuredPhoto',
-            'collaborators.user',
+            'user:id,name,avatar',
+            'coverPhoto:id,event_id,url,thumbnail_url',
+            'featuredPhoto:id,event_id,url,thumbnail_url',
+            'collaborators.user:id,name,avatar',
         ]);
+
+        // Ajouter les compteurs de statistiques
+        $event->loadCount([
+            'guests',
+            'guests as guests_confirmed_count' => function ($query) {
+                $query->where('rsvp_status', 'accepted');
+            },
+            'guests as guests_declined_count' => function ($query) {
+                $query->where('rsvp_status', 'declined');
+            },
+            'guests as guests_pending_count' => function ($query) {
+                $query->where('rsvp_status', 'pending');
+            },
+            'tasks',
+            'tasks as tasks_completed_count' => function ($query) {
+                $query->where('status', 'completed');
+            }
+        ]);
+
+        // Ajouter la somme du budget dépensé
+        $event->loadSum('budgetItems as budget_spent', 'actual_cost');
 
         return response()->json($event);
     }
