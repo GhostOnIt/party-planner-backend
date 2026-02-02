@@ -25,6 +25,7 @@ use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\RefreshTokenController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\EventTemplateController;
 use App\Http\Controllers\ExportController;
@@ -52,6 +53,9 @@ Route::prefix('auth')->group(function () {
         Route::post('/resend', [OtpController::class, 'resend'])->middleware('throttle:3,1');
         Route::post('/reset-password', [OtpController::class, 'resetPassword']);
     });
+
+    // Refresh access token using refresh token cookie (no auth:sanctum middleware)
+    Route::post('/refresh', RefreshTokenController::class);
 
     // Authenticated routes
     Route::middleware('auth:sanctum')->group(function () {

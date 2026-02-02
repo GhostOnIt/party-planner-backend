@@ -266,4 +266,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(UserBudgetCategory::class);
     }
+
+    /**
+     * Get the refresh tokens for the user.
+     */
+    public function refreshTokens(): HasMany
+    {
+        return $this->hasMany(RefreshToken::class);
+    }
 }

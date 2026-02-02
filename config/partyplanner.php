@@ -196,6 +196,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Authentication Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure refresh token behaviour (lifetime & idle timeout).
+    |
+    */
+
+    'auth' => [
+        // Number of days a refresh token remains valid (absolute lifetime)
+        'refresh_token_ttl_days' => env('REFRESH_TOKEN_TTL_DAYS', 30),
+
+        // Number of minutes of inactivity after which the refresh token is considered idle-expired.
+        // Set to null to disable idle timeout and rely only on absolute TTL.
+        'refresh_token_idle_timeout_minutes' => env('REFRESH_TOKEN_IDLE_TIMEOUT_MINUTES', 60 * 24 * 7), // 7 days
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Export Settings
     |--------------------------------------------------------------------------
     */
