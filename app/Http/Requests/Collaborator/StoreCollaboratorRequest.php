@@ -43,25 +43,34 @@ class StoreCollaboratorRequest extends FormRequest
                 'email',
                 'exists:users,email',
             ],
-            // Backward compatibility: allow either `role` (single) or `roles` (multiple)
+            // At least one of: role, roles (non-empty), or custom_role_ids (non-empty)
             'role' => [
-                'required_without:roles',
+                'required_without_all:roles,custom_role_ids',
+                'nullable',
                 'string',
                 Rule::in($allowedRoleValues),
             ],
             'roles' => [
-                'required_without:role',
+                'required_without_all:role,custom_role_ids',
+                'nullable',
                 'array',
-                'min:1',
             ],
             'roles.*' => [
+                'string',
                 Rule::in($allowedRoleValues),
             ],
-            // Legacy single custom role
-            'custom_role_id' => ['nullable', 'integer', 'exists:custom_roles,id'],
-            // New multi custom roles
-            'custom_role_ids' => ['nullable', 'array'],
-            'custom_role_ids.*' => ['integer', 'exists:custom_roles,id'],
+            // Legacy single custom role (must belong to this event)
+            'custom_role_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('custom_roles', 'id')->where('event_id', $event->id),
+            ],
+            // New multi custom roles (must belong to this event)
+            'custom_role_ids' => ['nullable', 'array', 'min:1'],
+            'custom_role_ids.*' => [
+                'integer',
+                Rule::exists('custom_roles', 'id')->where('event_id', $event->id),
+            ],
         ];
     }
 
@@ -104,7 +113,8 @@ class StoreCollaboratorRequest extends FormRequest
             'roles.array' => 'Les rôles doivent être fournis sous forme de tableau.',
             'roles.min' => 'Au moins un rôle doit être sélectionné.',
             'roles.*.in' => 'Un des rôles sélectionnés n\'est pas valide.',
-            'custom_role_id.exists' => 'Le rôle personnalisé sélectionné n\'existe pas.',
+            'custom_role_id.exists' => 'Le rôle personnalisé sélectionné n\'existe pas ou n\'appartient pas à cet événement.',
+            'custom_role_ids.*.exists' => 'Un des rôles personnalisés n\'existe pas ou n\'appartient pas à cet événement.',
         ];
     }
 }

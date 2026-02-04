@@ -52,11 +52,18 @@ class UpdateCollaboratorRequest extends FormRequest
             'roles.*' => [
                 Rule::in($allowedRoleValues),
             ],
-            // Legacy single custom role
-            'custom_role_id' => ['nullable', 'integer', 'exists:custom_roles,id'],
-            // New multi custom roles
+            // Legacy single custom role (must belong to this event)
+            'custom_role_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('custom_roles', 'id')->where('event_id', $event->id),
+            ],
+            // New multi custom roles (must belong to this event)
             'custom_role_ids' => ['nullable', 'array'],
-            'custom_role_ids.*' => ['integer', 'exists:custom_roles,id'],
+            'custom_role_ids.*' => [
+                'integer',
+                Rule::exists('custom_roles', 'id')->where('event_id', $event->id),
+            ],
         ];
     }
 

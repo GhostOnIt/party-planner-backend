@@ -25,7 +25,7 @@ class StorePhotoRequest extends FormRequest
      */
     public function rules(): array
     {
-        $maxSize = config('partyplanner.uploads.photos.max_size', 5120);
+        $maxSize = max(10240, (int) config('partyplanner.uploads.photos.max_size', 10240));
         $maxPerUpload = config('partyplanner.uploads.photos.max_per_upload', 10);
         $allowedTypes = config('partyplanner.uploads.photos.allowed_types', ['jpeg', 'jpg', 'png', 'gif', 'webp']);
 
@@ -64,8 +64,8 @@ class StorePhotoRequest extends FormRequest
      */
     public function messages(): array
     {
-        $maxSize = config('partyplanner.uploads.photos.max_size', 5120);
-        $maxSizeMb = $maxSize / 1024;
+        $maxSize = max(10240, (int) config('partyplanner.uploads.photos.max_size', 10240));
+        $maxSizeMb = (int) round($maxSize / 1024);
         $maxPerUpload = config('partyplanner.uploads.photos.max_per_upload', 10);
 
         return [

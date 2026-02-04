@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\CollaboratorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CollaboratorController extends Controller
 {
@@ -68,23 +69,50 @@ class CollaboratorController extends Controller
             ], 422);
         }
 
-        $roles = $request->validated('roles');
-        if (!$roles || count($roles) === 0) {
-            $roles = [$request->validated('role')];
+        $email = $request->validated('email');
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'email' => ['Aucun utilisateur trouvé avec cette adresse email.'],
+            ]);
         }
 
-        $collaborator = $this->collaboratorService->inviteByEmailWithRoles(
-            $event,
-            $request->validated('email'),
-            $roles,
-            $request->validated('custom_role_ids', [])
-        );
-
-        if (!$collaborator) {
+        if ($event->user_id === $user->id) {
             return response()->json([
-                'message' => 'Impossible d\'inviter cet utilisateur.',
+                'message' => 'Le propriétaire de l\'événement est déjà membre.',
             ], 422);
         }
+
+        if ($this->collaboratorService->isCollaborator($event, $user)) {
+            return response()->json([
+                'message' => 'Cet utilisateur est déjà collaborateur de cet événement.',
+            ], 422);
+        }
+
+        $roles = $request->validated('roles');
+        $role = $request->validated('role');
+        if (!$roles || count($roles) === 0) {
+            $roles = $role ? [$role] : [];
+        }
+        $customRoleIds = $request->validated('custom_role_ids', []);
+
+        // When only custom roles are sent, use a default system role for the legacy column
+        if (count($roles) === 0 && count($customRoleIds) > 0) {
+            $roles = ['supervisor'];
+        }
+        if (count($roles) === 0) {
+            return response()->json([
+                'message' => 'Au moins un rôle (système ou personnalisé) doit être sélectionné.',
+            ], 422);
+        }
+
+        $collaborator = $this->collaboratorService->inviteWithRoles(
+            $event,
+            $user,
+            $roles,
+            $customRoleIds
+        );
 
         // Add roles to collaborator for frontend compatibility
         $collaborator->roles = $collaborator->getRoleValues();

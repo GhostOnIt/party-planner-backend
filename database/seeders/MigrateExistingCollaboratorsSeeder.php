@@ -72,12 +72,6 @@ class MigrateExistingCollaboratorsSeeder extends Seeder
                 'role_enum' => CollaboratorRole::ACCOUNTANT,
             ],
             [
-                'name' => 'Photographe',
-                'description' => 'Gestion de la galerie photo',
-                'color' => 'pink',
-                'role_enum' => CollaboratorRole::PHOTOGRAPHER,
-            ],
-            [
                 'name' => 'Superviseur',
                 'description' => 'Accès en lecture seule sur tout',
                 'color' => 'gray',
@@ -129,7 +123,6 @@ class MigrateExistingCollaboratorsSeeder extends Seeder
             'guest_manager' => 'Gestionnaire d\'Invités',
             'planner' => 'Planificateur',
             'accountant' => 'Comptable',
-            'photographer' => 'Photographe',
             'supervisor' => 'Superviseur',
             'reporter' => 'Rapporteur',
         ];
