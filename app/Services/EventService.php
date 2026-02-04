@@ -35,9 +35,9 @@ class EventService
     public function create(User $user, array $data, ?int $templateId = null): Event
     {
         return DB::transaction(function () use ($user, $data, $templateId) {
-            // Set default estimated budget if not provided
-            if (empty($data['estimated_budget'])) {
-                $data['estimated_budget'] = $this->getEstimatedBudget($data['type']);
+            // Set estimated budget to 0 when not provided (user can set it later)
+            if (!isset($data['estimated_budget']) || $data['estimated_budget'] === '' || $data['estimated_budget'] === null) {
+                $data['estimated_budget'] = 0;
             }
 
             // Set default status

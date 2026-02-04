@@ -66,9 +66,15 @@ class PhotoService
 
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = "events/{$event->id}/photos/{$filename}";
+        $directory = dirname($path);
 
         try {
-            $stored = Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+            $disk = Storage::disk('public');
+            if (!$disk->exists($directory)) {
+                $disk->makeDirectory($directory);
+            }
+
+            $stored = $disk->put($path, file_get_contents($file->getRealPath()));
             
             if (!$stored) {
                 throw new \RuntimeException('Impossible de stocker le fichier sur le disque.');

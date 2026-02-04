@@ -77,6 +77,7 @@ class StorePhotoRequest extends FormRequest
             'photos.*.image' => 'Le fichier doit être une image.',
             'photos.*.mimes' => 'Le format de l\'image n\'est pas supporté. Formats acceptés : JPEG, PNG, GIF, WebP.',
             'photos.*.max' => "La taille de l'image ne peut pas dépasser {$maxSizeMb} Mo.",
+            'photos.*.uploaded' => "Le fichier n'a pas pu être envoyé. Vérifiez que la taille ne dépasse pas {$maxSizeMb} Mo et réessayez. Si le problème persiste, le serveur peut avoir une limite d'upload plus basse.",
             'type.required' => 'Le type de photo est obligatoire.',
             'type.Illuminate\Validation\Rules\Enum' => 'Le type de photo sélectionné est invalide.',
             'description.max' => 'La description ne peut pas dépasser 255 caractères.',

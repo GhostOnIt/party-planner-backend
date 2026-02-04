@@ -124,7 +124,7 @@ return [
 
     'uploads' => [
         'photos' => [
-            'max_size' => env('PHOTO_MAX_SIZE', 5120), // in KB (5MB)
+            'max_size' => env('PHOTO_MAX_SIZE', 10240), // in KB (10MB)
             'max_per_upload' => env('PHOTO_MAX_PER_UPLOAD', 10),
             'allowed_types' => ['jpeg', 'jpg', 'png', 'gif', 'webp'],
             'thumbnail_width' => 300,
