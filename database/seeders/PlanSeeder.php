@@ -33,7 +33,6 @@ class PlanSeeder extends Seeder
                 ],
                 'features' => [
                     'budget.enabled' => true,
-                    'planning.enabled' => true,
                     'tasks.enabled' => true,
                     'guests.manage' => true,
                     'guests.import' => false,
@@ -49,9 +48,7 @@ class PlanSeeder extends Seeder
                     'reporting.enabled' => false,
                     'branding.custom' => false,
                     'support.whatsapp_priority' => false,
-                    'support.dedicated' => false,
                     'multi_client.enabled' => false,
-                    'assistance.human' => false,
                 ],
             ],
 
@@ -74,7 +71,6 @@ class PlanSeeder extends Seeder
                 ],
                 'features' => [
                     'budget.enabled' => true,
-                    'planning.enabled' => true,
                     'tasks.enabled' => true,
                     'guests.manage' => true,
                     'guests.import' => true,
@@ -90,9 +86,7 @@ class PlanSeeder extends Seeder
                     'reporting.enabled' => true,
                     'branding.custom' => false,
                     'support.whatsapp_priority' => true,
-                    'support.dedicated' => false,
                     'multi_client.enabled' => false,
-                    'assistance.human' => false,
                 ],
             ],
 
@@ -115,7 +109,6 @@ class PlanSeeder extends Seeder
                 ],
                 'features' => [
                     'budget.enabled' => true,
-                    'planning.enabled' => true,
                     'tasks.enabled' => true,
                     'guests.manage' => true,
                     'guests.import' => true,
@@ -131,9 +124,7 @@ class PlanSeeder extends Seeder
                     'reporting.enabled' => true,
                     'branding.custom' => true,
                     'support.whatsapp_priority' => true,
-                    'support.dedicated' => true,
                     'multi_client.enabled' => true,
-                    'assistance.human' => true,
                 ],
             ],
         ];
