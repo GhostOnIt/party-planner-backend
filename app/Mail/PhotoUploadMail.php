@@ -12,6 +12,7 @@ use Illuminate\Queue\SerializesModels;
 class PhotoUploadMail extends Mailable
 {
     use Queueable, SerializesModels;
+    use \App\Mail\Concerns\EmbedsMailLogo;
 
     /**
      * Create a new message instance.
