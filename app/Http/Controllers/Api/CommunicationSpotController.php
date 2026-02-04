@@ -170,6 +170,15 @@ class CommunicationSpotController extends Controller
             $secondaryButton = $validated['secondaryButton'];
         }
 
+        // Les sondages ne peuvent pas être affichés sur la page de connexion
+        $displayLocations = $validated['displayLocations'];
+        if ($validated['type'] === 'poll') {
+            $displayLocations = array_values(array_filter($displayLocations, fn($loc) => $loc !== 'login'));
+            if (empty($displayLocations)) {
+                $displayLocations = ['dashboard'];
+            }
+        }
+
         $spot = CommunicationSpot::create([
             'type' => $validated['type'],
             'title' => $validated['title'] ?? null,
@@ -182,7 +191,7 @@ class CommunicationSpotController extends Controller
             'poll_question' => $validated['pollQuestion'] ?? null,
             'poll_options' => $pollOptions,
             'is_active' => $validated['isActive'] ?? false,
-            'display_locations' => $validated['displayLocations'],
+            'display_locations' => $displayLocations,
             'priority' => $validated['priority'] ?? 0,
             'start_date' => $validated['startDate'] ?? null,
             'end_date' => $validated['endDate'] ?? null,
@@ -320,7 +329,15 @@ class CommunicationSpotController extends Controller
             $spot->is_active = $validated['isActive'];
         }
         if (isset($validated['displayLocations'])) {
-            $spot->display_locations = $validated['displayLocations'];
+            $locations = $validated['displayLocations'];
+            // Les sondages ne peuvent pas être affichés sur la page de connexion
+            if ($spot->type === 'poll') {
+                $locations = array_values(array_filter($locations, fn($loc) => $loc !== 'login'));
+                if (empty($locations)) {
+                    $locations = ['dashboard'];
+                }
+            }
+            $spot->display_locations = $locations;
         }
         if (isset($validated['priority'])) {
             $spot->priority = $validated['priority'];
@@ -489,7 +506,12 @@ class CommunicationSpotController extends Controller
                 $userRole = (string) $userRole;
             }
 
-            $spots = CommunicationSpot::activeForLocation($location, $userRole)->get();
+            $query = CommunicationSpot::activeForLocation($location, $userRole);
+            // Les sondages ne s'affichent pas sur la page de connexion
+            if ($location === 'login') {
+                $query->where('type', '!=', 'poll');
+            }
+            $spots = $query->get();
 
             $spotsData = $spots->map(function ($spot) use ($user) {
                 $data = $spot->toApiResponse();

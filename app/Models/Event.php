@@ -62,7 +62,7 @@ class Event extends Model
      *
      * @return array<int, string>
      */
-    protected $appends = ['budget', 'expected_guests'];
+    protected $appends = ['budget', 'expected_guests', 'can_check_in'];
 
     /**
      * Get the budget attribute (alias for estimated_budget).
@@ -78,6 +78,22 @@ class Event extends Model
     public function getExpectedGuestsAttribute(): ?int
     {
         return $this->expected_guests_count;
+    }
+
+    /**
+     * Check if guest check-in is allowed (from 24 hours before event start).
+     */
+    public function getCanCheckInAttribute(): bool
+    {
+        if (! $this->date) {
+            return false;
+        }
+
+        $timeStr = $this->time ? $this->time->format('H:i') : '00:00';
+        $eventStart = $this->date->copy()->setTimeFromTimeString($timeStr);
+        $checkInOpensAt = $eventStart->copy()->subHours(24);
+
+        return now()->gte($checkInOpensAt);
     }
 
     /**
