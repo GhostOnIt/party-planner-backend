@@ -28,6 +28,15 @@ class PhotoController extends Controller
 
         $query = $event->photos()->with('uploadedBy');
 
+        // Search by uploader name or email
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('uploadedBy', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
         // Filter by type
         if ($request->filled('type')) {
             $query->where('type', $request->type);
