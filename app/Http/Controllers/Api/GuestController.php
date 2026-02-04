@@ -50,6 +50,13 @@ class GuestController extends Controller
     // Order by name
     $query->orderBy('name');
 
+    // Nombre d'accompagnateurs pour la requête courante (filtrée ou non)
+    $companionsCount = (clone $query)
+        ->where('plus_one', true)
+        ->whereNotNull('plus_one_name')
+        ->whereRaw("TRIM(COALESCE(plus_one_name, '')) != ''")
+        ->count();
+
     // Pagination with per_page support
     $perPage = $request->input('per_page', 20);
     $guests = $query->paginate($perPage);
@@ -66,6 +73,7 @@ class GuestController extends Controller
             'total' => $guests->total(),
         ],
         'stats' => $stats,
+        'companions_count' => $companionsCount,
     ]);
 }
      
