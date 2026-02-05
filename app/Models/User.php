@@ -141,6 +141,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the user's custom roles (unique per user; managed in settings).
+     */
+    public function customRoles(): HasMany
+    {
+        return $this->hasMany(CustomRole::class);
+    }
+
+    /**
      * Get the collaborations for the user.
      */
     public function collaborations(): HasMany
@@ -265,5 +273,13 @@ class User extends Authenticatable implements MustVerifyEmail
     public function budgetCategories(): HasMany
     {
         return $this->hasMany(UserBudgetCategory::class);
+    }
+
+    /**
+     * Get the refresh tokens for the user.
+     */
+    public function refreshTokens(): HasMany
+    {
+        return $this->hasMany(RefreshToken::class);
     }
 }

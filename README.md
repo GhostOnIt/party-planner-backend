@@ -78,6 +78,27 @@ php artisan serve
 npm run dev
 ```
 
+### Limites d'upload PHP (photos)
+
+L'application autorise des photos jusqu'à **5 Mo**. Par défaut, PHP limite souvent les uploads à **2 Mo**. Si vous avez l'erreur « Le fichier n'a pas pu être envoyé » avec une image &lt; 5 Mo, augmentez les limites PHP :
+
+1. **Trouver le fichier php.ini utilisé** :
+   ```bash
+   php --ini
+   ```
+   Notez le chemin « Loaded Configuration File ».
+
+2. **Éditer php.ini** et définir (ou modifier) :
+   ```ini
+   upload_max_filesize = 10M
+   post_max_size = 20M
+   ```
+   `post_max_size` doit être supérieur à `upload_max_filesize` (surtout si vous uploadez plusieurs photos).
+
+3. **Redémarrer le serveur** : arrêtez `php artisan serve` (Ctrl+C) puis relancez-le.
+
+Sous **XAMPP / WAMP / Laragon** : éditez le php.ini indiqué par `php --ini`, puis redémarrez Apache ou le serveur intégré.
+
 ## Configuration des services externes
 
 ### Stripe (Paiements par carte)

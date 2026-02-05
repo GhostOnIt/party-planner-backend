@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Guest;
 use App\Models\Payment;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 use App\Services\AdminActivityService;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
@@ -846,8 +848,10 @@ class DashboardController extends Controller
      */
     public function adminSubscriptionChangePlan(Request $request, Subscription $subscription): JsonResponse
     {
+        $validPlanSlugs = Plan::where('is_active', true)->pluck('slug')->push('starter', 'pro')->unique()->values()->toArray();
+
         $validated = $request->validate([
-            'plan_type' => 'required|in:starter,pro',
+            'plan_type' => ['required', Rule::in($validPlanSlugs)],
         ]);
 
         if ($subscription->plan_type === $validated['plan_type']) {

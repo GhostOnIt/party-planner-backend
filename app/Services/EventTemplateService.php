@@ -10,6 +10,7 @@ class EventTemplateService
 {
     /**
      * Get all active templates.
+     * Visible par tous les utilisateurs authentifiés (pas de filtre propriétaire).
      */
     public function getActiveTemplates(): Collection
     {
@@ -21,6 +22,7 @@ class EventTemplateService
 
     /**
      * Get templates by event type.
+     * Visible par tous les utilisateurs authentifiés (pas de filtre propriétaire).
      */
     public function getTemplatesByType(string $eventType): Collection
     {

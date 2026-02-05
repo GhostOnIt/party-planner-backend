@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 class TaskReminderMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+    use \App\Mail\Concerns\EmbedsMailLogo;
 
     /**
      * Create a new message instance.

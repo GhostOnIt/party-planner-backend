@@ -17,9 +17,10 @@ class CreateSystemRolesForEvent implements ShouldQueue
 
     /**
      * Handle the event.
+     * System roles are global (from enum); no DB rows are created per event.
      */
     public function handle(EventCreated $event): void
     {
-        $this->customRoleService->createSystemRolesForEvent($event->event);
+        // No-op: custom roles are user-scoped and managed in settings only
     }
 }

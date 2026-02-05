@@ -16,19 +16,19 @@ class CustomRoleService
     ) {}
 
     /**
-     * Create a custom role for an event.
+     * Create a custom role for a user (managed in settings; visible only to that user).
      */
-    public function createRole(Event $event, User $creator, array $data): CustomRole
+    public function createRole(User $owner, array $data): CustomRole
     {
-        $this->validateRoleCreation($event, $creator, $data);
+        $this->validateRoleCreationForUser($owner, $data);
 
         $role = CustomRole::create([
-            'event_id' => $event->id,
+            'user_id' => $owner->id,
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'color' => $data['color'] ?? 'gray',
             'is_system' => false,
-            'created_by' => $creator->id,
+            'created_by' => $owner->id,
         ]);
 
         if (isset($data['permissions']) && is_array($data['permissions'])) {
@@ -85,9 +85,9 @@ class CustomRoleService
     }
 
     /**
-     * Get system roles for an event.
+     * Get system roles (global; no event needed).
      */
-    public function getSystemRolesForEvent(Event $event): Collection
+    public function getSystemRoles(): Collection
     {
         $systemRoles = collect();
 
@@ -109,11 +109,19 @@ class CustomRoleService
     }
 
     /**
-     * Get custom roles for an event.
+     * Get system roles for an event (delegates to getSystemRoles).
+     */
+    public function getSystemRolesForEvent(Event $event): Collection
+    {
+        return $this->getSystemRoles();
+    }
+
+    /**
+     * Get custom roles assignable for an event (event owner's custom roles; they are unique per user).
      */
     public function getCustomRolesForEvent(Event $event): Collection
     {
-        return $event->customRoles()
+        return CustomRole::forUser($event->user_id)
             ->with('permissions')
             ->get()
             ->map(function ($role) {
@@ -132,58 +140,23 @@ class CustomRoleService
     }
 
     /**
-     * Check if a user can create custom roles for an event.
+     * Validate role creation data (user-scoped; name unique per user).
      */
-    public function canCreateCustomRoles(Event $event, User $user): bool
+    private function validateRoleCreationForUser(User $owner, array $data): void
     {
-        // Owner can always create custom roles
-        if ($event->user_id === $user->id) {
-            return true;
-        }
-
-        $collaborator = $event->collaborators()
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$collaborator || !$collaborator->isAccepted()) {
-            return false;
-        }
-
-        // Check custom role permissions
-        if ($collaborator->hasCustomRole() && $collaborator->customRole) {
-            return $collaborator->customRole->hasPermission('collaborators.invite');
-        }
-
-        // Check system role permissions
-        $roleEnum = \App\Enums\CollaboratorRole::tryFrom($collaborator->role);
-        return $roleEnum && $roleEnum->canCreateCustomRoles();
-    }
-
-    /**
-     * Validate role creation data.
-     */
-    private function validateRoleCreation(Event $event, User $creator, array $data): void
-    {
-        if (!$this->canCreateCustomRoles($event, $creator)) {
-            throw ValidationException::withMessages([
-                'user' => 'Vous n\'avez pas les permissions pour créer des rôles personnalisés.'
-            ]);
-        }
-
         if (empty($data['name'])) {
             throw ValidationException::withMessages([
                 'name' => 'Le nom du rôle est requis.'
             ]);
         }
 
-        // Check if role name already exists for this event
-        $existingRole = $event->customRoles()
+        $existingRole = CustomRole::forUser($owner->id)
             ->where('name', $data['name'])
             ->first();
 
         if ($existingRole) {
             throw ValidationException::withMessages([
-                'name' => 'Un rôle avec ce nom existe déjà pour cet événement.'
+                'name' => 'Un rôle avec ce nom existe déjà.'
             ]);
         }
 
@@ -191,20 +164,19 @@ class CustomRoleService
     }
 
     /**
-     * Validate role update data.
+     * Validate role update data (name unique per user).
      */
     private function validateRoleUpdate(CustomRole $role, array $data): void
     {
         if (isset($data['name']) && $data['name'] !== $role->name) {
-            // Check if new name conflicts with existing roles
-            $existingRole = $role->event->customRoles()
+            $existingRole = CustomRole::forUser($role->user_id)
                 ->where('name', $data['name'])
                 ->where('id', '!=', $role->id)
                 ->first();
 
             if ($existingRole) {
                 throw ValidationException::withMessages([
-                    'name' => 'Un rôle avec ce nom existe déjà pour cet événement.'
+                    'name' => 'Un rôle avec ce nom existe déjà.'
                 ]);
             }
         }
@@ -234,20 +206,4 @@ class CustomRoleService
         }
     }
 
-    /**
-     * Create system roles for a new event.
-     */
-    public function createSystemRolesForEvent(Event $event): void
-    {
-        foreach (\App\Enums\CollaboratorRole::systemRoles() as $roleEnum) {
-            CustomRole::create([
-                'event_id' => $event->id,
-                'name' => $roleEnum->label(),
-                'description' => $roleEnum->description(),
-                'color' => $roleEnum->color(),
-                'is_system' => true,
-                'created_by' => $event->user_id,
-            ]);
-        }
-    }
 }

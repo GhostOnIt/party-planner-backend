@@ -6,14 +6,27 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
+<!--[if mso]>
+<noscript>
+<style type="text/css">
+.body, .wrapper { background-color: #f4f5f9 !important; }
+.inner-body { border-radius: 10px !important; }
+</style>
+</noscript>
+<![endif]-->
 <style>
 @media only screen and (max-width: 600px) {
 .inner-body {
 width: 100% !important;
+max-width: 100% !important;
 }
 
 .footer {
 width: 100% !important;
+}
+
+.content-cell {
+padding: 24px 20px !important;
 }
 }
 

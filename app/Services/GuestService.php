@@ -12,6 +12,7 @@ use App\Models\Invitation;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class GuestService
@@ -348,7 +349,7 @@ class GuestService
                 }
             } catch (\Exception $e) {
                 // Log error but continue with other guests
-                \Log::error("Error sending invitation/reminder to guest {$guest->id}: " . $e->getMessage());
+                Log::error("Error sending invitation/reminder to guest {$guest->id}: " . $e->getMessage());
             }
         }
 
@@ -408,12 +409,26 @@ class GuestService
 
     /**
      * Check in a guest.
+     * Check-in is only allowed from 24 hours before the event start.
      */
     public function checkIn(Guest $guest): Guest
     {
         // Only allow check-in for guests with pending, accepted, or maybe status
         if (!in_array($guest->rsvp_status, ['pending', 'accepted', 'maybe'])) {
             throw new \InvalidArgumentException('Seuls les invités avec un statut "en attente", "accepté" ou "peut-être" peuvent être enregistrés.');
+        }
+
+        $guest->load('event');
+        $event = $guest->event;
+        if ($event && $event->date) {
+            $timeStr = $event->time ? $event->time->format('H:i') : '00:00';
+            $eventStart = $event->date->copy()->setTimeFromTimeString($timeStr);
+            $checkInOpensAt = $eventStart->copy()->subHours(24);
+            if (now()->lt($checkInOpensAt)) {
+                throw new \InvalidArgumentException(
+                    'Le check-in n\'est possible qu\'à partir de 24 h avant le début de l\'événement.'
+                );
+            }
         }
 
         $wasCheckedIn = $guest->checked_in;
@@ -487,6 +502,12 @@ class GuestService
                 'checked_in' => $guests->where('checked_in', true)->count(),
                 'not_checked_in' => $guests->where('checked_in', false)->count(),
             ],
+            // Nombre d'accompagnateurs : uniquement les invités avec +1 dont le nom est renseigné
+            'companions' => $guests->filter(function ($guest) {
+                return $guest->plus_one
+                    && $guest->plus_one_name !== null
+                    && trim((string) $guest->plus_one_name) !== '';
+            })->count(),
             'with_email' => $guests->whereNotNull('email')->count(),
             'without_email' => $guests->whereNull('email')->count(),
         ];

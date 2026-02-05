@@ -1,0 +1,6 @@
+; Exemple de directives PHP pour autoriser l'upload de photos jusqu'à 5 Mo (et plus).
+; Copier ces lignes dans votre php.ini (voir php --ini pour le chemin).
+; Puis redémarrer le serveur (php artisan serve, Apache, etc.).
+
+upload_max_filesize = 10M
+post_max_size = 20M

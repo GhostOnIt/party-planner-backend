@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CustomRole\StoreCustomRoleRequest;
-use App\Http\Requests\CustomRole\UpdateCustomRoleRequest;
 use App\Models\Event;
 use App\Services\CustomRoleService;
 use App\Services\PermissionService;
@@ -19,7 +17,7 @@ class CustomRoleController extends Controller
     ) {}
 
     /**
-     * Get all roles for an event (system + custom).
+     * Get all roles for an event (system + event owner's custom roles). Read-only; custom roles are managed in settings.
      */
     public function index(Event $event): JsonResponse
     {
@@ -33,7 +31,7 @@ class CustomRoleController extends Controller
     }
 
     /**
-     * Get permissions grouped by module for role creation.
+     * Get permissions grouped by module for role creation (used in settings).
      */
     public function permissions(): JsonResponse
     {
@@ -45,73 +43,12 @@ class CustomRoleController extends Controller
     }
 
     /**
-     * Create a custom role.
-     */
-    public function store(StoreCustomRoleRequest $request, Event $event): JsonResponse
-    {
-        $this->authorize('update', $event); // Only coordinators and owners can create roles
-
-        $role = $this->customRoleService->createRole($event, $request->user(), $request->validated());
-
-        return response()->json([
-            'role' => $role,
-            'message' => 'Rôle créé avec succès.',
-        ], 201);
-    }
-
-    /**
-     * Update a custom role.
-     */
-    public function update(UpdateCustomRoleRequest $request, Event $event, $roleId): JsonResponse
-    {
-        $this->authorize('update', $event);
-
-        // For custom roles, we need to find the role by ID
-        // For system roles, we don't allow updates
-        $role = $event->customRoles()->findOrFail($roleId);
-
-        $updatedRole = $this->customRoleService->updateRole($role, $request->validated());
-
-        return response()->json([
-            'role' => $updatedRole,
-            'message' => 'Rôle mis à jour avec succès.',
-        ]);
-    }
-
-    /**
-     * Delete a custom role.
-     */
-    public function destroy(Event $event, $roleId): JsonResponse
-    {
-        $this->authorize('update', $event);
-
-        $role = $event->customRoles()->findOrFail($roleId);
-
-        // A role cannot be deleted if it is assigned to at least one collaborator
-        // (business rule enforced here for clearer API message).
-        if ($role->collaborators()->exists()) {
-            return response()->json([
-                'message' => 'Ce rôle est assigné à au moins un collaborateur et ne peut pas être supprimé.',
-            ], 422);
-        }
-
-        $this->customRoleService->deleteRole($role);
-
-        return response()->json([
-            'message' => 'Rôle supprimé avec succès.',
-        ]);
-    }
-
-    /**
-     * Get available roles (system roles + user's custom roles that can be assigned).
+     * Get available system roles for assignment (global).
      */
     public function availableRoles(Request $request): JsonResponse
     {
-        $user = $request->user();
         $systemRoles = [];
-        $customRoles = [];
 
-        // Get system roles
         foreach (\App\Enums\CollaboratorRole::assignableRoles() as $roleEnum) {
             $systemRoles[] = [
                 'value' => $roleEnum->value,
@@ -123,22 +60,8 @@ class CustomRoleController extends Controller
             ];
         }
 
-        // Get user's custom roles
-        $userRoles = $user->collaboratorRoles()->ordered()->get();
-        foreach ($userRoles as $role) {
-            $customRoles[] = [
-                'value' => $role->slug,
-                'label' => $role->name,
-                'description' => $role->description,
-                'color' => 'blue', // Default color for custom roles
-                'icon' => 'user', // Default icon for custom roles
-                'is_system' => false,
-                'id' => $role->id,
-            ];
-        }
-
         return response()->json([
-            'roles' => array_merge($systemRoles, $customRoles),
+            'roles' => $systemRoles,
         ]);
     }
 }

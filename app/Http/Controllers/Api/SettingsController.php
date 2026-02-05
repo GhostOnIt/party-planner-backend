@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CustomRole\StoreCustomRoleRequest;
+use App\Http\Requests\CustomRole\UpdateCustomRoleRequest;
 use App\Models\BudgetItem;
+use App\Models\CustomRole;
 use App\Models\Event;
 use App\Models\UserBudgetCategory;
 use App\Models\UserCollaboratorRole;
 use App\Models\UserEventType;
+use App\Services\CustomRoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,6 +19,9 @@ use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
+    public function __construct(
+        private CustomRoleService $customRoleService
+    ) {}
     /**
      * Get user's event types.
      */
@@ -496,5 +503,125 @@ class SettingsController extends Controller
         return response()->json([
             'message' => 'Ordre des catégories de budget mis à jour.',
         ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Roles (user-scoped; visible only to the owner; managed only here)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get all roles for settings: system roles (global) + current user's custom roles.
+     */
+    public function getRoles(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $systemRoles = $this->customRoleService->getSystemRoles()->map(fn ($r) => [
+            'id' => $r->id,
+            'name' => $r->name,
+            'description' => $r->description,
+            'color' => $r->color ?? 'gray',
+            'is_system' => true,
+            'permissions' => $r->permissions ?? [],
+            'created_at' => null,
+            'updated_at' => null,
+        ])->values()->all();
+
+        $customRoles = CustomRole::forUser($user->id)
+            ->with('permissions')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (CustomRole $role) => [
+                'id' => $role->id,
+                'name' => $role->name,
+                'description' => $role->description,
+                'color' => $role->color,
+                'is_system' => false,
+                'permissions' => $role->getPermissionNames(),
+                'created_at' => $role->created_at,
+                'updated_at' => $role->updated_at,
+            ])->values()->all();
+
+        return response()->json([
+            'roles' => array_merge($systemRoles, $customRoles),
+        ]);
+    }
+
+    /**
+     * Get current user's custom roles only (for create/edit flows).
+     */
+    public function getCustomRoles(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $roles = CustomRole::forUser($user->id)
+            ->with('permissions')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (CustomRole $role) => [
+                'id' => $role->id,
+                'name' => $role->name,
+                'description' => $role->description,
+                'color' => $role->color,
+                'is_system' => false,
+                'permissions' => $role->getPermissionNames(),
+                'created_at' => $role->created_at,
+                'updated_at' => $role->updated_at,
+            ]);
+
+        return response()->json(['roles' => $roles]);
+    }
+
+    /**
+     * Create a custom role for the current user.
+     */
+    public function createCustomRole(StoreCustomRoleRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $role = $this->customRoleService->createRole($user, $request->validated());
+
+        return response()->json([
+            'message' => 'Rôle créé avec succès.',
+            'role' => $role,
+        ], 201);
+    }
+
+    /**
+     * Update a custom role (must belong to current user).
+     */
+    public function updateCustomRole(UpdateCustomRoleRequest $request, CustomRole $role): JsonResponse
+    {
+        $user = $request->user();
+        if ($role->user_id !== $user->id) {
+            return response()->json(['message' => 'Rôle non trouvé.'], 404);
+        }
+
+        $updated = $this->customRoleService->updateRole($role, $request->validated());
+
+        return response()->json([
+            'message' => 'Rôle mis à jour avec succès.',
+            'role' => $updated,
+        ]);
+    }
+
+    /**
+     * Delete a custom role (must belong to current user).
+     */
+    public function deleteCustomRole(Request $request, CustomRole $role): JsonResponse
+    {
+        $user = $request->user();
+        if ($role->user_id !== $user->id) {
+            return response()->json(['message' => 'Rôle non trouvé.'], 404);
+        }
+        if ($role->collaborators()->exists()) {
+            return response()->json([
+                'message' => 'Ce rôle est assigné à au moins un collaborateur. Modifiez ou retirez l\'assignation avant de supprimer le rôle.',
+            ], 422);
+        }
+
+        $this->customRoleService->deleteRole($role);
+
+        return response()->json(['message' => 'Rôle supprimé avec succès.']);
     }
 }

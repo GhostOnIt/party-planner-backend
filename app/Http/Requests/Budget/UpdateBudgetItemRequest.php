@@ -43,6 +43,7 @@ class UpdateBudgetItemRequest extends FormRequest
             'actual_cost' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
             'paid' => ['boolean'],
             'payment_date' => ['nullable', 'date'],
+            'vendor_name' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -71,6 +72,7 @@ class UpdateBudgetItemRequest extends FormRequest
             'actual_cost' => 'coût réel',
             'paid' => 'payé',
             'payment_date' => 'date de paiement',
+            'vendor_name' => 'fournisseur',
             'notes' => 'notes',
         ];
     }
