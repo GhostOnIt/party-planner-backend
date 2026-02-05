@@ -63,13 +63,13 @@ class StoreCollaboratorRequest extends FormRequest
             'custom_role_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('custom_roles', 'id')->where('event_id', $event->id),
+                Rule::exists('custom_roles', 'id')->where('user_id', $event->user_id),
             ],
-            // New multi custom roles (must belong to this event)
+            // Multi custom roles (must belong to event owner; custom roles are user-scoped)
             'custom_role_ids' => ['nullable', 'array', 'min:1'],
             'custom_role_ids.*' => [
                 'integer',
-                Rule::exists('custom_roles', 'id')->where('event_id', $event->id),
+                Rule::exists('custom_roles', 'id')->where('user_id', $event->user_id),
             ],
         ];
     }
@@ -113,8 +113,8 @@ class StoreCollaboratorRequest extends FormRequest
             'roles.array' => 'Les rôles doivent être fournis sous forme de tableau.',
             'roles.min' => 'Au moins un rôle doit être sélectionné.',
             'roles.*.in' => 'Un des rôles sélectionnés n\'est pas valide.',
-            'custom_role_id.exists' => 'Le rôle personnalisé sélectionné n\'existe pas ou n\'appartient pas à cet événement.',
-            'custom_role_ids.*.exists' => 'Un des rôles personnalisés n\'existe pas ou n\'appartient pas à cet événement.',
+            'custom_role_id.exists' => 'Le rôle personnalisé sélectionné n\'existe pas ou ne vous appartient pas.',
+            'custom_role_ids.*.exists' => 'Un des rôles personnalisés n\'existe pas ou ne vous appartient pas.',
         ];
     }
 }

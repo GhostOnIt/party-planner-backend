@@ -218,9 +218,6 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::prefix('events/{event}/roles')->group(function () {
         Route::get('/', [CustomRoleController::class, 'index']);
-        Route::post('/', [CustomRoleController::class, 'store']);
-        Route::put('/{role}', [CustomRoleController::class, 'update']);
-        Route::delete('/{role}', [CustomRoleController::class, 'destroy']);
     });
 
 // Permissions endpoint (not nested under events)
@@ -287,6 +284,14 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/collaborator-roles/{role}', [SettingsController::class, 'updateCollaboratorRole']);
         Route::delete('/collaborator-roles/{role}', [SettingsController::class, 'deleteCollaboratorRole']);
         Route::post('/collaborator-roles/reorder', [SettingsController::class, 'reorderCollaboratorRoles']);
+
+        // Roles (system + custom): list for settings table
+        Route::get('/roles', [SettingsController::class, 'getRoles']);
+        // Custom Roles CRUD (user-scoped)
+        Route::get('/custom-roles', [SettingsController::class, 'getCustomRoles']);
+        Route::post('/custom-roles', [SettingsController::class, 'createCustomRole']);
+        Route::put('/custom-roles/{role}', [SettingsController::class, 'updateCustomRole']);
+        Route::delete('/custom-roles/{role}', [SettingsController::class, 'deleteCustomRole']);
 
         // Budget Categories
         Route::get('/budget-categories', [SettingsController::class, 'getBudgetCategories']);

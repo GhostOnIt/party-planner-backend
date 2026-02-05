@@ -198,14 +198,6 @@ class Event extends Model
     }
 
     /**
-     * Get the custom roles for the event.
-     */
-    public function customRoles(): HasMany
-    {
-        return $this->hasMany(CustomRole::class);
-    }
-
-    /**
      * Get the invitations for the event.
      */
     public function invitations(): HasMany

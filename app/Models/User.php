@@ -141,6 +141,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the user's custom roles (unique per user; managed in settings).
+     */
+    public function customRoles(): HasMany
+    {
+        return $this->hasMany(CustomRole::class);
+    }
+
+    /**
      * Get the collaborations for the user.
      */
     public function collaborations(): HasMany
