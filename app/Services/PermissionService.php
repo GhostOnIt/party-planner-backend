@@ -33,6 +33,11 @@ class PermissionService
      */
     public function userCan(User $user, Event $event, string $permission): bool
     {
+        // Admins can do everything on any event
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         // Owner always has all permissions
         if ($event->user_id === $user->id) {
             return true;
@@ -66,6 +71,11 @@ class PermissionService
      */
     public function userCanInModule(User $user, Event $event, string $module): bool
     {
+        // Admins can do everything on any event
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         // Owner always has all permissions
         if ($event->user_id === $user->id) {
             return true;
@@ -99,6 +109,11 @@ class PermissionService
      */
     public function getUserPermissions(User $user, Event $event): array
     {
+        // Admins have all permissions on any event
+        if ($user->isAdmin()) {
+            return Permission::pluck('name')->toArray();
+        }
+
         // Owner has all permissions
         if ($event->user_id === $user->id) {
             return Permission::pluck('name')->toArray();
