@@ -23,6 +23,7 @@ class BudgetItem extends Model
         'actual_cost',
         'paid',
         'payment_date',
+        'vendor_name',
         'notes',
     ];
 

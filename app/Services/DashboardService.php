@@ -48,14 +48,10 @@ class DashboardService
         }
         $previousUsers = $previousUsersQuery->get();
         
-        $usersActiveQuery = User::whereHas('events', function($q) use ($currentPeriod) {
-            if ($currentPeriod !== null) {
-                $q->whereBetween('created_at', [$currentPeriod['start'], $currentPeriod['end']]);
-            }
-        });
-        $usersActive = $usersActiveQuery->count();
-        $usersInactive = $currentUsers->count() - $usersActive;
-        // Count users created in the last 48 hours
+        // Actifs/Inactifs = is_active (aligné avec la page Utilisateurs admin)
+        $usersActive = $currentUsers->where('is_active', true)->count();
+        $usersInactive = $currentUsers->where('is_active', false)->count();
+        // Nouveaux = créés dans les 48 dernières heures
         $usersNew = User::where('created_at', '>=', now()->subHours(48))->count();
 
         $usersTrend = $this->calculateTrend($currentUsers->count(), $previousUsers->count());

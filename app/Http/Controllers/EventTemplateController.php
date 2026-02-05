@@ -18,6 +18,7 @@ class EventTemplateController extends Controller
 
     /**
      * Display a listing of active templates.
+     * Tous les templates actifs sont visibles par tout utilisateur authentifié (pas de filtre par propriétaire).
      */
     public function index(): JsonResponse
     {
@@ -42,6 +43,7 @@ class EventTemplateController extends Controller
 
     /**
      * Get templates by event type.
+     * Tous les templates du type sont visibles par tout utilisateur authentifié (pas de filtre par propriétaire).
      */
     public function byType(string $type): JsonResponse
     {

@@ -124,7 +124,7 @@ return [
 
     'uploads' => [
         'photos' => [
-            'max_size' => env('PHOTO_MAX_SIZE', 5120), // in KB (5MB)
+            'max_size' => env('PHOTO_MAX_SIZE', 10240), // in KB (10MB)
             'max_per_upload' => env('PHOTO_MAX_PER_UPLOAD', 10),
             'allowed_types' => ['jpeg', 'jpg', 'png', 'gif', 'webp'],
             'thumbnail_width' => 300,
@@ -192,6 +192,24 @@ return [
         'max_description_length' => 5000,
         'allow_past_dates' => false, // For editing existing events
         'default_status' => 'upcoming',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure refresh token behaviour (lifetime & idle timeout).
+    |
+    */
+
+    'auth' => [
+        // Number of days a refresh token remains valid (absolute lifetime)
+        'refresh_token_ttl_days' => env('REFRESH_TOKEN_TTL_DAYS', 30),
+
+        // Number of minutes of inactivity after which the refresh token is considered idle-expired.
+        // Set to null to disable idle timeout and rely only on absolute TTL.
+        'refresh_token_idle_timeout_minutes' => env('REFRESH_TOKEN_IDLE_TIMEOUT_MINUTES', 60 * 24 * 7), // 7 days
     ],
 
     /*

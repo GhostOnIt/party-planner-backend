@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Rules\StrongPassword;
+use App\Services\AuthTokenService;
 use App\Services\SubscriptionService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,8 @@ use Illuminate\Validation\Rules;
 class RegisteredUserController extends Controller
 {
     public function __construct(
-        protected SubscriptionService $subscriptionService
+        protected SubscriptionService $subscriptionService,
+        protected AuthTokenService $authTokenService,
     ) {}
 
     /**
@@ -43,13 +45,15 @@ class RegisteredUserController extends Controller
         // User must activate it manually
         // $subscription = $this->subscriptionService->createTrialSubscription($user);
 
-        // Create Sanctum token for immediate login
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Issue access + refresh tokens for immediate login
+        $tokens = $this->authTokenService->issueTokens($user, $request);
 
-        return response()->json([
-            'message' => 'Inscription réussie.',
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        return response()
+            ->json([
+                'message' => 'Inscription réussie.',
+                'user' => $user,
+                'token' => $tokens['access_token'],
+            ], 201)
+            ->withCookie($tokens['refresh_cookie']);
     }
 }

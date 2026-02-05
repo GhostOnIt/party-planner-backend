@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Models\Otp;
 use App\Models\User;
 use App\Rules\StrongPassword;
+use App\Services\AuthTokenService;
 use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,8 @@ use Illuminate\Validation\ValidationException;
 class OtpController extends Controller
 {
     public function __construct(
-        protected OtpService $otpService
+        protected OtpService $otpService,
+        protected AuthTokenService $authTokenService,
     ) {}
 
     /**
@@ -190,15 +192,17 @@ class OtpController extends Controller
             ]);
         }
 
-        // Create auth token
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Issue access + refresh tokens
+        $tokens = $this->authTokenService->issueTokens($user, request());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Connexion réussie.',
-            'user' => $user,
-            'token' => $token,
-        ]);
+        return response()
+            ->json([
+                'success' => true,
+                'message' => 'Connexion réussie.',
+                'user' => $user,
+                'token' => $tokens['access_token'],
+            ])
+            ->withCookie($tokens['refresh_cookie']);
     }
 
     /**

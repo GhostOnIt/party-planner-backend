@@ -15,7 +15,7 @@ class CustomRole extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'event_id',
+        'user_id',
         'name',
         'description',
         'color',
@@ -36,11 +36,11 @@ class CustomRole extends Model
     }
 
     /**
-     * Get the event that owns this role.
+     * Get the user that owns this role (creator/owner; custom roles are unique per user).
      */
-    public function event(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Event::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
@@ -163,10 +163,10 @@ class CustomRole extends Model
     }
 
     /**
-     * Scope to filter by event.
+     * Scope to filter by owner user (custom roles are unique per user).
      */
-    public function scopeForEvent($query, $eventId)
+    public function scopeForUser($query, $userId)
     {
-        return $query->where('event_id', $eventId);
+        return $query->where('user_id', $userId);
     }
 }

@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Events\EventCreated;
 use App\Listeners\CreateSystemRolesForEvent;
+use App\Models\BudgetItem;
 use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Models\User;
 use App\Observers\UserObserver;
 use App\Policies\AdminPolicy;
+use App\Policies\BudgetPolicy;
 use App\Policies\CollaboratorPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\PaymentPolicy;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Collaborator::class, CollaboratorPolicy::class);
+        Gate::policy(BudgetItem::class, BudgetPolicy::class);
 
         // Register admin gates
         Gate::define('admin.access', [AdminPolicy::class, 'access']);

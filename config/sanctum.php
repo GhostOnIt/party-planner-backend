@@ -47,7 +47,9 @@ return [
     |
     */
 
-    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 60), // 60 minutes (1 hour)
+    // Short-lived access token lifetime (in minutes). Kept relatively small because
+    // we now rely on refresh tokens for long-lived sessions.
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 30),
 
     /*
     |--------------------------------------------------------------------------

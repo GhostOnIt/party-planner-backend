@@ -187,24 +187,18 @@ class EventController extends Controller
         $validated['_has_cover_photo'] = $hasUserCoverPhoto;
 
         // Créer l'événement via EventService qui gère l'application des templates
-        // Si template_id est null et présent dans la requête, on passe -1 pour indiquer "pas d'auto-application"
-        // Si template_id est absent de la requête, on passe null pour l'auto-application
-        $finalTemplateId = ($request->has('template_id') && $templateId === null) ? -1 : $templateId;
+        // template_id absent ou null/ vide = pas de template (ne pas auto-appliquer)
+        // template_id présent et > 0 = appliquer ce template
+        $finalTemplateId = ($request->has('template_id') && $templateId !== null && $templateId !== '')
+            ? (int) $templateId
+            : -1;
         $event = $this->eventService->create($user, $validated, $finalTemplateId);
         
         // Récupérer l'URL de la photo de couverture du template si elle existe
         // L'EventService stocke cette info dans un attribut temporaire
         $templateCoverPhotoUrl = null;
-        if ($finalTemplateId && $finalTemplateId > 0) {
+        if ($finalTemplateId > 0) {
             $template = \App\Models\EventTemplate::find($finalTemplateId);
-            if ($template && $template->cover_photo_url) {
-                $templateCoverPhotoUrl = $template->cover_photo_url;
-            }
-        } elseif ($finalTemplateId === null) {
-            // Auto-application : récupérer le template appliqué automatiquement
-            $template = \App\Models\EventTemplate::active()
-                ->ofType($event->type)
-                ->first();
             if ($template && $template->cover_photo_url) {
                 $templateCoverPhotoUrl = $template->cover_photo_url;
             }
@@ -245,10 +239,14 @@ class EventController extends Controller
                     'trace' => $e->getTraceAsString()
                 ]);
 
+                $errorDetail = config('app.debug')
+                    ? $e->getMessage()
+                    : 'L\'upload de la photo de couverture a échoué.';
+
                 return response()->json([
-                    'message' => 'L\'upload de la photo de couverture a échoué.',
+                    'message' => $errorDetail,
                     'errors' => [
-                        'cover_photo' => ['L\'upload de la photo de couverture a échoué.']
+                        'cover_photo' => [$errorDetail]
                     ]
                 ], 422);
             }

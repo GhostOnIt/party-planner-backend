@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 class PaymentConfirmationMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+    use \App\Mail\Concerns\EmbedsMailLogo;
 
     public function __construct(
         public Payment $payment
