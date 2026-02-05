@@ -1,8 +1,7 @@
 @props(['url'])
 <tr>
 <td class="header">
-<a href="{{ $url }}" style="display: inline-block;">
-<img src="cid:logo@partyplanner" class="logo" alt="{{ config('app.name') }} Logo">
+<span style="font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Party Planner</span>
 </a>
 </td>
 </tr>
