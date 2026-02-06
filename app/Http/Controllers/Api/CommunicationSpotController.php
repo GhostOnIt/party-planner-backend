@@ -596,15 +596,6 @@ class CommunicationSpotController extends Controller
             ], 400);
         }
 
-        // Check if user already voted
-        if ($spot->hasUserVoted($user->id)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vous avez déjà voté',
-                'hasVoted' => true,
-            ], 400);
-        }
-
         $validated = $request->validate([
             'optionId' => 'required|string',
         ]);
@@ -621,14 +612,29 @@ class CommunicationSpotController extends Controller
             ], 400);
         }
 
-        // Record the vote
-        CommunicationSpotVote::create([
-            'spot_id' => $spot->id,
-            'user_id' => $user->id,
-            'option_id' => $validated['optionId'],
-        ]);
+        $userVote = $spot->getUserVote($user->id);
 
-        $spot->recordVote($validated['optionId']);
+        if ($userVote) {
+            // Changer de vote : retirer l'ancien, enregistrer le nouveau
+            if ($userVote->option_id === $validated['optionId']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Vote déjà enregistré pour cette option',
+                    'hasVoted' => true,
+                ]);
+            }
+            $spot->removeVote($userVote->option_id);
+            $userVote->update(['option_id' => $validated['optionId']]);
+            $spot->recordVote($validated['optionId']);
+        } else {
+            // Premier vote
+            CommunicationSpotVote::create([
+                'spot_id' => $spot->id,
+                'user_id' => $user->id,
+                'option_id' => $validated['optionId'],
+            ]);
+            $spot->recordVote($validated['optionId']);
+        }
 
         return response()->json([
             'success' => true,
