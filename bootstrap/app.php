@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'optional.sanctum' => \App\Http\Middleware\OptionalSanctum::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'event.access' => \App\Http\Middleware\EnsureEventAccess::class,
             'subscription.active' => \App\Http\Middleware\EnsureActiveSubscription::class,

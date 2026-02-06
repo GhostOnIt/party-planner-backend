@@ -94,7 +94,8 @@ Route::prefix('events/{event}/photos/public/{token}')->group(function () {
 | Communication Spots - Public Routes (for login/register pages)
 |--------------------------------------------------------------------------
 */
-Route::get('/communication/active', [CommunicationSpotController::class, 'active']);
+Route::get('/communication/active', [CommunicationSpotController::class, 'active'])
+    ->middleware('optional.sanctum');
 
 /*
 |--------------------------------------------------------------------------
