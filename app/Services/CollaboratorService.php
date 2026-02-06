@@ -222,7 +222,7 @@ class CollaboratorService
     {
         return $event->collaborators()
             ->with(['user', 'collaboratorRoles', 'customRoles'])
-            ->orderByRaw("CASE role WHEN 'owner' THEN 1 WHEN 'editor' THEN 2 WHEN 'viewer' THEN 3 WHEN 'coordinator' THEN 4 WHEN 'guest_manager' THEN 5 WHEN 'planner' THEN 6 WHEN 'accountant' THEN 7 WHEN 'photographer' THEN 8 WHEN 'supervisor' THEN 9 WHEN 'reporter' THEN 10 END")
+            ->orderByRaw("CASE role WHEN 'owner' THEN 1 WHEN 'editor' THEN 2 WHEN 'viewer' THEN 3 WHEN 'coordinator' THEN 4 WHEN 'guest_manager' THEN 5 WHEN 'planner' THEN 6 WHEN 'accountant' THEN 7 WHEN 'supervisor' THEN 8 WHEN 'reporter' THEN 9 END")
             ->get();
     }
 
