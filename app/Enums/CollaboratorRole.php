@@ -14,7 +14,6 @@ enum CollaboratorRole: string
     case GUEST_MANAGER = 'guest_manager';
     case PLANNER = 'planner';
     case ACCOUNTANT = 'accountant';
-    case PHOTOGRAPHER = 'photographer';
     case SUPERVISOR = 'supervisor';
     case REPORTER = 'reporter';
 
@@ -26,7 +25,6 @@ enum CollaboratorRole: string
             self::GUEST_MANAGER => 'Gestionnaire d\'Invités',
             self::PLANNER => 'Planificateur',
             self::ACCOUNTANT => 'Comptable',
-            self::PHOTOGRAPHER => 'Photographe',
             self::SUPERVISOR => 'Superviseur',
             self::REPORTER => 'Rapporteur',
             // Legacy
@@ -43,7 +41,6 @@ enum CollaboratorRole: string
             self::GUEST_MANAGER => 'Gestion complète des invités',
             self::PLANNER => 'Gestion des tâches et planning',
             self::ACCOUNTANT => 'Gestion du budget et finances',
-            self::PHOTOGRAPHER => 'Gestion de la galerie photo',
             self::SUPERVISOR => 'Accès en lecture seule sur tout',
             self::REPORTER => 'Accès aux rapports et exports',
             // Legacy
@@ -60,7 +57,6 @@ enum CollaboratorRole: string
             self::GUEST_MANAGER => 'blue',
             self::PLANNER => 'green',
             self::ACCOUNTANT => 'indigo',
-            self::PHOTOGRAPHER => 'pink',
             self::SUPERVISOR => 'gray',
             self::REPORTER => 'orange',
             // Legacy
@@ -77,7 +73,6 @@ enum CollaboratorRole: string
             self::GUEST_MANAGER => 'users',
             self::PLANNER => 'checklist',
             self::ACCOUNTANT => 'money',
-            self::PHOTOGRAPHER => 'camera',
             self::SUPERVISOR => 'eye',
             self::REPORTER => 'file-text',
             // Legacy
@@ -94,7 +89,6 @@ enum CollaboratorRole: string
             self::GUEST_MANAGER,
             self::PLANNER,
             self::ACCOUNTANT,
-            self::PHOTOGRAPHER,
             self::EDITOR, // Legacy
         ]);
     }
@@ -114,7 +108,6 @@ enum CollaboratorRole: string
             self::GUEST_MANAGER,
             self::PLANNER,
             self::ACCOUNTANT,
-            self::PHOTOGRAPHER,
             self::SUPERVISOR,
             self::REPORTER,
             // Include legacy for migration
@@ -134,7 +127,6 @@ enum CollaboratorRole: string
             self::GUEST_MANAGER,
             self::PLANNER,
             self::ACCOUNTANT,
-            self::PHOTOGRAPHER,
             self::SUPERVISOR,
             self::REPORTER,
         ];

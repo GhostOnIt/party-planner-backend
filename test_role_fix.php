@@ -21,7 +21,7 @@ try {
     echo "Role: " . $collaborator->role . "\n";
 
     // Test other new roles
-    $testRoles = ['coordinator', 'planner', 'accountant', 'photographer', 'supervisor', 'reporter'];
+    $testRoles = ['coordinator', 'planner', 'accountant', 'supervisor', 'reporter'];
 
     foreach ($testRoles as $role) {
         $testCollaborator = App\Models\Collaborator::factory()->create([

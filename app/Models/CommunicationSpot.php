@@ -166,6 +166,21 @@ class CommunicationSpot extends Model
     }
 
     /**
+     * Remove one vote from a poll option (e.g. when user changes their vote).
+     */
+    public function removeVote(string $optionId): void
+    {
+        $votes = $this->votes ?? [];
+        $current = $votes[$optionId] ?? 0;
+        if ($current <= 1) {
+            unset($votes[$optionId]);
+        } else {
+            $votes[$optionId] = $current - 1;
+        }
+        $this->update(['votes' => $votes]);
+    }
+
+    /**
      * Transform to API response format.
      */
     public function toApiResponse(): array

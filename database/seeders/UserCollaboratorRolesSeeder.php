@@ -17,11 +17,8 @@ class UserCollaboratorRolesSeeder extends Seeder
     {
         $permissionService = app(PermissionService::class);
         
-        // Get assignable roles (excluding owner and photographer)
-        $assignableRoles = array_filter(
-            CollaboratorRole::assignableRoles(),
-            fn($role) => $role !== CollaboratorRole::PHOTOGRAPHER
-        );
+        // Get assignable roles (excluding owner)
+        $assignableRoles = CollaboratorRole::assignableRoles();
         
         $defaultRoles = [];
         foreach ($assignableRoles as $role) {
