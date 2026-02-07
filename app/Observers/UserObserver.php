@@ -75,14 +75,9 @@ class UserObserver
             ]);
         }
 
-        // Create default collaborator roles (excluding photographer)
-        $assignableRoles = array_filter(
-            CollaboratorRole::assignableRoles(),
-            fn($role) => $role !== CollaboratorRole::PHOTOGRAPHER
-        );
+        // Create default collaborator roles
         $order = 1;
-        
-        foreach ($assignableRoles as $role) {
+        foreach (CollaboratorRole::assignableRoles() as $role) {
             UserCollaboratorRole::create([
                 'user_id' => $user->id,
                 'slug' => $role->value,

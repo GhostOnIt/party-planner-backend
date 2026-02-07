@@ -172,7 +172,6 @@ class PermissionService
             'guest_manager' => $this->getGuestManagerPermissions(),
             'planner' => $this->getPlannerPermissions(),
             'accountant' => $this->getAccountantPermissions(),
-            'photographer' => $this->getPhotographerPermissions(),
             'supervisor' => $this->getSupervisorPermissions(),
             'reporter' => $this->getReporterPermissions(),
             // Legacy roles
@@ -245,18 +244,6 @@ class PermissionService
             // Always allow tasks read access by default for collaborators
             'tasks.view',
             'budget.view', 'budget.create', 'budget.edit', 'budget.delete', 'budget.export',
-        ];
-    }
-
-    /**
-     * Get photographer permissions.
-     */
-    private function getPhotographerPermissions(): array
-    {
-        return [
-            // Always allow tasks read access by default for collaborators
-            'tasks.view',
-            'photos.view', 'photos.upload', 'photos.delete', 'photos.set_featured',
         ];
     }
 
