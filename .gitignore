@@ -29,3 +29,9 @@ Thumbs.db
 /database/*.sqlite
 /database/*.sqlite-journal
 /database/*.db
+
+# Fichiers de logging et observabilité locaux
+OBSERVABILITY_ANALYSIS.md
+/app/Logging/
+/app/Providers/LoggingServiceProvider.php
+test-json-logging.php

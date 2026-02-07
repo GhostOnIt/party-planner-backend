@@ -17,6 +17,7 @@ class BudgetItem extends Model
      */
     protected $fillable = [
         'event_id',
+        'task_id',
         'category',
         'name',
         'estimated_cost',
@@ -48,6 +49,22 @@ class BudgetItem extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    /**
+     * Get the task that this budget item is associated with (if any).
+     */
+    public function task(): BelongsTo
+    {
+        return $this->belongsTo(Task::class);
+    }
+
+    /**
+     * Check if this budget item is linked to a task.
+     */
+    public function isLinkedToTask(): bool
+    {
+        return $this->task_id !== null;
     }
 
     /**

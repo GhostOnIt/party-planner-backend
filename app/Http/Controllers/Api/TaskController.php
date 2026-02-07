@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Task;
 use App\Services\PermissionService;
+use App\Services\TaskBudgetService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
     public function __construct(
-        protected PermissionService $permissionService
+        protected PermissionService $permissionService,
+        protected TaskBudgetService $taskBudgetService
     ) {}
 
     /**
@@ -61,6 +63,8 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date',
+            'estimated_cost' => 'nullable|numeric|min:0',
+            'budget_category' => 'nullable|string|in:location,catering,decoration,entertainment,photography,transportation,other',
             'assigned_to_user_id' => [
                 'nullable',
                 'exists:users,id',
@@ -89,6 +93,13 @@ class TaskController extends Controller
 
         $task = $event->tasks()->create($validated);
 
+        // Synchronize budget item if task has a cost
+        if ($this->taskBudgetService->shouldCreateBudgetItem($task)) {
+            $this->taskBudgetService->syncBudgetItemFromTask($task);
+        }
+
+        $task->load('budgetItem');
+
         return response()->json($task, 201);
     }
 
@@ -99,7 +110,7 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
 
-        $task->load('assignedUser');
+        $task->load(['assignedUser', 'budgetItem']);
 
         return response()->json($task);
     }
@@ -115,6 +126,8 @@ class TaskController extends Controller
             'status' => 'sometimes|required|in:todo,in_progress,completed,cancelled',
             'priority' => 'sometimes|required|in:low,medium,high',
             'due_date' => 'nullable|date',
+            'estimated_cost' => 'nullable|numeric|min:0',
+            'budget_category' => 'nullable|string|in:location,catering,decoration,entertainment,photography,transportation,other',
             'assigned_to_user_id' => [
                 'nullable',
                 'exists:users,id',
@@ -158,7 +171,28 @@ class TaskController extends Controller
             }
         }
 
+        // Track which attributes changed for budget sync
+        $changedAttributes = [];
+        foreach ($validated as $key => $value) {
+            if ($task->getAttribute($key) != $value) {
+                $changedAttributes[$key] = $value;
+            }
+        }
+
         $task->update($validated);
+
+        // Always synchronize budget item when cost-related fields are present or changed
+        // This handles: adding cost, removing cost, updating cost, or any cost-related change
+        $costRelatedFields = ['estimated_cost', 'budget_category', 'title', 'description'];
+        $hasCostRelatedChanges = !empty(array_intersect_key($changedAttributes, array_flip($costRelatedFields)));
+        $hasCostInRequest = isset($validated['estimated_cost']) || isset($validated['budget_category']);
+        
+        // Sync if: cost-related fields changed OR cost fields are in the request
+        if ($hasCostRelatedChanges || $hasCostInRequest) {
+            $this->taskBudgetService->updateBudgetItemFromTask($task, $changedAttributes);
+        }
+
+        $task->load('budgetItem');
 
         return response()->json($task);
     }
@@ -169,6 +203,9 @@ class TaskController extends Controller
     public function destroy(Event $event, Task $task): JsonResponse
     {
         $this->authorize('delete', $task);
+
+        // Remove associated budget item if exists
+        $this->taskBudgetService->removeBudgetItemFromTask($task);
 
         $task->delete();
 
