@@ -113,9 +113,8 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        // Les admins n'ont pas besoin d'abonnement pour créer un événement
-        // Vérifier le quota avant de créer l'événement (sauf pour les admins)
-        if (!$user->isAdmin() && !$this->quotaService->canCreateEvent($user)) {
+        // Vérifier le quota avant de créer l'événement
+        if (!$this->quotaService->canCreateEvent($user)) {
             $quota = $this->quotaService->getCreationsQuota($user);
             $subscription = $this->subscriptionService->getUserActiveSubscription($user);
             
@@ -204,10 +203,8 @@ class EventController extends Controller
             }
         }
 
-        // Consommer un crédit de création d'événement (sauf pour les admins)
-        if (!$user->isAdmin()) {
+        // Consommer un crédit de création d'événement
         $this->quotaService->consumeCreation($user);
-        }
 
         // Si une photo de couverture est fournie par l'utilisateur, l'uploader et la marquer comme featured
         // Sinon, si le template a une photo de couverture, l'utiliser
