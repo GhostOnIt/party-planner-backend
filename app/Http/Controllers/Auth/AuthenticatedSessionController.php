@@ -43,6 +43,7 @@ class AuthenticatedSessionController extends Controller
             'otp_id' => $otp->id,
             'channel' => Otp::CHANNEL_EMAIL,
             'expires_in' => Otp::EXPIRATION_MINUTES * 60,
+            'remember_me' => $request->boolean('remember'),
         ]);
     }
 

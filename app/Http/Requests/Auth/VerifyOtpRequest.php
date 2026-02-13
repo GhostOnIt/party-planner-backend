@@ -27,6 +27,7 @@ class VerifyOtpRequest extends FormRequest
             'identifier' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'size:4', 'regex:/^[0-9]+$/'],
             'type' => ['required', 'string', Rule::in(Otp::getTypes())],
+            'remember_me' => ['sometimes', 'boolean'],
         ];
     }
 

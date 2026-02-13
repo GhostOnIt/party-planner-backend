@@ -14,14 +14,16 @@ class AuthTokenService
      *
      * @return array{access_token: string, refresh_cookie: \Symfony\Component\HttpFoundation\Cookie}
      */
-    public function issueTokens(User $user, Request $request): array
+    public function issueTokens(User $user, Request $request, bool $rememberMe = false): array
     {
         // Short-lived access token (Sanctum personal access token)
         $accessToken = $user->createToken('auth-token')->plainTextToken;
 
-        // Refresh token configuration
+        // Refresh token configuration — long TTL when "remember me", short otherwise
         $config = config('partyplanner.auth');
-        $ttlDays = (int) ($config['refresh_token_ttl_days'] ?? 30);
+        $ttlDays = $rememberMe
+            ? (int) ($config['refresh_token_ttl_days'] ?? 30)
+            : (int) ($config['refresh_token_ttl_days_short'] ?? 1);
         $expiresAt = now()->addDays($ttlDays);
 
         // Generate a secure random refresh token and store only the hash

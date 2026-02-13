@@ -192,8 +192,10 @@ class OtpController extends Controller
             ]);
         }
 
-        // Issue access + refresh tokens
-        $tokens = $this->authTokenService->issueTokens($user, request());
+        $rememberMe = request()->boolean('remember_me');
+
+        // Issue access + refresh tokens (TTL depends on remember_me)
+        $tokens = $this->authTokenService->issueTokens($user, request(), $rememberMe);
 
         return response()
             ->json([

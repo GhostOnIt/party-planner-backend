@@ -204,8 +204,11 @@ return [
     */
 
     'auth' => [
-        // Number of days a refresh token remains valid (absolute lifetime)
+        // Number of days a refresh token remains valid (absolute lifetime) when "remember me" is checked
         'refresh_token_ttl_days' => env('REFRESH_TOKEN_TTL_DAYS', 30),
+
+        // Number of days a refresh token remains valid when "remember me" is NOT checked (short session)
+        'refresh_token_ttl_days_short' => env('REFRESH_TOKEN_TTL_DAYS_SHORT', 1),
 
         // Number of minutes of inactivity after which the refresh token is considered idle-expired.
         // Set to null to disable idle timeout and rely only on absolute TTL.
