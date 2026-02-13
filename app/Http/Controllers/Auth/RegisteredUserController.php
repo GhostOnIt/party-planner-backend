@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Otp;
 use App\Models\User;
 use App\Rules\StrongPassword;
-use App\Services\AuthTokenService;
+use App\Services\OtpService;
 use App\Services\SubscriptionService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -17,11 +18,12 @@ class RegisteredUserController extends Controller
 {
     public function __construct(
         protected SubscriptionService $subscriptionService,
-        protected AuthTokenService $authTokenService,
+        protected OtpService $otpService,
     ) {}
 
     /**
      * Handle an incoming registration request.
+     * Creates user, sends OTP by email, returns requires_otp (no tokens yet).
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -41,19 +43,22 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        // Auto-create trial subscription for new user - DISABLED as per requirements
-        // User must activate it manually
-        // $subscription = $this->subscriptionService->createTrialSubscription($user);
+        $email = strtolower($request->input('email'));
 
-        // Issue access + refresh tokens for immediate login
-        $tokens = $this->authTokenService->issueTokens($user, $request);
+        $otp = $this->otpService->generateAndSend(
+            identifier: $email,
+            type: Otp::TYPE_LOGIN,
+            channel: Otp::CHANNEL_EMAIL,
+            userId: $user->id
+        );
 
-        return response()
-            ->json([
-                'message' => 'Inscription réussie.',
-                'user' => $user,
-                'token' => $tokens['access_token'],
-            ], 201)
-            ->withCookie($tokens['refresh_cookie']);
+        return response()->json([
+            'message' => 'Un code de vérification a été envoyé à votre adresse email.',
+            'requires_otp' => true,
+            'identifier' => $email,
+            'otp_id' => $otp->id,
+            'channel' => Otp::CHANNEL_EMAIL,
+            'expires_in' => Otp::EXPIRATION_MINUTES * 60,
+        ], 201);
     }
 }

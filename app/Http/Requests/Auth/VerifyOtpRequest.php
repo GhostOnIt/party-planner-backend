@@ -25,7 +25,7 @@ class VerifyOtpRequest extends FormRequest
     {
         return [
             'identifier' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'size:6', 'regex:/^[0-9]+$/'],
+            'code' => ['required', 'string', 'size:4', 'regex:/^[0-9]+$/'],
             'type' => ['required', 'string', Rule::in(Otp::getTypes())],
         ];
     }
@@ -38,7 +38,7 @@ class VerifyOtpRequest extends FormRequest
         return [
             'identifier.required' => 'L\'email ou le numéro de téléphone est requis.',
             'code.required' => 'Le code de vérification est requis.',
-            'code.size' => 'Le code doit contenir exactement 6 chiffres.',
+            'code.size' => 'Le code doit contenir exactement 4 chiffres.',
             'code.regex' => 'Le code ne doit contenir que des chiffres.',
             'type.required' => 'Le type d\'OTP est requis.',
             'type.in' => 'Le type d\'OTP est invalide.',

@@ -49,7 +49,7 @@ class Otp extends Model
     /**
      * OTP expiration time in minutes
      */
-    public const EXPIRATION_MINUTES = 10;
+    public const EXPIRATION_MINUTES = 5;
 
     /**
      * Get the user that owns the OTP.

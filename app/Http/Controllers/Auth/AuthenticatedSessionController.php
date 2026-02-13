@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\Otp;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\AuthTokenService;
+use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,30 +15,35 @@ class AuthenticatedSessionController extends Controller
 {
     public function __construct(
         protected AuthTokenService $authTokenService,
+        protected OtpService $otpService,
     ) {}
 
     /**
      * Handle an incoming authentication request.
+     * Validates credentials, sends OTP by email, returns requires_otp (no tokens yet).
      */
     public function store(LoginRequest $request): JsonResponse
     {
         $request->authenticate();
 
         $user = $request->user();
+        $email = strtolower($request->input('email'));
 
-        // Revoke all existing tokens for this user (optional - single device login)
-        // $user->tokens()->delete();
+        $otp = $this->otpService->generateAndSend(
+            identifier: $email,
+            type: Otp::TYPE_LOGIN,
+            channel: Otp::CHANNEL_EMAIL,
+            userId: $user->id
+        );
 
-        // Issue access + refresh tokens
-        $tokens = $this->authTokenService->issueTokens($user, $request);
-
-        return response()
-            ->json([
-                'message' => 'Connexion réussie.',
-                'user' => $user,
-                'token' => $tokens['access_token'],
-            ])
-            ->withCookie($tokens['refresh_cookie']);
+        return response()->json([
+            'message' => 'Un code de vérification a été envoyé à votre adresse email.',
+            'requires_otp' => true,
+            'identifier' => $email,
+            'otp_id' => $otp->id,
+            'channel' => Otp::CHANNEL_EMAIL,
+            'expires_in' => Otp::EXPIRATION_MINUTES * 60,
+        ]);
     }
 
     /**

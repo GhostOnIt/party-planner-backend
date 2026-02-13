@@ -299,11 +299,11 @@ class OtpService
     }
 
     /**
-     * Generate a 6-digit OTP code.
+     * Generate a 4-digit OTP code.
      */
     protected function generateCode(): string
     {
-        return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        return str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
     }
 
     /**
