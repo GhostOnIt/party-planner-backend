@@ -23,6 +23,7 @@ class Collaborator extends Model
         'custom_role_id',
         'invited_at',
         'accepted_at',
+        'invitation_token',
     ];
 
     /**

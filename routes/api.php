@@ -232,6 +232,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     | User Invitations (invitations à collaborer reçues)
     |--------------------------------------------------------------------------
     */
+    Route::get('/invitations/by-token/{token}', [CollaboratorController::class, 'getByToken']);
     Route::get('/user/invitations', [CollaboratorController::class, 'pendingInvitations']);
     Route::post('/user/invitations/{id}/accept', [CollaboratorController::class, 'acceptInvitationById']);
     Route::post('/user/invitations/{id}/reject', [CollaboratorController::class, 'rejectInvitationById']);

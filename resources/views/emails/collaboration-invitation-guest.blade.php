@@ -1,8 +1,6 @@
 <x-mail::message>
 # Invitation à collaborer
 
-Bonjour {{ $invitee->name }},
-
 **{{ $inviter->name }}** vous invite à collaborer sur l'événement **"{{ $event->title }}"**.
 
 ## Détails de l'événement
@@ -25,6 +23,8 @@ Vous pourrez accéder à l'événement selon les permissions associées à votre
 <x-mail::button :url="$inviteUrl" color="primary">
 Voir l'invitation
 </x-mail::button>
+
+**Si vous n'avez pas encore de compte** sur {{ config('app.name') }}, vous pouvez en créer un. 
 
 Si vous ne connaissez pas {{ $inviter->name }} ou n'avez pas sollicité cette invitation, vous pouvez ignorer cet email.
 

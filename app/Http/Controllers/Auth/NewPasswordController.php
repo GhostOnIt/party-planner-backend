@@ -42,12 +42,19 @@ class NewPasswordController extends Controller
 
         if ($status == Password::PASSWORD_RESET) {
             return response()->json([
-                'message' => __($status),
+                'message' => 'Votre mot de passe a été réinitialisé.',
             ]);
         }
 
+        $message = match ($status) {
+            Password::INVALID_USER => 'Aucun utilisateur trouvé avec cette adresse email.',
+            Password::INVALID_TOKEN => 'Ce lien de réinitialisation n\'est plus valide. Demandez-en un nouveau.',
+            Password::RESET_THROTTLED => 'Veuillez patienter avant de réessayer.',
+            default => 'Impossible de réinitialiser le mot de passe.',
+        };
+
         throw ValidationException::withMessages([
-            'email' => [__($status)],
+            'email' => [$message],
         ]);
     }
 }

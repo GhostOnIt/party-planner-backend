@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Enums\CollaboratorRole;
+use App\Jobs\SendCollaborationInvitationGuestJob;
 use App\Jobs\SendCollaborationInvitationJob;
+use App\Models\CollaborationInvitation;
 use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\Notification;
@@ -31,6 +33,7 @@ class CollaboratorService
             // Keep legacy column populated with the "first" custom role for backward compatibility.
             'custom_role_id' => !empty($customRoleIds) ? $customRoleIds[0] : null,
             'invited_at' => now(),
+            'invitation_token' => CollaborationInvitation::generateToken(),
         ]);
 
         // Add roles to pivot table using the CollaboratorRole model
@@ -63,26 +66,90 @@ class CollaboratorService
 
     /**
      * Invite a user by email with multiple roles.
+     * If user exists: create Collaborator and send existing-user email.
+     * If user does not exist: create CollaborationInvitation and send guest email.
      */
-    public function inviteByEmailWithRoles(Event $event, string $email, array $roles, array $customRoleIds = []): ?Collaborator
+    public function inviteByEmailWithRoles(Event $event, string $email, array $roles, array $customRoleIds = []): Collaborator|CollaborationInvitation|null
     {
         $user = User::where('email', $email)->first();
 
-        if (!$user) {
-            return null;
+        if ($user) {
+            if ($this->isCollaborator($event, $user)) {
+                return null;
+            }
+            if ($event->user_id === $user->id) {
+                return null;
+            }
+            return $this->inviteWithRoles($event, $user, $roles, $customRoleIds);
         }
 
-        // Check if already a collaborator
-        if ($this->isCollaborator($event, $user)) {
-            return null;
+        // User does not exist: create pending invitation (guest)
+        if ($this->hasPendingInvitation($event, $email)) {
+            return null; // already invited this email
         }
+        return $this->createPendingInvitation($event, $email, $roles, $customRoleIds);
+    }
 
-        // Check if it's the owner
-        if ($event->user_id === $user->id) {
-            return null;
+    /**
+     * Check if there is already a pending collaboration invitation for this event + email.
+     */
+    public function hasPendingInvitation(Event $event, string $email): bool
+    {
+        return CollaborationInvitation::where('event_id', $event->id)
+            ->where('email', $email)
+            ->exists();
+    }
+
+    /**
+     * Create a pending collaboration invitation (for email not yet registered) and send guest email.
+     */
+    public function createPendingInvitation(Event $event, string $email, array $roles, array $customRoleIds = []): CollaborationInvitation
+    {
+        $invitation = $event->collaborationInvitations()->create([
+            'email' => $email,
+            'roles' => $roles,
+            'custom_role_ids' => $customRoleIds,
+            'token' => CollaborationInvitation::generateToken(),
+            'invited_at' => now(),
+        ]);
+
+        SendCollaborationInvitationGuestJob::dispatch($invitation);
+
+        return $invitation;
+    }
+
+    /**
+     * Claim pending collaboration invitations for a user (by email).
+     * Called when listing invitations so that after login/register the user sees their pending invites.
+     */
+    public function claimPendingInvitationsForUser(User $user): void
+    {
+        $pending = CollaborationInvitation::where('email', $user->email)->get();
+
+        foreach ($pending as $invitation) {
+            $event = $invitation->event;
+            if ($this->isCollaborator($event, $user)) {
+                $invitation->delete();
+                continue;
+            }
+            if ($event->user_id === $user->id) {
+                $invitation->delete();
+                continue;
+            }
+
+            $roles = $invitation->roles ?? [];
+            $customRoleIds = $invitation->custom_role_ids ?? [];
+            if (empty($roles) && !empty($customRoleIds)) {
+                $roles = ['supervisor'];
+            }
+            if (empty($roles)) {
+                $invitation->delete();
+                continue;
+            }
+
+            $this->inviteWithRoles($event, $user, $roles, $customRoleIds, false);
+            $invitation->delete();
         }
-
-        return $this->inviteWithRoles($event, $user, $roles, $customRoleIds);
     }
 
     /**
@@ -227,6 +294,16 @@ class CollaboratorService
     }
 
     /**
+     * Get pending collaboration invitations (emails not yet registered) for an event.
+     */
+    public function getPendingCollaborationInvitations(Event $event): Collection
+    {
+        return $event->collaborationInvitations()
+            ->orderBy('invited_at', 'desc')
+            ->get();
+    }
+
+    /**
      * Get pending invitations for an event.
      */
     public function getPendingInvitations(Event $event): Collection
@@ -347,11 +424,79 @@ class CollaboratorService
     }
 
     /**
+     * Get invitation by token (from collaboration_invitations or collaborators).
+     *
+     * @return array{invitation: Collaborator, message?: string}|array{error: 'wrong_account', message: string}|null null = 404
+     */
+    public function getInvitationByToken(string $token, User $user): array|null
+    {
+        // 1. Try collaboration_invitations first
+        $collabInvitation = CollaborationInvitation::where('token', $token)->first();
+
+        if ($collabInvitation) {
+            if (strtolower($user->email) !== strtolower($collabInvitation->email)) {
+                return [
+                    'error' => 'wrong_account',
+                    'message' => 'Cette invitation a été envoyée à une autre adresse email.',
+                    'expected_email' => $collabInvitation->email,
+                ];
+            }
+            // Claim: create Collaborator, delete CollaborationInvitation
+            $roles = $collabInvitation->roles ?? [];
+            $customRoleIds = $collabInvitation->custom_role_ids ?? [];
+            if (empty($roles) && !empty($customRoleIds)) {
+                $roles = ['supervisor'];
+            }
+            if (empty($roles)) {
+                $roles = ['viewer'];
+            }
+            // Create collaborator with same token so /invite/{token} still works after claim
+            $collaborator = $collabInvitation->event->collaborators()->create([
+                'user_id' => $user->id,
+                'role' => $roles[0] ?? null,
+                'custom_role_id' => !empty($customRoleIds) ? $customRoleIds[0] : null,
+                'invited_at' => now(),
+                'invitation_token' => $collabInvitation->token,
+            ]);
+            foreach ($roles as $role) {
+                \App\Models\CollaboratorRole::create([
+                    'collaborator_id' => $collaborator->id,
+                    'role' => $role,
+                ]);
+            }
+            $collaborator->customRoles()->sync($customRoleIds);
+            $collabInvitation->delete();
+
+            return ['invitation' => $collaborator];
+        }
+
+        // 2. Try collaborators by invitation_token
+        $collaborator = Collaborator::where('invitation_token', $token)->first();
+
+        if ($collaborator) {
+            if ($collaborator->user_id !== $user->id) {
+                return [
+                    'error' => 'wrong_account',
+                    'message' => 'Cette invitation a été envoyée à un autre compte.',
+                    'expected_email' => $collaborator->user->email ?? null,
+                ];
+            }
+            return ['invitation' => $collaborator];
+        }
+
+        return null; // 404
+    }
+
+    /**
      * Resend invitation to a collaborator.
      */
     public function resendInvitation(Collaborator $collaborator): void
     {
-        $collaborator->update(['invited_at' => now()]);
+        $updates = ['invited_at' => now()];
+        if (!$collaborator->invitation_token) {
+            $updates['invitation_token'] = CollaborationInvitation::generateToken();
+        }
+        $collaborator->update($updates);
 
         SendCollaborationInvitationJob::dispatch($collaborator);
     }

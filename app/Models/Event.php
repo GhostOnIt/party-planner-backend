@@ -206,6 +206,14 @@ class Event extends Model
     }
 
     /**
+     * Get pending collaboration invitations (by email, not yet registered).
+     */
+    public function collaborationInvitations(): HasMany
+    {
+        return $this->hasMany(CollaborationInvitation::class, 'event_id');
+    }
+
+    /**
      * Get the notifications for the event.
      */
     public function notifications(): HasMany

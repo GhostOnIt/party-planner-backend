@@ -26,6 +26,7 @@ class CollaboratorController extends Controller
         $this->authorize('view', $event);
 
         $collaborators = $this->collaboratorService->getCollaborators($event);
+        $pendingInvitations = $this->collaboratorService->getPendingCollaborationInvitations($event);
         $stats = $this->collaboratorService->getStatistics($event);
         $canAddCollaborator = $this->collaboratorService->canAddCollaborator($event);
         $remainingSlots = PHP_INT_MAX; // Unlimited collaborators
@@ -36,8 +37,28 @@ class CollaboratorController extends Controller
             return $collaborator;
         });
 
+        // Format pending invitations for frontend (emails not yet registered)
+        $pendingInvitationsFormatted = $pendingInvitations->map(function ($inv) {
+            $roleValues = $inv->roles ?? [];
+            return [
+                'id' => 'pending-' . $inv->id,
+                'type' => 'pending_invitation',
+                'email' => $inv->email,
+                'roles' => $roleValues,
+                'role' => $roleValues[0] ?? null,
+                'invited_at' => $inv->invited_at?->toIso8601String(),
+                'user' => [
+                    'id' => null,
+                    'name' => $inv->email,
+                    'email' => $inv->email,
+                ],
+                'accepted_at' => null,
+            ];
+        });
+
         return response()->json([
             'collaborators' => $collaborators,
+            'pending_invitations' => $pendingInvitationsFormatted,
             'stats' => $stats,
             'can_add_collaborator' => $canAddCollaborator,
             'remaining_slots' => PHP_INT_MAX, // Unlimited collaborators
@@ -59,7 +80,9 @@ class CollaboratorController extends Controller
     }
 
     /**
-     * Invite a collaborator.
+     * Invite a collaborator by email.
+     * If the email belongs to an existing user: create Collaborator and send invitation.
+     * If not: create a pending invitation and send guest email (they can sign up or log in to accept).
      */
     public function store(StoreCollaboratorRequest $request, Event $event): JsonResponse
     {
@@ -72,24 +95,6 @@ class CollaboratorController extends Controller
         $email = $request->validated('email');
         $user = User::where('email', $email)->first();
 
-        if (!$user) {
-            throw ValidationException::withMessages([
-                'email' => ['Aucun utilisateur trouvé avec cette adresse email.'],
-            ]);
-        }
-
-        if ($event->user_id === $user->id) {
-            return response()->json([
-                'message' => 'Le propriétaire de l\'événement est déjà membre.',
-            ], 422);
-        }
-
-        if ($this->collaboratorService->isCollaborator($event, $user)) {
-            return response()->json([
-                'message' => 'Cet utilisateur est déjà collaborateur de cet événement.',
-            ], 422);
-        }
-
         $roles = $request->validated('roles');
         $role = $request->validated('role');
         if (!$roles || count($roles) === 0) {
@@ -97,7 +102,6 @@ class CollaboratorController extends Controller
         }
         $customRoleIds = $request->validated('custom_role_ids', []);
 
-        // When only custom roles are sent, use a default system role for the legacy column
         if (count($roles) === 0 && count($customRoleIds) > 0) {
             $roles = ['supervisor'];
         }
@@ -107,20 +111,49 @@ class CollaboratorController extends Controller
             ], 422);
         }
 
-        $collaborator = $this->collaboratorService->inviteWithRoles(
-            $event,
-            $user,
-            $roles,
-            $customRoleIds
-        );
+        $result = $this->collaboratorService->inviteByEmailWithRoles($event, $email, $roles, $customRoleIds);
 
-        // Add roles to collaborator for frontend compatibility
-        $collaborator->roles = $collaborator->getRoleValues();
-        $collaborator->load(['user', 'customRoles']);
+        if ($result === null) {
+            if ($user && $event->user_id === $user->id) {
+                return response()->json([
+                    'message' => 'Le propriétaire de l\'événement est déjà membre.',
+                ], 422);
+            }
+            if ($user && $this->collaboratorService->isCollaborator($event, $user)) {
+                return response()->json([
+                    'message' => 'Cet utilisateur est déjà collaborateur de cet événement.',
+                ], 422);
+            }
+            if (!$user && $this->collaboratorService->hasPendingInvitation($event, $email)) {
+                return response()->json([
+                    'message' => 'Une invitation a déjà été envoyée à cette adresse email.',
+                ], 422);
+            }
+            return response()->json(['message' => 'Impossible d\'envoyer l\'invitation.'], 422);
+        }
 
+        if ($result instanceof \App\Models\Collaborator) {
+            $collaborator = $result;
+            $collaborator->roles = $collaborator->getRoleValues();
+            $collaborator->load(['user', 'customRoles']);
+            return response()->json([
+                'message' => 'Invitation envoyée.',
+                'collaborator' => $collaborator,
+                'pending' => false,
+            ], 201);
+        }
+
+        $invitation = $result;
+        $invitation->load('event');
         return response()->json([
-            'message' => 'Invitation envoyée.',
-            'collaborator' => $collaborator,
+            'message' => 'Invitation envoyée. La personne pourra accepter après connexion ou inscription.',
+            'pending_invitation' => [
+                'id' => $invitation->id,
+                'email' => $invitation->email,
+                'event_id' => $invitation->event_id,
+                'invited_at' => $invitation->invited_at?->toIso8601String(),
+            ],
+            'pending' => true,
         ], 201);
     }
 
@@ -258,6 +291,44 @@ class CollaboratorController extends Controller
     }
 
     /**
+     * Get invitation by token (for /invite/{token} page).
+     * Auth required. Returns 403 if wrong account, 404 if not found.
+     */
+    public function getByToken(Request $request, string $token): JsonResponse
+    {
+        $user = $request->user();
+        $result = $this->collaboratorService->getInvitationByToken($token, $user);
+
+        if ($result === null) {
+            return response()->json([
+                'message' => 'Invitation introuvable ou expirée.',
+            ], 404);
+        }
+
+        if (isset($result['error']) && $result['error'] === 'wrong_account') {
+            $payload = ['message' => $result['message']];
+            if (!empty($result['expected_email'])) {
+                $payload['expected_email'] = $result['expected_email'];
+            }
+            return response()->json($payload, 403);
+        }
+
+        $collaborator = $result['invitation'];
+        $collaborator->load(['event.user', 'collaboratorRoles', 'customRoles']);
+        $event = $collaborator->event;
+        $inviter = $event->user;
+
+        return response()->json([
+            'id' => $collaborator->id,
+            'event_id' => $collaborator->event_id,
+            'event' => $event,
+            'inviter' => $inviter,
+            'roles' => $collaborator->getRoleValues(),
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
      * Get user's collaborations.
      */
     public function myCollaborations(Request $request): JsonResponse
@@ -269,9 +340,11 @@ class CollaboratorController extends Controller
 
     /**
      * Get user's pending invitations.
+     * Claims any pending collaboration invitations (by email) for this user first.
      */
     public function pendingInvitations(Request $request): JsonResponse
     {
+        $this->collaboratorService->claimPendingInvitationsForUser($request->user());
         $collaborators = $this->collaboratorService->getUserPendingInvitations($request->user());
 
         // Transform collaborators into invitation-compatible format
