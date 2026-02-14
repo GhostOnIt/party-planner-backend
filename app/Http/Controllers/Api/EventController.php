@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\EventStatus;
 use App\Helpers\StorageHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\StoreEventRequest;
+use App\Jobs\NotifyGuestsOfStatusChangeJob;
 use App\Models\Event;
 use App\Services\EventService;
+use App\Services\EventStatusService;
 use App\Services\PermissionService;
 use App\Services\PhotoService;
 use App\Services\QuotaService;
@@ -22,19 +25,22 @@ class EventController extends Controller
     protected QuotaService $quotaService;
     protected SubscriptionService $subscriptionService;
     protected EventService $eventService;
+    protected EventStatusService $eventStatusService;
 
     public function __construct(
-        PhotoService $photoService, 
+        PhotoService $photoService,
         PermissionService $permissionService,
         QuotaService $quotaService,
         SubscriptionService $subscriptionService,
-        EventService $eventService
+        EventService $eventService,
+        EventStatusService $eventStatusService
     ) {
         $this->photoService = $photoService;
         $this->permissionService = $permissionService;
         $this->quotaService = $quotaService;
         $this->subscriptionService = $subscriptionService;
         $this->eventService = $eventService;
+        $this->eventStatusService = $eventStatusService;
     }
 
     /**
@@ -355,23 +361,27 @@ class EventController extends Controller
             'status' => 'sometimes|required|in:upcoming,ongoing,completed,cancelled',
         ]);
 
-        // Prevent manual changes to ongoing or completed status (except for admins or cancelled)
-        // These statuses should be managed automatically by the scheduled command
+        // Validate status transition rules (for all users including admins)
         if (isset($validated['status'])) {
-            $user = $request->user();
-            $newStatus = $validated['status'];
-            
-            // Allow admins to set any status
-            if (!$user->isAdmin()) {
-                // Regular users can only set to upcoming or cancelled manually
-                // ongoing and completed are managed automatically
-                if (in_array($newStatus, ['ongoing', 'completed']) && $event->status !== 'cancelled') {
-                    unset($validated['status']);
+            $newStatus = EventStatus::tryFrom($validated['status']);
+            if ($newStatus) {
+                if (!$this->eventStatusService->canTransitionTo($event, $newStatus)) {
+                    $message = $this->eventStatusService->getTransitionErrorMessage($event, $newStatus);
+
+                    return response()->json(['message' => $message], 422);
                 }
             }
         }
 
+        $previousStatus = $event->status;
+
         $event->update($validated);
+
+        // Dispatch delayed job to notify guests (2 min) when status actually changed
+        if (isset($validated['status']) && $previousStatus !== $validated['status']) {
+            NotifyGuestsOfStatusChangeJob::dispatch($event->id, $validated['status'])
+                ->delay(now()->addMinutes(2));
+        }
 
         return response()->json($event);
     }

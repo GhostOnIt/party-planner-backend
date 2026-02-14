@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -43,6 +44,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // Laisser Laravel gérer la validation (422 + errors)
             if ($e instanceof ValidationException) {
                 return null;
+            }
+            // Authentification : 401 et non 500
+            if ($e instanceof AuthenticationException) {
+                return response()->json(['message' => $e->getMessage()], 401);
             }
 
             $status = $e instanceof HttpException ? $e->getStatusCode() : 500;
