@@ -240,14 +240,10 @@ class EventController extends Controller
                     'trace' => $e->getTraceAsString()
                 ]);
 
-                $errorDetail = config('app.debug')
-                    ? $e->getMessage()
-                    : 'L\'upload de la photo de couverture a échoué.';
-
                 return response()->json([
-                    'message' => $errorDetail,
+                    'message' => 'L\'upload de la photo de couverture a échoué. Veuillez réessayer.',
                     'errors' => [
-                        'cover_photo' => [$errorDetail]
+                        'cover_photo' => ['L\'upload de la photo de couverture a échoué. Veuillez réessayer.']
                     ]
                 ], 422);
             }

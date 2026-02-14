@@ -10,7 +10,7 @@ use App\Models\Photo;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PhotoService
@@ -70,13 +70,19 @@ class PhotoService
 
         try {
             $disk = StorageHelper::disk();
-            $stored = $disk->put($path, file_get_contents($file->getRealPath()));
-            
-            if (!$stored) {
-                throw new \RuntimeException('Impossible de stocker le fichier sur le disque.');
-            }
+            // Ne pas envoyer d'ACL si le bucket n'autorise pas les ACLs (Block Public Access)
+            $disk->put($path, file_get_contents($file->getRealPath()));
         } catch (\Exception $e) {
-            throw new \RuntimeException('Erreur lors du stockage du fichier: ' . $e->getMessage(), 0, $e);
+            $previous = $e->getPrevious();
+            Log::error('Photo storage failed', [
+                'event_id' => $event->id,
+                'path' => $path,
+                'error' => $e->getMessage(),
+                'aws_error' => $previous ? $previous->getMessage() : null,
+                'aws_exception' => $previous ? get_class($previous) : null,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new \RuntimeException('Impossible d’enregistrer la photo. Veuillez réessayer.', 0, $e);
         }
 
         return $path;

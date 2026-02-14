@@ -99,6 +99,7 @@ class PhotoController extends Controller
      */
     public function store(StorePhotoRequest $request, Event $event): JsonResponse
     {
+        set_time_limit(120);
         $this->authorize('upload', [Photo::class, $event]);
 
         $files = $request->file('photos');
@@ -112,18 +113,24 @@ class PhotoController extends Controller
             ], 422);
         }
 
-        $photos = $this->photoService->uploadMultiple(
-            $event,
-            is_array($files) ? $files : [$files],
-            $request->user(),
-            $request->validated('type'),
-            $request->validated('description')
-        );
+        try {
+            $photos = $this->photoService->uploadMultiple(
+                $event,
+                is_array($files) ? $files : [$files],
+                $request->user(),
+                $request->validated('type'),
+                $request->validated('description')
+            );
 
-        return response()->json([
-            'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
-            'photos' => $photos,
-        ], 201);
+            return response()->json([
+                'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
+                'photos' => $photos,
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -256,9 +263,13 @@ class PhotoController extends Controller
             // Return file download
             return response()->download($zipPath, $filename)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la création du fichier ZIP.',
+            \Illuminate\Support\Facades\Log::error('Photo ZIP download failed', [
+                'event_id' => $event->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Erreur lors de la création du fichier ZIP. Veuillez réessayer.',
             ], 500);
         }
     }
@@ -312,6 +323,7 @@ class PhotoController extends Controller
      */
     public function publicStore(PublicStorePhotoRequest $request, Event $event, string $token): JsonResponse
     {
+        set_time_limit(120);
         // Validate token
         $guest = $this->photoService->validatePhotoUploadToken($event, $token);
         if (!$guest) {
@@ -332,17 +344,23 @@ class PhotoController extends Controller
             ], 422);
         }
 
-        $photos = $this->photoService->uploadPublic(
-            $event,
-            is_array($files) ? $files : [$files],
-            $token,
-            $guest->name
-        );
+        try {
+            $photos = $this->photoService->uploadPublic(
+                $event,
+                is_array($files) ? $files : [$files],
+                $token,
+                $guest->name
+            );
 
-        return response()->json([
-            'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
-            'photos' => $photos,
-        ], 201);
+            return response()->json([
+                'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
+                'photos' => $photos,
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -421,9 +439,13 @@ class PhotoController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la création du fichier ZIP.',
+            \Illuminate\Support\Facades\Log::error('Public photo ZIP download failed', [
+                'event_id' => $event->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Erreur lors de la création du fichier ZIP. Veuillez réessayer.',
             ], 500);
         }
     }

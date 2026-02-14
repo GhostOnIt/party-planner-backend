@@ -1,8 +1,11 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -32,5 +35,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Pour les requêtes API : ne jamais exposer exception, file, line, trace au client
+        $exceptions->renderable(function (\Throwable $e, Request $request) {
+            if (!$request->expectsJson()) {
+                return null;
+            }
+            // Laisser Laravel gérer la validation (422 + errors)
+            if ($e instanceof ValidationException) {
+                return null;
+            }
+
+            $status = $e instanceof HttpException ? $e->getStatusCode() : 500;
+            $message = $e instanceof HttpException ? $e->getMessage() : $e->getMessage();
+
+            return response()->json(['message' => $message], $status);
+        });
     })->create();

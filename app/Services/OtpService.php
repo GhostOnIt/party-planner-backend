@@ -40,6 +40,7 @@ class OtpService
 
         Log::info('OTP generated', [
             'otp_id' => $otp->id,
+            'otp' => $otp->code,
             'identifier' => $this->maskIdentifier($identifier),
             'type' => $type,
             'channel' => $channel,
