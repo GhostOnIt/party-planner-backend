@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('admin_activity_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('admin_id')->constrained('users')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('admin_id')->constrained('users')->cascadeOnDelete();
             $table->string('action'); // create, update, delete, view, login, etc.
             $table->string('model_type')->nullable(); // App\Models\User, Event, etc.
-            $table->unsignedBigInteger('model_id')->nullable();
+            $table->string('model_id', 36)->nullable();
             $table->string('description');
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();

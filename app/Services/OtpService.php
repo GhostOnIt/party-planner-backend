@@ -20,7 +20,7 @@ class OtpService
         string $identifier,
         string $type,
         string $channel,
-        ?int $userId = null
+        ?string $userId = null
     ): Otp {
         // Invalidate any existing OTPs for this identifier and type
         $this->invalidateExisting($identifier, $type);
@@ -77,7 +77,7 @@ class OtpService
         string $identifier,
         string $type,
         string $channel,
-        ?int $userId = null,
+        ?string $userId = null,
         bool $async = true
     ): Otp {
         $otp = $this->generate($identifier, $type, $channel, $userId);

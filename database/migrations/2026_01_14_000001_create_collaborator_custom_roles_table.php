@@ -10,9 +10,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('collaborator_custom_roles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('collaborator_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('custom_role_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('collaborator_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('custom_role_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['collaborator_id', 'custom_role_id']);

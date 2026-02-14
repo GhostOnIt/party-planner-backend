@@ -13,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('collaboration_invitations', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('event_id')->constrained()->cascadeOnDelete();
             $table->string('email');
             $table->json('roles')->nullable(); // system role values e.g. ['editor','viewer']
             $table->json('custom_role_ids')->nullable(); // custom role ids for event owner

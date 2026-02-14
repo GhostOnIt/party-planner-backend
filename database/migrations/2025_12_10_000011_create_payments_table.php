@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('subscription_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('subscription_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->string('currency', 3)->default('XAF');
             $table->enum('payment_method', ['mtn_mobile_money', 'airtel_money']);

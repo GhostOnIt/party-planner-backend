@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('subscriptions', function (Blueprint $table) {
             // Add plan_id for dynamic plans (nullable for migration)
-            $table->foreignId('plan_id')->nullable()->after('event_id')->constrained()->nullOnDelete();
+            $table->foreignUuid('plan_id')->nullable()->after('event_id')->constrained()->nullOnDelete();
             
             // Add creations tracking
             $table->unsignedInteger('creations_used')->default(0)->after('payment_status');
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('status')->default('active')->after('creations_used');
             
             // Make event_id nullable for account-scope subscriptions
-            $table->unsignedBigInteger('event_id')->nullable()->change();
+            $table->uuid('event_id')->nullable()->change();
             
             // Add billing period tracking
             $table->timestamp('starts_at')->nullable()->after('status');

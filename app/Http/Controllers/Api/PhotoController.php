@@ -238,11 +238,10 @@ class PhotoController extends Controller
 
         $validated = $request->validate([
             'photos' => ['required', 'array', 'min:1'],
-            'photos.*' => ['required', 'integer'],
+            'photos.*' => ['required', 'string', 'exists:photos,id'],
         ]);
 
-        // Convert all photo IDs to integers
-        $photoIds = array_map('intval', $validated['photos']);
+        $photoIds = $validated['photos'];
 
         // Validate that all photos exist and belong to this event
         $existingPhotos = Photo::whereIn('id', $photoIds)

@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('subscriptions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('event_id')->constrained()->cascadeOnDelete();
             $table->enum('plan_type', ['starter', 'pro'])->default('starter');
             $table->decimal('base_price', 12, 2);
             $table->unsignedInteger('guest_count')->default(0);

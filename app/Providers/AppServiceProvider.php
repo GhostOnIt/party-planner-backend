@@ -8,6 +8,7 @@ use App\Models\BudgetItem;
 use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\Payment;
+use App\Models\PersonalAccessToken;
 use App\Models\User;
 use App\Observers\UserObserver;
 use App\Policies\AdminPolicy;
@@ -18,6 +19,7 @@ use App\Policies\PaymentPolicy;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
         // Register policies
         Gate::policy(Event::class, EventPolicy::class);
         Gate::policy(Payment::class, PaymentPolicy::class);
