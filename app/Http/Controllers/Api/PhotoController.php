@@ -352,21 +352,16 @@ class PhotoController extends Controller
     {
         $this->authorize('download', [Photo::class, $event]);
 
-        // Get the file path from the photo URL
-        $path = str_replace('/storage/', '', $photo->url);
+        $path = \App\Helpers\StorageHelper::urlToPath($photo->url);
+        $disk = \App\Helpers\StorageHelper::diskForUrl($photo->url);
 
-        // Check if file exists
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        if (!$path || !$disk->exists($path)) {
             return response()->json([
                 'message' => 'Photo introuvable.',
             ], 404);
         }
 
-        // Use Laravel's download response which handles headers correctly
-        return \Illuminate\Support\Facades\Storage::disk('public')->download(
-            $path,
-            $photo->original_name ?? 'photo.jpg'
-        );
+        return $disk->download($path, $photo->original_name ?? 'photo.jpg');
     }
 
     /**

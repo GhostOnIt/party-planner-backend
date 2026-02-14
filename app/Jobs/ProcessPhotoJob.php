@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StorageHelper;
 use App\Models\Photo;
 use App\Services\PhotoService;
 use Illuminate\Bus\Queueable;
@@ -10,7 +11,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class ProcessPhotoJob implements ShouldQueue
 {
@@ -50,8 +50,7 @@ class ProcessPhotoJob implements ShouldQueue
             return;
         }
 
-        // Verify source file exists
-        if (!Storage::disk('public')->exists($this->sourcePath)) {
+        if (!StorageHelper::disk()->exists($this->sourcePath)) {
             Log::warning("ProcessPhotoJob: Source file {$this->sourcePath} not found");
             return;
         }
@@ -64,8 +63,7 @@ class ProcessPhotoJob implements ShouldQueue
         $thumbnailPath = $photoService->generateThumbnail($this->sourcePath, $width, $height);
 
         if ($thumbnailPath) {
-             $thumbnailUrl = '/storage/' . ltrim($thumbnailPath, '/');
-            
+            $thumbnailUrl = StorageHelper::url($thumbnailPath);
             $this->photo->update([
                 'thumbnail_url' => $thumbnailUrl,
             ]);

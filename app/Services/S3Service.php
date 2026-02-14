@@ -6,7 +6,6 @@ use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class S3Service
@@ -54,8 +53,7 @@ class S3Service
         array $metadata = []
     ): array {
         if (!$this->isConfigured()) {
-            // Fallback to local storage
-            return $this->uploadLocal($file, $path, $filename, $visibility);
+            throw new \RuntimeException('S3 is not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_BUCKET.');
         }
 
         try {
@@ -93,9 +91,7 @@ class S3Service
                 'error' => $e->getMessage(),
                 'key' => $key ?? 'unknown',
             ]);
-
-            // Fallback to local storage
-            return $this->uploadLocal($file, $path, $filename ?? $this->generateFilename($file), $visibility);
+            throw $e;
         }
     }
 
@@ -143,7 +139,7 @@ class S3Service
     public function delete(string $path): bool
     {
         if (!$this->isConfigured()) {
-            return Storage::disk('local')->delete($path);
+            return false;
         }
 
         try {
@@ -201,7 +197,7 @@ class S3Service
     public function exists(string $path): bool
     {
         if (!$this->isConfigured()) {
-            return Storage::disk('local')->exists($path);
+            return false;
         }
 
         try {
@@ -221,8 +217,7 @@ class S3Service
     public function getUrl(string $path): string
     {
         if (!$this->isConfigured()) {
-            // Generate relative URL (frontend will handle the base URL)
-            return '/storage/' . ltrim($path, '/');
+            throw new \RuntimeException('S3 is not configured.');
         }
 
         return "https://{$this->bucket}.s3.{$this->region}.amazonaws.com/{$path}";
@@ -308,7 +303,7 @@ class S3Service
     public function copy(string $sourcePath, string $destinationPath): bool
     {
         if (!$this->isConfigured()) {
-            return Storage::disk('local')->copy($sourcePath, $destinationPath);
+            return false;
         }
 
         try {
@@ -422,34 +417,6 @@ class S3Service
     }
 
     /**
-     * Upload to local storage (fallback).
-     */
-    protected function uploadLocal(
-        UploadedFile $file,
-        string $path,
-        ?string $filename,
-        string $visibility
-    ): array {
-        $filename = $filename ?? $this->generateFilename($file);
-        $fullPath = $path ? "{$path}/{$filename}" : $filename;
-
-        $storedPath = $file->storeAs(
-            $path,
-            $filename,
-            ['disk' => 'public', 'visibility' => $visibility]
-        );
-
-        Log::info('Local upload (S3 fallback)', ['path' => $storedPath]);
-
-        return [
-            'success' => true,
-            'path' => $storedPath,
-            'url' => '/storage/' . ltrim($storedPath, '/'),
-            'storage' => 'local',
-        ];
-    }
-
-    /**
      * Generate a unique filename.
      */
     protected function generateFilename(UploadedFile $file): string
@@ -527,10 +494,6 @@ class S3Service
      */
     public function getEventPhotoUrl(string $path, int $minutes = 60): ?string
     {
-        if (!$this->isConfigured()) {
-            return '/storage/' . ltrim($path, '/');
-        }
-
         return $this->getSignedUrl($path, $minutes);
     }
 

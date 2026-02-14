@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\StorageHelper;
 use App\Http\Controllers\Controller;
 use App\Models\CommunicationSpot;
 use App\Models\CommunicationSpotVote;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CommunicationSpotController extends Controller
@@ -140,10 +140,9 @@ class CommunicationSpotController extends Controller
             'targetRoles.*' => 'string',
         ]);
 
-        // Handle image upload
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('communication-spots', 'public');
+            $imagePath = $request->file('image')->store('communication-spots', 's3');
         }
 
         // Build poll options with IDs
@@ -183,7 +182,7 @@ class CommunicationSpotController extends Controller
             'type' => $validated['type'],
             'title' => $validated['title'] ?? null,
             'description' => $validated['description'] ?? null,
-            'image' => $imagePath ? Storage::url($imagePath) : null,
+            'image' => $imagePath ? StorageHelper::url($imagePath) : null,
             'badge' => $validated['badge'] ?? null,
             'badge_type' => $validated['badgeType'] ?? 'new',
             'primary_button' => $primaryButton,
@@ -263,15 +262,15 @@ class CommunicationSpotController extends Controller
         
         $validated = $request->validate($rules);
 
-        // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
             if ($spot->image) {
-                $oldPath = str_replace('/storage/', '', $spot->image);
-                Storage::disk('public')->delete($oldPath);
+                $oldPath = StorageHelper::urlToPath($spot->image);
+                if ($oldPath) {
+                    StorageHelper::diskForUrl($spot->image)->delete($oldPath);
+                }
             }
-            $imagePath = $request->file('image')->store('communication-spots', 'public');
-            $spot->image = Storage::url($imagePath);
+            $imagePath = $request->file('image')->store('communication-spots', 's3');
+            $spot->image = StorageHelper::url($imagePath);
         }
 
         // Update fields
@@ -364,10 +363,11 @@ class CommunicationSpotController extends Controller
     {
         $spot = CommunicationSpot::findOrFail($id);
 
-        // Delete image if exists
         if ($spot->image) {
-            $path = str_replace('/storage/', '', $spot->image);
-            Storage::disk('public')->delete($path);
+            $path = StorageHelper::urlToPath($spot->image);
+            if ($path) {
+                StorageHelper::diskForUrl($spot->image)->delete($path);
+            }
         }
 
         $spot->delete();

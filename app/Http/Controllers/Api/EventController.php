@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\StorageHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\StoreEventRequest;
 use App\Models\Event;
@@ -251,17 +252,17 @@ class EventController extends Controller
                 ], 422);
             }
         } elseif ($templateCoverPhotoUrl && !$hasUserCoverPhoto) {
-            // Si le template a une photo de couverture et que l'utilisateur n'en a pas fourni, copier la photo du template
             try {
-                // Copier la photo du template vers l'événement
-                $sourcePath = str_replace('/storage/', '', $templateCoverPhotoUrl);
+                $sourcePath = StorageHelper::urlToPath($templateCoverPhotoUrl);
                 $destinationPath = "events/{$event->id}/photos/" . basename($sourcePath);
-                
-                if (\Storage::disk('public')->exists($sourcePath)) {
-                    $fileContent = \Storage::disk('public')->get($sourcePath);
-                    \Storage::disk('public')->put($destinationPath, $fileContent);
-                    
-                    $photoUrl = '/storage/' . $destinationPath;
+                $sourceDisk = StorageHelper::diskForUrl($templateCoverPhotoUrl);
+                $destDisk = StorageHelper::disk();
+
+                if ($sourcePath && $sourceDisk->exists($sourcePath)) {
+                    $fileContent = $sourceDisk->get($sourcePath);
+                    $destDisk->put($destinationPath, $fileContent);
+
+                    $photoUrl = StorageHelper::url($destinationPath);
                     
                     // Créer l'entrée Photo pour l'événement
                     $photo = $event->photos()->create([

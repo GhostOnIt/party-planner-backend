@@ -270,14 +270,15 @@ class PhotoController extends Controller
     {
         $this->authorize('view', $event);
 
-        $path = str_replace('/storage/', '', $photo->url);
+        $path = \App\Helpers\StorageHelper::urlToPath($photo->url);
+        $disk = \App\Helpers\StorageHelper::diskForUrl($photo->url);
 
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        if (!$path || !$disk->exists($path)) {
             return redirect()
                 ->route('events.gallery.index', $event)
                 ->with('error', 'Photo introuvable.');
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($path);
+        return $disk->download($path);
     }
 }
