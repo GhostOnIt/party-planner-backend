@@ -234,6 +234,9 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     */
     Route::get('/invitations/by-token/{token}', [CollaboratorController::class, 'getByToken']);
     Route::get('/user/invitations', [CollaboratorController::class, 'pendingInvitations']);
+
+    // Event created for you (admin created event for non-registered email)
+    Route::post('/event-creation-invitations/{token}/claim', [\App\Http\Controllers\Api\EventCreationInvitationController::class, 'claim']);
     Route::post('/user/invitations/{id}/accept', [CollaboratorController::class, 'acceptInvitationById']);
     Route::post('/user/invitations/{id}/reject', [CollaboratorController::class, 'rejectInvitationById']);
 

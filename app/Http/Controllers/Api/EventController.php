@@ -8,6 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\StoreEventRequest;
 use App\Jobs\NotifyGuestsOfStatusChangeJob;
 use App\Models\Event;
+use App\Models\EventCreationInvitation;
+use App\Models\User;
+use App\Notifications\EventCreatedForUserNotification;
 use App\Services\EventService;
 use App\Services\EventStatusService;
 use App\Services\PermissionService;
@@ -50,12 +53,15 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        // All users see their own events + events where they are collaborators
+        // All users see: own events + collaborator events + events with pending claim (admin created for them)
         $query = Event::where(function ($q) use ($user) {
             $q->where('user_id', $user->id) // Events created by user
               ->orWhereHas('collaborators', function ($collaboratorQuery) use ($user) {
                   $collaboratorQuery->where('user_id', $user->id)
                                    ->whereNotNull('accepted_at'); // Events where user is accepted collaborator
+              })
+              ->orWhereHas('eventCreationInvitations', function ($invQuery) use ($user) {
+                  $invQuery->where('email', $user->email); // Pending events to claim
               });
         });
 
@@ -89,7 +95,10 @@ class EventController extends Controller
             ->with([
                 'user:id,name,avatar',
                 'coverPhoto:id,event_id,url,thumbnail_url',
-                'featuredPhoto:id,event_id,url,thumbnail_url'
+                'featuredPhoto:id,event_id,url,thumbnail_url',
+                'eventCreationInvitations' => function ($q) use ($user) {
+                    $q->where('email', $user->email)->select('event_id', 'token');
+                }
             ])
             ->withCount([
                 'guests',
@@ -110,6 +119,19 @@ class EventController extends Controller
             ->withSum('budgetItems as budget_spent', 'actual_cost')
             ->paginate($perPage);
 
+        // Add pending_claim and claim_token for events with invitation
+        $events->getCollection()->transform(function ($event) use ($user) {
+            $invitation = $event->eventCreationInvitations->first();
+            if ($invitation && strtolower($invitation->email) === strtolower($user->email)) {
+                $event->pending_claim = true;
+                $event->claim_token = $invitation->token;
+            } else {
+                $event->pending_claim = false;
+            }
+            $event->unsetRelation('eventCreationInvitations');
+            return $event;
+        });
+
         return response()->json($events);
     }
 
@@ -119,9 +141,21 @@ class EventController extends Controller
     public function store(StoreEventRequest $request): JsonResponse
     {
         $user = $request->user();
+        $owner = $user;
+
+        // Admin may create an event for another user by providing email
+        $ownerEmail = null;
+        if ($user->isAdmin() && $request->filled('owner_email')) {
+            $ownerEmail = strtolower(trim($request->input('owner_email')));
+            $targetUser = User::where('email', $ownerEmail)->first();
+            if ($targetUser) {
+                $owner = $targetUser;
+            }
+            // If no user found, event will be created for admin; pending invitation + email sent
+        }
 
         // Les admins n'ont pas besoin d'abonnement pour créer un événement
-        // Vérifier le quota avant de créer l'événement (sauf pour les admins)
+        // Vérifier le quota avant de créer l'événement (sauf pour les admins qui créent pour eux-mêmes ou pour un autre)
         if (!$user->isAdmin() && !$this->quotaService->canCreateEvent($user)) {
             $quota = $this->quotaService->getCreationsQuota($user);
             $subscription = $this->subscriptionService->getUserActiveSubscription($user);
@@ -186,20 +220,29 @@ class EventController extends Controller
             ]);
         }
 
-        // Retirer cover_photo et template_id des données validées car ce ne sont pas des champs du modèle Event
+        // Retirer cover_photo, template_id et owner_email des données validées
         unset($validated['cover_photo']);
         unset($validated['template_id']);
+        unset($validated['owner_email']);
         
         // Indiquer si l'utilisateur a fourni une photo de couverture
         $validated['_has_cover_photo'] = $hasUserCoverPhoto;
 
-        // Créer l'événement via EventService qui gère l'application des templates
-        // template_id absent ou null/ vide = pas de template (ne pas auto-appliquer)
-        // template_id présent et > 0 = appliquer ce template
+        // Créer l'événement pour le propriétaire (owner) via EventService
         $finalTemplateId = ($request->has('template_id') && $templateId !== null && $templateId !== '')
             ? (int) $templateId
             : -1;
-        $event = $this->eventService->create($user, $validated, $finalTemplateId);
+        $event = $this->eventService->create($owner, $validated, $finalTemplateId);
+
+        // If admin created the event for another user, notify that user by email
+        if ($owner->id !== $user->id) {
+            $owner->notify(new EventCreatedForUserNotification($event, $user));
+        }
+        // If admin created for non-registered email: create pending invitation and send email
+        if ($ownerEmail && $owner->id === $user->id) {
+            app(\App\Services\EventCreationInvitationService::class)
+                ->createPendingInvitation($event, $ownerEmail, $user);
+        }
         
         // Récupérer l'URL de la photo de couverture du template si elle existe
         // L'EventService stocke cette info dans un attribut temporaire
@@ -305,9 +348,26 @@ class EventController extends Controller
     /**
      * Display the specified event.
      */
-    public function show(Event $event): JsonResponse
+    public function show(Request $request, Event $event): JsonResponse
     {
         $this->authorize('view', $event);
+
+        $user = $request->user();
+
+        // Check if this is a pending claim event (user must claim before any action)
+        $invitation = EventCreationInvitation::where('event_id', $event->id)
+            ->where('email', $user->email)
+            ->first();
+
+        if ($invitation) {
+            // Return event with requires_claim so frontend shows claim screen (no other actions allowed)
+            $event->load(['user:id,name,avatar', 'coverPhoto:id,event_id,url,thumbnail_url']);
+            $event->loadCount(['guests', 'tasks']);
+            $event->requires_claim = true;
+            $event->claim_token = $invitation->token;
+
+            return response()->json($event);
+        }
 
         // Charger les relations avec les statistiques
         $event->load([

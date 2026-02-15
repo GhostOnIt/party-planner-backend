@@ -215,6 +215,14 @@ class Event extends Model
     }
 
     /**
+     * Get pending event creation invitations (admin created event for non-registered email).
+     */
+    public function eventCreationInvitations(): HasMany
+    {
+        return $this->hasMany(EventCreationInvitation::class, 'event_id');
+    }
+
+    /**
      * Get the notifications for the event.
      */
     public function notifications(): HasMany

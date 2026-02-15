@@ -18,6 +18,7 @@ use App\Policies\EventPolicy;
 use App\Policies\PaymentPolicy;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
 
@@ -62,5 +63,21 @@ class AppServiceProvider extends ServiceProvider
 
         // Register observers
         User::observe(UserObserver::class);
+
+        // Settings: types d'événement et catégories de budget visibles uniquement par leur propriétaire
+        Route::bind('eventType', function (string $value) {
+            $user = request()->user();
+            if (! $user) {
+                abort(401);
+            }
+            return $user->eventTypes()->findOrFail($value);
+        });
+        Route::bind('category', function (string $value) {
+            $user = request()->user();
+            if (! $user) {
+                abort(401);
+            }
+            return $user->budgetCategories()->findOrFail($value);
+        });
     }
 }
