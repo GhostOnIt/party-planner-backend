@@ -452,8 +452,9 @@ class EventController extends Controller
             'collaborators',
         ]);
 
-        // Ajouter la somme du budget dépensé
+        // Somme des coûts réels (dépensé) et des coûts estimés des lignes de budget
         $event->loadSum('budgetItems as budget_spent', 'actual_cost');
+        $event->loadSum('budgetItems as budget_items_estimated', 'estimated_cost');
 
         return response()->json($event);
     }
