@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Event;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
@@ -125,6 +126,60 @@ class EntitlementService
             'is_active' => true,
             'is_trial' => $plan->is_trial,
         ];
+    }
+
+    /**
+     * Get event entitlements for collaborators.
+     * Used when a collaborator views an event - determines which features/limits apply.
+     *
+     * - If owner is admin: full access (all features true, unlimited limits) so collaborators
+     *   can use their role permissions regardless of subscription.
+     * - Else if event has features_enabled: use stored features (from creation time).
+     * - Else: use owner's current subscription.
+     */
+    public function getEventEntitlements(Event $event): array
+    {
+        $owner = $event->user;
+        if (!$owner) {
+            return [
+                'plan' => null,
+                'subscription' => null,
+                'limits' => $this->defaultLimits,
+                'features' => $this->defaultFeatures,
+                'is_active' => false,
+                'is_trial' => false,
+            ];
+        }
+
+        // Admin owner without subscription: grant full access so collaborators can use their permissions
+        if ($owner->isAdmin()) {
+            $fullLimits = [
+                'events.creations_per_billing_period' => -1,
+                'guests.max_per_event' => -1,
+                'collaborators.max_per_event' => -1,
+                'photos.max_per_event' => -1,
+            ];
+            $fullFeatures = array_fill_keys(array_keys($this->defaultFeatures), true);
+
+            return [
+                'plan' => null,
+                'subscription' => null,
+                'limits' => $fullLimits,
+                'features' => $fullFeatures,
+                'is_active' => true,
+                'is_trial' => false,
+            ];
+        }
+
+        // Event has features stored at creation: use them (persist after subscription expires)
+        if ($event->features_enabled !== null && ! empty($event->features_enabled)) {
+            $base = $this->getEffectiveEntitlements($owner);
+            $base['features'] = array_merge($this->defaultFeatures, $event->features_enabled);
+
+            return $base;
+        }
+
+        return $this->getEffectiveEntitlements($owner);
     }
 
     /**

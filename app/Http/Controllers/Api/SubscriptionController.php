@@ -226,16 +226,16 @@ class SubscriptionController extends Controller
             $event->load('user');
         }
 
-        // Get entitlements of the event owner (not the current user)
+        // Get entitlements for collaborators (considers admin owner, event.features_enabled)
         $owner = $event->user;
-        
+
         if (!$owner) {
             return response()->json([
                 'message' => 'Propriétaire de l\'événement introuvable.',
             ], 404);
         }
 
-        $entitlements = $this->entitlementService->getEffectiveEntitlements($owner);
+        $entitlements = $this->entitlementService->getEventEntitlements($event);
 
         return response()->json($entitlements);
     }

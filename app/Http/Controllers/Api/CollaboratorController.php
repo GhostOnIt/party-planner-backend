@@ -376,7 +376,7 @@ class CollaboratorController extends Controller
     /**
      * Accept invitation by collaborator ID.
      */
-    public function acceptInvitationById(Request $request, int $id): JsonResponse
+    public function acceptInvitationById(Request $request, string $id): JsonResponse
     {
         $user = $request->user();
         $collaborator = $user->collaborations()->find($id);
@@ -400,7 +400,7 @@ class CollaboratorController extends Controller
     /**
      * Reject invitation by collaborator ID.
      */
-    public function rejectInvitationById(Request $request, int $id): JsonResponse
+    public function rejectInvitationById(Request $request, string $id): JsonResponse
     {
         $user = $request->user();
         $collaborator = $user->collaborations()->find($id);
