@@ -136,6 +136,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Specific routes must be defined BEFORE the resource route to avoid conflicts
     Route::get('events/upcoming', [DashboardController::class, 'upcoming']);
     Route::get('events/{event}/permissions', [EventController::class, 'getPermissions']);
+    Route::post('events/{event}/duplicate', [EventController::class, 'duplicate']);
     Route::apiResource('events', EventController::class);
 
     /*

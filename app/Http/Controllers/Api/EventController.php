@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\EventStatus;
 use App\Helpers\StorageHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Event\DuplicateEventRequest;
 use App\Http\Requests\Event\StoreEventRequest;
 use App\Jobs\NotifyGuestsOfStatusChangeJob;
 use App\Models\Event;
@@ -346,6 +347,60 @@ class EventController extends Controller
     }
 
     /**
+     * Duplicate an event with optional overrides and options (include guests, tasks, budget).
+     */
+    public function duplicate(DuplicateEventRequest $request, Event $event): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && !$this->quotaService->canCreateEvent($user)) {
+            $quota = $this->quotaService->getCreationsQuota($user);
+            $subscription = $this->subscriptionService->getUserActiveSubscription($user);
+            if (!$subscription) {
+                return response()->json([
+                    'message' => 'Vous devez souscrire à un plan pour créer un événement.',
+                    'error' => 'no_subscription',
+                    'quota' => $quota,
+                ], 403);
+            }
+            return response()->json([
+                'message' => 'Quota de création d\'événements atteint.',
+                'error' => 'quota_exceeded',
+                'quota' => $quota,
+            ], 403);
+        }
+
+        $validated = $request->validated();
+        $overrides = [
+            'title' => $validated['title'],
+            'type' => $validated['type'] ?? $event->type,
+            'date' => isset($validated['date']) ? $validated['date'] : null,
+            'time' => $validated['time'] ?? $event->time?->format('H:i'),
+            'location' => $validated['location'] ?? $event->location,
+            'description' => $validated['description'] ?? $event->description,
+            'theme' => $validated['theme'] ?? $event->theme,
+            'expected_guests_count' => $validated['expected_guests_count'] ?? $event->expected_guests_count,
+            'duplicate_guests' => $validated['include_guests'] ?? false,
+            'duplicate_tasks' => $validated['include_tasks'] ?? true,
+            'duplicate_budget' => $validated['include_budget'] ?? true,
+            'duplicate_collaborators' => $validated['include_collaborators'] ?? false,
+        ];
+
+        $newEvent = $this->eventService->duplicate($event, $user, $overrides);
+
+        if (!$user->isAdmin()) {
+            $this->quotaService->consumeCreation($user);
+        }
+
+        $newEvent->load([
+            'coverPhoto:id,event_id,url,thumbnail_url',
+            'featuredPhoto:id,event_id,url,thumbnail_url',
+        ]);
+
+        return response()->json($newEvent, 201);
+    }
+
+    /**
      * Display the specified event.
      */
     public function show(Request $request, Event $event): JsonResponse
@@ -392,7 +447,9 @@ class EventController extends Controller
             'tasks',
             'tasks as tasks_completed_count' => function ($query) {
                 $query->where('status', 'completed');
-            }
+            },
+            'budgetItems',
+            'collaborators',
         ]);
 
         // Ajouter la somme du budget dépensé
