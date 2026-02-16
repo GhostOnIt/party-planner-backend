@@ -16,9 +16,6 @@ class AuthTokenService
      */
     public function issueTokens(User $user, Request $request, bool $rememberMe = false): array
     {
-        // Short-lived access token (Sanctum personal access token)
-        $accessToken = $user->createToken('auth-token')->plainTextToken;
-
         // Refresh token configuration — long TTL when "remember me", short otherwise
         $config = config('partyplanner.auth');
         $ttlDays = $rememberMe
@@ -30,13 +27,16 @@ class AuthTokenService
         $rawToken = bin2hex(random_bytes(64));
         $hashed = hash('sha256', $rawToken);
 
-        $user->refreshTokens()->create([
+        $refreshToken = $user->refreshTokens()->create([
             'token_hash' => $hashed,
             'user_agent' => $request->userAgent(),
             'ip_address' => $request->ip(),
             'expires_at' => $expiresAt,
             'last_used_at' => now(),
         ]);
+
+        // Short-lived access token (Sanctum), name includes refresh_token id so we can revoke it when session is revoked
+        $accessToken = $user->createToken('auth-token|' . $refreshToken->id)->plainTextToken;
 
         // Lifetime in minutes for the cookie
         $cookieMinutes = $ttlDays * 24 * 60;

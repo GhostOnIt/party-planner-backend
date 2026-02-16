@@ -82,7 +82,7 @@ class RefreshTokenController extends Controller
         $refreshToken->forceFill(['last_used_at' => now()])->save();
 
         // Création d’un nouveau token d’accès Sanctum
-        $accessToken = $user->createToken('auth-token')->plainTextToken;
+        $accessToken = $user->createToken('auth-token|' . $refreshToken->id)->plainTextToken;
 
         return response()->json([
             'message' => 'Token rafraîchi avec succès.',

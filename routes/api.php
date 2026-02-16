@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\TaskController;
@@ -121,6 +122,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/profile', [ProfileController::class, 'update']);
     Route::delete('/user/profile/avatar', [ProfileController::class, 'deleteAvatar']);
     Route::delete('/user', [ProfileController::class, 'destroy']);
+
+    // User sessions (active devices)
+    Route::get('/user/sessions', [SessionController::class, 'index']);
+    Route::delete('/user/sessions/{id}', [SessionController::class, 'destroy']);
+    Route::post('/user/sessions/revoke-others', [SessionController::class, 'revokeOthers']);
 
     /*
     |--------------------------------------------------------------------------

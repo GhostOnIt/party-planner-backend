@@ -1631,7 +1631,7 @@ Body: {
   event_id: number,
   plan: 'starter' | 'pro',
   payment_method: 'mtn_mobile_money' | 'airtel_money',
-  phone_number: string  // Format: +237XXXXXXXXX
+  phone_number: string  // Format: +242 XX XXX XX XX
 }
 
 // Polling
@@ -1656,7 +1656,7 @@ POST /api/payments/:id/retry
 │                                            │
 │  Numéro de téléphone                       │
 │  ┌──────────────────────────────────────┐ │
-│  │ +237 6XX XXX XXX                     │ │
+│  │ +242 XX XXX XX XX                     │ │
 │  └──────────────────────────────────────┘ │
 │                                            │
 │  ⚠️ Vous recevrez une demande de          │
