@@ -11,7 +11,7 @@ use App\Models\Subscription;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Validation\Rule;
-use App\Services\AdminActivityService;
+use App\Services\ActivityService;
 use App\Services\DashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ class DashboardController extends Controller
 {
     public function __construct(
         protected DashboardService $dashboardService,
-        protected AdminActivityService $activityService
+        protected ActivityService $activityService
     ) {}
 
     /*
@@ -886,12 +886,15 @@ class DashboardController extends Controller
     public function adminActivityLogs(Request $request): JsonResponse
     {
         $filters = [
-            'admin_id' => $request->input('admin_id'),
+            'user_id' => $request->input('user_id', $request->input('admin_id')),
+            'actor_type' => $request->input('actor_type'),
+            'source' => $request->input('source'),
             'action' => $request->input('action'),
             'model_type' => $request->input('model_type'),
             'from' => $request->input('from'),
             'to' => $request->input('to'),
             'search' => $request->input('search'),
+            'session_id' => $request->input('session_id'),
             'sort_by' => $request->input('sort_by', 'created_at'),
             'sort_dir' => $request->input('sort_dir', 'desc'),
         ];
@@ -905,9 +908,12 @@ class DashboardController extends Controller
     /**
      * Get admin activity statistics.
      */
-    public function adminActivityStats(): JsonResponse
+    public function adminActivityStats(Request $request): JsonResponse
     {
-        $stats = $this->activityService->getActivityStats();
+        $actorType = $request->input('actor_type');
+        $source = $request->input('source');
+
+        $stats = $this->activityService->getActivityStats($actorType, $source);
 
         return response()->json([
             'stats' => $stats,
