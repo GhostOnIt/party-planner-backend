@@ -18,18 +18,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Renommer la table
+        // 1. Supprimer la FK AVANT de renommer la table (PostgreSQL garde le nom original)
+        Schema::table('admin_activity_logs', function (Blueprint $table) {
+            $table->dropForeign(['admin_id']);
+        });
+
+        // 2. Renommer la table
         Schema::rename('admin_activity_logs', 'activity_logs');
 
-        // 2. Modifier la structure
+        // 3. Renommer la colonne admin_id -> user_id
         Schema::table('activity_logs', function (Blueprint $table) {
-            // Renommer admin_id -> user_id
-            $table->dropForeign(['admin_id']);
             $table->renameColumn('admin_id', 'user_id');
         });
 
+        // 4. Ajouter la nouvelle FK et les nouvelles colonnes
         Schema::table('activity_logs', function (Blueprint $table) {
-            // Remettre la contrainte foreign key avec le nouveau nom
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
 
             // Type d'acteur : admin, user, system, guest
@@ -93,16 +96,21 @@ return new class extends Migration
                 's3_archived_at',
             ]);
 
-            // Renommer user_id -> admin_id
+            // Supprimer la FK avant renommage
             $table->dropForeign(['user_id']);
-            $table->renameColumn('user_id', 'admin_id');
         });
 
+        // Renommer user_id -> admin_id
         Schema::table('activity_logs', function (Blueprint $table) {
-            $table->foreign('admin_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->renameColumn('user_id', 'admin_id');
         });
 
         // Renommer la table
         Schema::rename('activity_logs', 'admin_activity_logs');
+
+        // Remettre la FK originale
+        Schema::table('admin_activity_logs', function (Blueprint $table) {
+            $table->foreign('admin_id')->references('id')->on('users')->cascadeOnDelete();
+        });
     }
 };
