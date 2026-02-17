@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
-     * 
+     *
      * Only seeds essential data: Users (admins), Permissions, and Plans.
      * All other data (events, guests, etc.) can be created via the platform.
      */

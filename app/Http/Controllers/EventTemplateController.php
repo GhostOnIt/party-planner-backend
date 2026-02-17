@@ -253,7 +253,7 @@ class EventTemplateController extends Controller
                 $oldPath = str_replace('/storage/', '', $template->cover_photo_url);
                 \Storage::disk('public')->delete($oldPath);
             }
-            
+
             $file = $request->file('cover_photo');
             $filename = uniqid() . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('templates/cover_photos', $filename, 'public');

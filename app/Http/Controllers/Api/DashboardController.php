@@ -773,12 +773,12 @@ class DashboardController extends Controller
         $subscriptions->getCollection()->transform(function ($subscription) {
             $startDate = $subscription->created_at;
             $endDate = $subscription->expires_at ?? now();
-            
+
             // Count events created by the user during the subscription period
             $eventsCount = \App\Models\Event::where('user_id', $subscription->user_id)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
-            
+
             $subscription->events_count = $eventsCount;
             return $subscription;
         });
@@ -815,7 +815,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    
+
     /**
      * Extend a subscription (admin only).
      */
@@ -926,14 +926,14 @@ class DashboardController extends Controller
     public function adminRecentActivity(Request $request): JsonResponse
     {
         $limit = (int) $request->input('limit', 10);
-        
+
         $activities = [];
-        
+
         // Get recent users
         $recentUsers = User::orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
-        
+
         foreach ($recentUsers as $user) {
             $activities[] = [
                 'id' => 'user_' . $user->id,
@@ -946,13 +946,13 @@ class DashboardController extends Controller
                 'created_at' => $user->created_at->toIso8601String(),
             ];
         }
-        
+
         // Get recent events
         $recentEvents = Event::with('user')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
-        
+
         foreach ($recentEvents as $event) {
             $activities[] = [
                 'id' => 'event_' . $event->id,
@@ -965,18 +965,18 @@ class DashboardController extends Controller
                 'created_at' => $event->created_at->toIso8601String(),
             ];
         }
-        
+
         // Get recent completed payments
         $recentPayments = Payment::with(['subscription.user', 'subscription.event.user'])
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
-        
+
         foreach ($recentPayments as $payment) {
             // Try subscription.user first, then subscription.event.user
-            $user = $payment->subscription?->user 
-                ?? $payment->subscription?->event?->user 
+            $user = $payment->subscription?->user
+                ?? $payment->subscription?->event?->user
                 ?? null;
             $userName = $user?->name ?? 'Utilisateur inconnu';
             $activities[] = [
@@ -990,17 +990,17 @@ class DashboardController extends Controller
                 'created_at' => $payment->created_at->toIso8601String(),
             ];
         }
-        
+
         // Get recent subscriptions
         $recentSubscriptions = Subscription::with(['user', 'event.user'])
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
-        
+
         foreach ($recentSubscriptions as $subscription) {
             // Try subscription.user first, then subscription.event.user
-            $user = $subscription->user 
-                ?? $subscription->event?->user 
+            $user = $subscription->user
+                ?? $subscription->event?->user
                 ?? null;
             $userName = $user?->name ?? 'Utilisateur inconnu';
             $planType = $subscription->plan_type === 'essai-gratuit' ? 'Essai gratuit' : ucfirst($subscription->plan_type);
@@ -1015,14 +1015,14 @@ class DashboardController extends Controller
                 'created_at' => $subscription->created_at->toIso8601String(),
             ];
         }
-        
+
         // Sort by created_at desc and limit
         usort($activities, function($a, $b) {
             return strtotime($b['created_at']) - strtotime($a['created_at']);
         });
-        
+
         $activities = array_slice($activities, 0, $limit);
-        
+
         return response()->json($activities);
     }
 }

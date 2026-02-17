@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Middleware global pour collecter les métriques Prometheus
         $middleware->append(\App\Http\Middleware\CollectPrometheusMetrics::class);
-        
+
         $middleware->alias([
             'optional.sanctum' => \App\Http\Middleware\OptionalSanctum::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
