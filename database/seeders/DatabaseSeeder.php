@@ -51,5 +51,8 @@ class DatabaseSeeder extends Seeder
             CommunicationSpotSeeder::class,
             LegalPageSeeder::class,
         ]);
+
+        // Optional: Activity logs test data (run separately with: php artisan db:seed --class=ActivityLogSeeder)
+        // $this->call([ActivityLogSeeder::class]);
     }
 }

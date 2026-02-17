@@ -1600,7 +1600,11 @@ Authorization: Bearer <token>
 
 > **Note:** Les utilisateurs desactives ne peuvent plus se connecter.
 
-### Logs d'activite admin
+### Journal d'activite (systeme unifie)
+
+Le systeme de logs d'activite trace toutes les actions de tous les utilisateurs (admin, users, systeme) avec stockage hybride SQL + S3.
+
+#### Lister les logs d'activite (admin)
 
 ```http
 GET /api/admin/activity-logs
@@ -1610,29 +1614,135 @@ Authorization: Bearer <token>
 **Parametres de requete (ListActivityLogsRequest):**
 | Parametre | Type | Description |
 |-----------|------|-------------|
-| admin_id | integer | Filtrer par admin |
-| action | string | Type d'action |
-| model_type | string | `User`, `Event`, `Payment`, `Subscription`, `EventTemplate` |
+| user_id | integer | Filtrer par utilisateur |
+| admin_id | integer | Filtrer par admin (retro-compatible) |
+| actor_type | string | `admin`, `user`, `system`, `guest` |
+| source | string | `api`, `navigation`, `ui_interaction`, `system` |
+| action | string | Type d'action (voir liste ci-dessous) |
+| model_type | string | `User`, `Event`, `Payment`, `Subscription`, `EventTemplate`, `Guest`, `Task`, `BudgetItem`, `Photo`, `Collaborator` |
 | search | string | Recherche dans la description |
+| session_id | string | Filtrer par session |
 | from | date | Date de debut |
 | to | date | Date de fin |
-| sort_by | string | `created_at`, `action`, `model_type` |
+| sort_by | string | `created_at`, `action`, `model_type`, `actor_type`, `source` |
 | sort_dir | string | `asc`, `desc` |
 | per_page | integer | Nombre par page (1-100) |
 
 **Actions disponibles:**
-- `create`, `update`, `delete`
-- `create_user`, `update_user`, `delete_user`, `update_role`
-- `create_event`, `update_event`, `delete_event`
-- `create_template`, `update_template`, `delete_template`
-- `refund_payment`, `cancel_subscription`
+- CRUD : `create`, `update`, `delete`, `view`, `duplicate`
+- Auth : `login`, `logout`
+- Admin users : `update_role`, `toggle_active`
+- Admin finance : `refund`, `extend`, `change_plan`, `cancel`
+- Profil : `update_password`, `update_avatar`, `delete_avatar`
+- Frontend : `page_view`, `click`, `modal_open`, `modal_close`, `filter_applied`, `tab_change`
+- API middleware : `api_read`, `api_create`, `api_update`, `api_delete`
 
-### Statistiques des activites
+#### Statistiques des activites (admin)
 
 ```http
 GET /api/admin/activity-logs/stats
 Authorization: Bearer <token>
 ```
+
+**Parametres de requete:**
+| Parametre | Type | Description |
+|-----------|------|-------------|
+| actor_type | string | Filtrer les stats par type d'acteur |
+| source | string | Filtrer les stats par source |
+
+**Reponse:**
+```json
+{
+    "stats": {
+        "total": 1234,
+        "today": 45,
+        "this_week": 230,
+        "this_month": 890,
+        "by_action": { "login": 100, "create": 50, "page_view": 500 },
+        "by_model_type": [{ "type": "Event", "count": 200 }],
+        "by_actor_type": { "admin": 300, "user": 900, "system": 34 },
+        "by_source": { "api": 400, "navigation": 600, "ui_interaction": 234 },
+        "by_user": [{ "user_id": 1, "user_name": "Admin", "count": 300 }],
+        "recent_users": [{ "user_id": 1, "name": "Admin", "last_activity": "2026-02-17T10:00:00Z" }]
+    }
+}
+```
+
+#### Detail d'un log (admin)
+
+```http
+GET /api/admin/activity-logs/{id}
+Authorization: Bearer <token>
+```
+
+#### Lien temporaire S3 (admin)
+
+```http
+GET /api/admin/activity-logs/{id}/s3-url
+Authorization: Bearer <token>
+```
+
+**Reponse:**
+```json
+{
+    "url": "https://s3.amazonaws.com/...",
+    "s3_key": "2026/02/17/uuid.json",
+    "expires_at": "2026-02-17T10:30:00Z"
+}
+```
+
+#### Export logs archives (admin)
+
+```http
+GET /api/admin/activity-logs/export
+Authorization: Bearer <token>
+```
+
+**Parametres de requete:**
+| Parametre | Type | Description |
+|-----------|------|-------------|
+| date_from | date | Date de debut (requis) |
+| date_to | date | Date de fin (requis) |
+
+#### Batch frontend (tous les utilisateurs authentifies)
+
+```http
+POST /api/activity-logs/batch
+Authorization: Bearer <token>
+```
+
+**Corps de la requete:**
+```json
+{
+    "events": [
+        {
+            "type": "navigation",
+            "action": "page_view",
+            "page_url": "/events",
+            "session_id": "abc123",
+            "timestamp": "2026-02-17T10:00:00Z",
+            "metadata": { "previous_page": "/dashboard", "duration": 15 }
+        },
+        {
+            "type": "ui_interaction",
+            "action": "click",
+            "page_url": "/events",
+            "session_id": "abc123",
+            "metadata": { "element": "btn-create-event" }
+        }
+    ]
+}
+```
+
+**Reponse (201):**
+```json
+{
+    "message": "2 evenements enregistres.",
+    "count": 2
+}
+```
+
+> **Note:** Les logs sont stockes en SQL (retention 30 jours) puis archives automatiquement vers S3. Le job `ArchiveAndPurgeLogsJob` s'execute quotidiennement a 02h00 UTC.
 
 ### Gestion des templates (Admin)
 
