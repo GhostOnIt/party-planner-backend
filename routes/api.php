@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\GlobalGuestController;
 use App\Http\Controllers\Api\GuestController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\NotificationController;
@@ -138,6 +139,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('events/{event}/permissions', [EventController::class, 'getPermissions']);
     Route::post('events/{event}/duplicate', [EventController::class, 'duplicate']);
     Route::apiResource('events', EventController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Global Guest Directory
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/guests', [GlobalGuestController::class, 'index']);
+    Route::get('/guests/export', [GlobalGuestController::class, 'export']);
+    Route::post('/guests/campaign', [GlobalGuestController::class, 'sendCampaign']);
 
     /*
     |--------------------------------------------------------------------------

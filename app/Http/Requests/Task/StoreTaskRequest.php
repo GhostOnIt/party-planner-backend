@@ -9,6 +9,17 @@ use Illuminate\Validation\Rule;
 class StoreTaskRequest extends FormRequest
 {
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $assigned = $this->input('assigned_to_user_id');
+        if ($assigned === 0 || $assigned === '0' || $assigned === '') {
+            $this->merge(['assigned_to_user_id' => null]);
+        }
+    }
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
