@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
-     * 
+     *
      * Only seeds essential data: Users (admins), Permissions, and Plans.
      * All other data (events, guests, etc.) can be created via the platform.
      */
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'alexsonicka@gmail.com'],
+            ['email' => 'alexsonicka11@gmail.com'],
             [
                 'name' => 'Alexandre Sonicka',
                 'password' => Hash::make('Test@1234'),
