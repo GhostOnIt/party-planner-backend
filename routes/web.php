@@ -5,7 +5,6 @@ use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Http\Controllers\Webhooks\TwilioWebhookController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,22 +102,3 @@ Route::prefix('webhooks/twilio')->name('webhooks.twilio.')->group(function () {
 // Legacy payment callbacks (kept for backwards compatibility)
 Route::post('/payments/mtn/callback', [MobileMoneyWebhookController::class, 'handleMtn'])->name('payments.mtn.callback');
 Route::post('/payments/airtel/callback', [MobileMoneyWebhookController::class, 'handleAirtel'])->name('payments.airtel.callback');
-
-
-Route::get('/storage/{path}', function (string $path) {
-    $disk = Storage::disk('public');
-    
-     $path = ltrim($path, '/');
-    
-    if (!$disk->exists($path)) {
-        abort(404, 'File not found');
-    }
-    
-    $filePath = $disk->path($path);
-    $mimeType = \Illuminate\Support\Facades\File::mimeType($filePath);
-
-    return response()->file($filePath, [
-        'Content-Type' => $mimeType,
-        'Cache-Control' => 'public, max-age=31536000',
-    ]);
-})->where('path', '.*')->name('storage.serve');

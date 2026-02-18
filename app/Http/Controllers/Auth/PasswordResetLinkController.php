@@ -27,12 +27,18 @@ class PasswordResetLinkController extends Controller
 
         if ($status == Password::RESET_LINK_SENT) {
             return response()->json([
-                'message' => __($status),
+                'message' => 'Un lien de réinitialisation a été envoyé à votre adresse email.',
             ]);
         }
 
+        $message = match ($status) {
+            Password::INVALID_USER => 'Aucun utilisateur trouvé avec cette adresse email.',
+            Password::RESET_THROTTLED => 'Veuillez patienter avant de réessayer.',
+            default => 'Impossible d\'envoyer le lien de réinitialisation.',
+        };
+
         throw ValidationException::withMessages([
-            'email' => [__($status)],
+            'email' => [$message],
         ]);
     }
 }

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('budget_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('event_id')->constrained()->cascadeOnDelete();
             $table->enum('category', ['location', 'catering', 'decoration', 'entertainment', 'photography', 'transportation', 'other'])->default('other');
             $table->string('name');
             $table->decimal('estimated_cost', 12, 2)->nullable();

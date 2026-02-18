@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('photos', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('uploaded_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('uploaded_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('type', ['moodboard', 'event_photo'])->default('event_photo');
             $table->string('url');
             $table->string('thumbnail_url')->nullable();

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->foreignId('cover_photo_id')
+            $table->foreignUuid('cover_photo_id')
                 ->nullable()
                 ->after('status')
                 ->constrained('photos')

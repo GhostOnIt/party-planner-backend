@@ -189,6 +189,41 @@ class EventService
                 }
             }
 
+            // Optionally duplicate collaborators (re-invite same users; they must accept again)
+            if ($overrides['duplicate_collaborators'] ?? false) {
+                foreach ($event->collaborators()->whereNotNull('user_id')->get() as $collab) {
+                    $newEvent->collaborators()->create([
+                        'user_id' => $collab->user_id,
+                        'role' => $collab->role,
+                        'custom_role_id' => $collab->custom_role_id,
+                        'invited_at' => now(),
+                        'accepted_at' => null,
+                        'invitation_token' => \Illuminate\Support\Str::random(48),
+                    ]);
+                }
+            }
+
+            // Optionally duplicate guests (list only: name, email, phone, plus_one, notes, dietary_restrictions; new tokens)
+            if ($overrides['duplicate_guests'] ?? false) {
+                foreach ($event->guests as $guest) {
+                    $newGuest = $newEvent->guests()->create([
+                        'name' => $guest->name,
+                        'email' => $guest->email,
+                        'phone' => $guest->phone,
+                        'plus_one' => $guest->plus_one,
+                        'plus_one_name' => $guest->plus_one_name,
+                        'notes' => $guest->notes,
+                        'dietary_restrictions' => $guest->dietary_restrictions,
+                        'rsvp_status' => 'pending',
+                        'checked_in' => false,
+                    ]);
+                    // Invitation is created with new token via Guest/Invitation model or we create it
+                    $newEvent->invitations()->create([
+                        'guest_id' => $newGuest->id,
+                    ]);
+                }
+            }
+
             return $newEvent->fresh();
         });
     }

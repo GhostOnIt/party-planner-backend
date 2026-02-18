@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('collaborators', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->enum('role', ['owner', 'editor', 'viewer'])->default('viewer');
             $table->timestamp('invited_at')->nullable();
             $table->timestamp('accepted_at')->nullable();

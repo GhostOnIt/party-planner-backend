@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('legal_pages', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('slug')->unique(); // 'terms', 'privacy', etc.
             $table->string('title');
             $table->text('content'); // HTML or Markdown content
             $table->boolean('is_published')->default(true);
             $table->timestamp('last_updated_by')->nullable();
-            $table->foreignId('updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

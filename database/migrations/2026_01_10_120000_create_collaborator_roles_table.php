@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('collaborator_roles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('collaborator_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('collaborator_id')->constrained()->cascadeOnDelete();
             $table->enum('role', [
                 'owner', 'coordinator', 'guest_manager', 'planner',
                 'accountant', 'photographer', 'supervisor', 'reporter',

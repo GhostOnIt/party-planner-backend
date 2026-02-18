@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\StorageHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -26,7 +26,7 @@ class ProfileController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'avatar' => $user->avatar,
-                'avatar_url' => $user->avatar ? '/storage/' . ltrim($user->avatar, '/') : null,
+                'avatar_url' => $user->avatar ? StorageHelper::url($user->avatar) : null,
                 'role' => $user->role,
                 'email_verified_at' => $user->email_verified_at,
                 'created_at' => $user->created_at,
@@ -47,14 +47,11 @@ class ProfileController extends Controller
             'avatar' => ['nullable', 'image', 'max:2048'], // 2MB max
         ]);
 
-        // Handle avatar upload
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if exists
             if ($user->avatar) {
-                Storage::delete($user->avatar);
+                StorageHelper::disk()->delete($user->avatar);
             }
-
-            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 's3');
         }
 
         $user->update($validated);
@@ -67,7 +64,7 @@ class ProfileController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'avatar' => $user->avatar,
-                'avatar_url' => $user->avatar ? '/storage/' . ltrim($user->avatar, '/') : null,
+                'avatar_url' => $user->avatar ? StorageHelper::url($user->avatar) : null,
                 'role' => $user->role,
                 'email_verified_at' => $user->email_verified_at,
                 'created_at' => $user->created_at,
@@ -83,7 +80,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         if ($user->avatar) {
-            Storage::delete($user->avatar);
+            StorageHelper::disk()->delete($user->avatar);
             $user->update(['avatar' => null]);
         }
 
@@ -110,9 +107,8 @@ class ProfileController extends Controller
             ], 422);
         }
 
-        // Delete avatar if exists
         if ($user->avatar) {
-            Storage::delete($user->avatar);
+            StorageHelper::disk()->delete($user->avatar);
         }
 
         // Revoke all tokens

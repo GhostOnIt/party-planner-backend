@@ -41,7 +41,6 @@ class StoreCollaboratorRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                'exists:users,email',
             ],
             // At least one of: role, roles (non-empty), or custom_role_ids (non-empty)
             'role' => [
@@ -65,8 +64,8 @@ class StoreCollaboratorRequest extends FormRequest
                 'integer',
                 Rule::exists('custom_roles', 'id')->where('user_id', $event->user_id),
             ],
-            // Multi custom roles (must belong to event owner; custom roles are user-scoped)
-            'custom_role_ids' => ['nullable', 'array', 'min:1'],
+            // Multi custom roles (must belong to event owner; custom roles are user-scoped). Can be empty when only system roles are selected.
+            'custom_role_ids' => ['nullable', 'array'],
             'custom_role_ids.*' => [
                 'integer',
                 Rule::exists('custom_roles', 'id')->where('user_id', $event->user_id),
@@ -108,7 +107,7 @@ class StoreCollaboratorRequest extends FormRequest
         return [
             'email.required' => 'L\'adresse email est obligatoire.',
             'email.email' => 'L\'adresse email n\'est pas valide.',
-            'email.exists' => 'Aucun utilisateur trouvé avec cette adresse email. L\'utilisateur doit d\'abord créer un compte.',
+            'email.exists' => 'L\'adresse email n\'est pas valide.',
             'roles.required' => 'Au moins un rôle doit être sélectionné.',
             'roles.array' => 'Les rôles doivent être fournis sous forme de tableau.',
             'roles.min' => 'Au moins un rôle doit être sélectionné.',

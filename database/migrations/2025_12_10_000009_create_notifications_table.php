@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_id')->nullable()->constrained()->nullOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('event_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('type', ['task_reminder', 'guest_reminder', 'budget_alert', 'event_reminder', 'collaboration_invite']);
             $table->string('title');
             $table->text('message')->nullable();

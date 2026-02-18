@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('otps', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('identifier'); // email or phone number
             $table->string('code', 6);
             $table->enum('type', ['registration', 'login', 'password_reset']);

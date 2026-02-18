@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Enums\CollaboratorRole;
 use App\Models\Event;
+use App\Models\EventCreationInvitation;
 use App\Models\User;
 use App\Services\PermissionService;
 
@@ -39,6 +40,13 @@ class EventPolicy
      */
     public function view(User $user, Event $event): bool
     {
+        // Pending claim: admin created event for this user's email, not yet claimed
+        if (EventCreationInvitation::where('event_id', $event->id)
+            ->where('email', $user->email)
+            ->exists()) {
+            return true;
+        }
+
         // Check if user has any permission on this event
         return $this->permissionService->userCanInModule($user, $event, 'events')
             || $this->permissionService->userCanInModule($user, $event, 'guests')

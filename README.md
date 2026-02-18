@@ -183,7 +183,7 @@ Pour recevoir les notifications push, votre application mobile ou web doit:
 ```env
 TWILIO_SID=ACxxxxxxxxxx
 TWILIO_TOKEN=your_auth_token
-TWILIO_FROM=+237xxxxxxxxx
+TWILIO_FROM=+242xxxxxxxxx
 TWILIO_WHATSAPP_FROM=+14155238886  # Numero WhatsApp sandbox ou Business
 ```
 

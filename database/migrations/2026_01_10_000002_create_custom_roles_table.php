@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('custom_roles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('event_id')->constrained()->cascadeOnDelete();
             $table->string('name', 100);
             $table->text('description')->nullable();
             $table->string('color', 20)->default('gray');
             $table->boolean('is_system')->default(false); // TRUE for predefined roles
-            $table->foreignId('created_by')->constrained('users');
+            $table->foreignUuid('created_by')->constrained('users');
             $table->timestamps();
 
             $table->unique(['event_id', 'name']);

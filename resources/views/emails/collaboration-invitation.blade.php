@@ -22,8 +22,8 @@ Vous êtes invité(e) en tant que **{{ $roleLabel }}**.
 
 Vous pourrez accéder à l'événement selon les permissions associées à votre rôle.
 
-<x-mail::button :url="$invitationsUrl" color="primary">
-Voir mes invitations
+<x-mail::button :url="$inviteUrl" color="primary">
+Voir l'invitation
 </x-mail::button>
 
 Si vous ne connaissez pas {{ $inviter->name }} ou n'avez pas sollicité cette invitation, vous pouvez ignorer cet email.
@@ -34,6 +34,6 @@ L'équipe {{ config('app.name') }}
 <x-mail::subcopy>
 Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :
 
-**Voir mes invitations :** {{ $invitationsUrl }}
+**Voir l'invitation :** {{ $inviteUrl }}
 </x-mail::subcopy>
 </x-mail::message>

@@ -141,7 +141,7 @@ class CollaboratorControllerTest extends TestCase
             ->assertJsonValidationErrors(['email']);
     }
 
-    public function test_invite_requires_existing_user(): void
+    public function test_invite_accepts_non_existing_user_creates_pending_invitation(): void
     {
         Sanctum::actingAs($this->user);
 
@@ -150,8 +150,10 @@ class CollaboratorControllerTest extends TestCase
             'role' => 'editor',
         ]);
 
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['email']);
+        $response->assertCreated()
+            ->assertJsonPath('pending', true)
+            ->assertJsonPath('pending_invitation.email', 'nonexistent@example.com')
+            ->assertJsonPath('pending_invitation.event_id', $this->event->id);
     }
 
     public function test_invite_requires_valid_role(): void

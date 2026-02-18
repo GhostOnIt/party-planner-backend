@@ -962,7 +962,7 @@ Authorization: Bearer <token>
 {
     "plan": "pro",
     "payment_method": "mtn_mobile_money",
-    "phone_number": "+237670000000"
+    "phone_number": "+242670000000"
 }
 ```
 
@@ -1038,7 +1038,7 @@ Authorization: Bearer <token>
     "event_id": 1,
     "plan": "pro",
     "payment_method": "mtn_mobile_money",
-    "phone_number": "+237670000000"
+    "phone_number": "+242670000000"
 }
 ```
 

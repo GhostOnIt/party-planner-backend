@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Event extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     /**
      * The attributes that are mass assignable.
@@ -203,6 +204,22 @@ class Event extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(Invitation::class);
+    }
+
+    /**
+     * Get pending collaboration invitations (by email, not yet registered).
+     */
+    public function collaborationInvitations(): HasMany
+    {
+        return $this->hasMany(CollaborationInvitation::class, 'event_id');
+    }
+
+    /**
+     * Get pending event creation invitations (admin created event for non-registered email).
+     */
+    public function eventCreationInvitations(): HasMany
+    {
+        return $this->hasMany(EventCreationInvitation::class, 'event_id');
     }
 
     /**

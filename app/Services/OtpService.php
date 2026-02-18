@@ -20,7 +20,7 @@ class OtpService
         string $identifier,
         string $type,
         string $channel,
-        ?int $userId = null
+        ?string $userId = null
     ): Otp {
         // Invalidate any existing OTPs for this identifier and type
         $this->invalidateExisting($identifier, $type);
@@ -40,6 +40,7 @@ class OtpService
 
         Log::info('OTP generated', [
             'otp_id' => $otp->id,
+            'otp' => $otp->code,
             'identifier' => $this->maskIdentifier($identifier),
             'type' => $type,
             'channel' => $channel,
@@ -76,7 +77,7 @@ class OtpService
         string $identifier,
         string $type,
         string $channel,
-        ?int $userId = null,
+        ?string $userId = null,
         bool $async = true
     ): Otp {
         $otp = $this->generate($identifier, $type, $channel, $userId);
@@ -299,11 +300,11 @@ class OtpService
     }
 
     /**
-     * Generate a 6-digit OTP code.
+     * Generate a 4-digit OTP code.
      */
     protected function generateCode(): string
     {
-        return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        return str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
     }
 
     /**

@@ -185,7 +185,7 @@ components:
         id: 456
         name: "Marie Martin"
         email: "marie.martin@example.com"
-        phone: "+237670123456"
+        phone: "+242670123456"
         rsvp_status: "accepted"
         plus_one: true
         plus_one_name: "Pierre Martin"
@@ -1194,7 +1194,7 @@ paths:
               sms:
                 summary: Envoi par SMS
                 value:
-                  identifier: "+237670123456"
+                  identifier: "+242670123456"
                   type: "login"
                   channel: "sms"
       responses:
@@ -2003,7 +2003,7 @@ paths:
                   - id: 101
                     name: "Marie Martin"
                     email: "marie@example.com"
-                    phone: "+237670123456"
+                    phone: "+242670123456"
                     rsvp_status: "accepted"
                     plus_one: true
                     plus_one_name: "Pierre Martin"
@@ -2013,7 +2013,7 @@ paths:
                   - id: 102
                     name: "Paul Durand"
                     email: "paul@example.com"
-                    phone: "+237699887766"
+                    phone: "+242699887766"
                     rsvp_status: "pending"
                     plus_one: false
                     plus_one_name: null
@@ -2073,7 +2073,7 @@ paths:
             example:
               name: "Sophie Lemaire"
               email: "sophie.lemaire@example.com"
-              phone: "+237680123456"
+              phone: "+242680123456"
               plus_one: true
               dietary_restrictions: "Sans gluten"
       responses:
@@ -2087,7 +2087,7 @@ paths:
                 id: 150
                 name: "Sophie Lemaire"
                 email: "sophie.lemaire@example.com"
-                phone: "+237680123456"
+                phone: "+242680123456"
                 rsvp_status: "pending"
                 plus_one: true
                 plus_one_name: null
