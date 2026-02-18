@@ -26,6 +26,23 @@ class SendCampaignEmailJob implements ShouldQueue
     ) {}
 
     /**
+     * Replace variables in text with guest data.
+     */
+    private function replaceVariables(string $text): string
+    {
+        $replacements = [
+            '{nom}' => $this->guest->name ?? '',
+            '{name}' => $this->guest->name ?? '',
+            '{mail}' => $this->guest->email ?? '',
+            '{email}' => $this->guest->email ?? '',
+            '{numero}' => $this->guest->phone ?? '',
+            '{phone}' => $this->guest->phone ?? '',
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $text);
+    }
+
+    /**
      * Execute the job.
      */
     public function handle(): void
@@ -34,8 +51,11 @@ class SendCampaignEmailJob implements ShouldQueue
             return;
         }
 
+        $subject = $this->replaceVariables($this->subject);
+        $message = $this->replaceVariables($this->message);
+
         try {
-            Mail::to($this->guest->email)->send(new CampaignMail($this->subject, $this->message));
+            Mail::to($this->guest->email)->send(new CampaignMail($subject, $message));
         } catch (\Exception $e) {
             Log::error("Failed to send campaign email to guest {$this->guest->id}: " . $e->getMessage());
         }

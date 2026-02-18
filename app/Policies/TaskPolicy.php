@@ -72,7 +72,7 @@ class TaskPolicy
         }
 
         return !empty($task->assigned_to_user_id)
-            && (int) $task->assigned_to_user_id === (int) $user->id
+            && (string) $task->assigned_to_user_id === (string) $user->id
             && $this->permissionService->userCan($user, $task->event, 'tasks.view');
     }
 
