@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\StorageHelper;
 use App\Models\Event;
 use App\Models\EventTemplate;
-use App\Services\AdminActivityService;
+use App\Services\ActivityService;
 use App\Services\EventTemplateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ class EventTemplateController extends Controller
 {
     public function __construct(
         protected EventTemplateService $templateService,
-        protected AdminActivityService $activityService
+        protected ActivityService $activityService
     ) {}
 
     /**

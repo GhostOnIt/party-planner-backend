@@ -30,6 +30,21 @@ Route::get('/health', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Prometheus Metrics
+|--------------------------------------------------------------------------
+|
+| L'endpoint /metrics est automatiquement enregistré par le package
+| spatie/laravel-prometheus via la configuration dans config/prometheus.php
+|
+| Sécurité :
+| - Restriction IP configurée via config/prometheus.php (allowed_ips)
+| - Middleware AllowIps appliqué automatiquement
+| - Pour production, ajoutez les IPs de votre serveur Prometheus dans allowed_ips
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
 | API Documentation (Swagger UI)
 |--------------------------------------------------------------------------
 */

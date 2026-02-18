@@ -29,6 +29,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\RefreshTokenController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\EventTemplateController;
 use App\Http\Controllers\ExportController;
 use Illuminate\Support\Facades\Route;
@@ -112,7 +113,7 @@ Route::get('/legal/{slug}', [LegalPageController::class, 'show']);
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'log.activity'])->group(function () {
     // Current authenticated user
     Route::get('/user', function () {
         return request()->user();
@@ -418,6 +419,13 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
 
     /*
     |--------------------------------------------------------------------------
+    | Activity Logs - Batch endpoint (tous les users authentifiés)
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/activity-logs/batch', [ActivityLogController::class, 'storeBatch']);
+
+    /*
+    |--------------------------------------------------------------------------
     | Communication Spots (public for authenticated users)
     |--------------------------------------------------------------------------
     */
@@ -471,8 +479,11 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
 
         // Activity Logs
         Route::get('/activity', [DashboardController::class, 'adminRecentActivity']);
-        Route::get('/activity-logs', [DashboardController::class, 'adminActivityLogs']);
-        Route::get('/activity-logs/stats', [DashboardController::class, 'adminActivityStats']);
+        Route::get('/activity-logs', [ActivityLogController::class, 'index']);
+        Route::get('/activity-logs/stats', [ActivityLogController::class, 'stats']);
+        Route::get('/activity-logs/export', [ActivityLogController::class, 'export']);
+        Route::get('/activity-logs/{id}', [ActivityLogController::class, 'show']);
+        Route::get('/activity-logs/{id}/s3-url', [ActivityLogController::class, 's3Url']);
 
         // Templates Management
         Route::get('/templates', [EventTemplateController::class, 'adminIndex']);

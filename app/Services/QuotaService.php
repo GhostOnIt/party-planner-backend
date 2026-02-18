@@ -32,9 +32,21 @@ class QuotaService
             ];
         }
 
-        $baseQuota = $subscription->plan 
-            ? $subscription->plan->getEventsCreationLimit() 
-            : 1;
+        // Si l'abonnement n'a pas de plan valide, aucun quota n'est accordé
+        if (!$subscription->plan) {
+            return [
+                'base_quota' => 0,
+                'topup_credits' => 0,
+                'total_quota' => 0,
+                'used' => 0,
+                'remaining' => 0,
+                'is_unlimited' => false,
+                'percentage_used' => 100,
+                'can_create' => false,
+            ];
+        }
+
+        $baseQuota = $subscription->plan->getEventsCreationLimit();
 
         $isUnlimited = $baseQuota === -1;
         $topUpCredits = $this->getTopUpCredits($user, $subscription);
@@ -62,11 +74,6 @@ class QuotaService
      */
     public function canCreateEvent(User $user): bool
     {
-        // Les admins peuvent toujours créer des événements
-        if ($user->isAdmin()) {
-            return true;
-        }
-        
         $quota = $this->getCreationsQuota($user);
         return $quota['can_create'];
     }
@@ -76,11 +83,6 @@ class QuotaService
      */
     public function consumeCreation(User $user): bool
     {
-        // Les admins ne consomment pas de crédit
-        if ($user->isAdmin()) {
-            return true;
-        }
-        
         $subscription = $this->getActiveSubscription($user);
 
         if (!$subscription) {
@@ -153,7 +155,7 @@ class QuotaService
      */
     protected function getActiveSubscription(User $user): ?Subscription
     {
-        return $user->subscriptions()
+        $subscription = $user->subscriptions()
             ->whereNull('event_id')
             ->where(function ($query) {
                 $query->where('status', 'active')
@@ -164,9 +166,17 @@ class QuotaService
                 $query->whereNull('expires_at')
                       ->orWhere('expires_at', '>', now());
             })
+            ->whereNotNull('plan_id') // S'assurer que l'abonnement a un plan valide
             ->with('plan')
             ->latest()
             ->first();
+
+        // Vérification supplémentaire : s'assurer que le plan existe et est actif
+        if ($subscription && (!$subscription->plan || !$subscription->plan->is_active)) {
+            return null;
+        }
+
+        return $subscription;
     }
 
     /**

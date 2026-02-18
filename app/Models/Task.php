@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Task extends Model
 {
@@ -26,6 +27,8 @@ class Task extends Model
         'priority',
         'due_date',
         'completed_at',
+        'estimated_cost',
+        'budget_category',
     ];
 
     /**
@@ -38,6 +41,7 @@ class Task extends Model
         return [
             'due_date' => 'date',
             'completed_at' => 'datetime',
+            'estimated_cost' => 'decimal:2',
         ];
     }
 
@@ -55,6 +59,22 @@ class Task extends Model
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to_user_id');
+    }
+
+    /**
+     * Get the budget item associated with this task (if any).
+     */
+    public function budgetItem(): HasOne
+    {
+        return $this->hasOne(BudgetItem::class);
+    }
+
+    /**
+     * Check if the task has an associated cost.
+     */
+    public function hasCost(): bool
+    {
+        return $this->estimated_cost !== null && $this->estimated_cost > 0;
     }
 
     /**
