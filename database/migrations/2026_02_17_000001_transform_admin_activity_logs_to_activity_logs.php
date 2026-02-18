@@ -31,7 +31,11 @@ return new class extends Migration
             $table->renameColumn('admin_id', 'user_id');
         });
 
-        // 4. Ajouter la nouvelle FK et les nouvelles colonnes
+        // 4. Ajouter la génération automatique d'UUID pour la colonne id (si pas déjà présente)
+        // Note: PostgreSQL nécessite une modification explicite de la colonne pour ajouter le default
+        DB::statement('ALTER TABLE activity_logs ALTER COLUMN id SET DEFAULT gen_random_uuid()');
+
+        // 5. Ajouter la nouvelle FK et les nouvelles colonnes
         Schema::table('activity_logs', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
 
@@ -63,7 +67,7 @@ return new class extends Migration
             $table->index('s3_archived_at', 'activity_logs_s3_archived_at_index');
         });
 
-        // 3. Mettre à jour les données existantes : tous les anciens logs sont de type admin/api
+        // 6. Mettre à jour les données existantes : tous les anciens logs sont de type admin/api
         DB::table('activity_logs')
             ->whereNull('actor_type')
             ->orWhere('actor_type', '')

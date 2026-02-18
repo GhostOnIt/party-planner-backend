@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('admin_activity_logs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->default(DB::raw('gen_random_uuid()'))->primary();
             $table->foreignUuid('admin_id')->constrained('users')->cascadeOnDelete();
             $table->string('action'); // create, update, delete, view, login, etc.
             $table->string('model_type')->nullable(); // App\Models\User, Event, etc.
