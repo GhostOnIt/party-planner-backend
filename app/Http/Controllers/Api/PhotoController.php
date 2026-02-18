@@ -99,6 +99,7 @@ class PhotoController extends Controller
      */
     public function store(StorePhotoRequest $request, Event $event): JsonResponse
     {
+        set_time_limit(120);
         $this->authorize('upload', [Photo::class, $event]);
 
         $files = $request->file('photos');
@@ -112,18 +113,24 @@ class PhotoController extends Controller
             ], 422);
         }
 
-        $photos = $this->photoService->uploadMultiple(
-            $event,
-            is_array($files) ? $files : [$files],
-            $request->user(),
-            $request->validated('type'),
-            $request->validated('description')
-        );
+        try {
+            $photos = $this->photoService->uploadMultiple(
+                $event,
+                is_array($files) ? $files : [$files],
+                $request->user(),
+                $request->validated('type'),
+                $request->validated('description')
+            );
 
-        return response()->json([
-            'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
-            'photos' => $photos,
-        ], 201);
+            return response()->json([
+                'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
+                'photos' => $photos,
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -231,11 +238,10 @@ class PhotoController extends Controller
 
         $validated = $request->validate([
             'photos' => ['required', 'array', 'min:1'],
-            'photos.*' => ['required', 'integer'],
+            'photos.*' => ['required', 'string', 'exists:photos,id'],
         ]);
 
-        // Convert all photo IDs to integers
-        $photoIds = array_map('intval', $validated['photos']);
+        $photoIds = $validated['photos'];
 
         // Validate that all photos exist and belong to this event
         $existingPhotos = Photo::whereIn('id', $photoIds)
@@ -256,9 +262,13 @@ class PhotoController extends Controller
             // Return file download
             return response()->download($zipPath, $filename)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la création du fichier ZIP.',
+            \Illuminate\Support\Facades\Log::error('Photo ZIP download failed', [
+                'event_id' => $event->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Erreur lors de la création du fichier ZIP. Veuillez réessayer.',
             ], 500);
         }
     }
@@ -312,6 +322,7 @@ class PhotoController extends Controller
      */
     public function publicStore(PublicStorePhotoRequest $request, Event $event, string $token): JsonResponse
     {
+        set_time_limit(120);
         // Validate token
         $guest = $this->photoService->validatePhotoUploadToken($event, $token);
         if (!$guest) {
@@ -332,17 +343,23 @@ class PhotoController extends Controller
             ], 422);
         }
 
-        $photos = $this->photoService->uploadPublic(
-            $event,
-            is_array($files) ? $files : [$files],
-            $token,
-            $guest->name
-        );
+        try {
+            $photos = $this->photoService->uploadPublic(
+                $event,
+                is_array($files) ? $files : [$files],
+                $token,
+                $guest->name
+            );
 
-        return response()->json([
-            'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
-            'photos' => $photos,
-        ], 201);
+            return response()->json([
+                'message' => "{$photos->count()} photo(s) uploadée(s) avec succès.",
+                'photos' => $photos,
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -352,21 +369,16 @@ class PhotoController extends Controller
     {
         $this->authorize('download', [Photo::class, $event]);
 
-        // Get the file path from the photo URL
-        $path = str_replace('/storage/', '', $photo->url);
+        $path = \App\Helpers\StorageHelper::urlToPath($photo->url);
+        $disk = \App\Helpers\StorageHelper::diskForUrl($photo->url);
 
-        // Check if file exists
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        if (!$path || !$disk->exists($path)) {
             return response()->json([
                 'message' => 'Photo introuvable.',
             ], 404);
         }
 
-        // Use Laravel's download response which handles headers correctly
-        return \Illuminate\Support\Facades\Storage::disk('public')->download(
-            $path,
-            $photo->original_name ?? 'photo.jpg'
-        );
+        return $disk->download($path, $photo->original_name ?? 'photo.jpg');
     }
 
     /**
@@ -426,9 +438,13 @@ class PhotoController extends Controller
 
             return $response;
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la création du fichier ZIP.',
+            \Illuminate\Support\Facades\Log::error('Public photo ZIP download failed', [
+                'event_id' => $event->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Erreur lors de la création du fichier ZIP. Veuillez réessayer.',
             ], 500);
         }
     }

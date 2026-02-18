@@ -3,13 +3,14 @@
 namespace App\Services;
 
 use App\Enums\PhotoType;
+use App\Helpers\StorageHelper;
 use App\Jobs\ProcessPhotoJob;
 use App\Models\Event;
 use App\Models\Photo;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PhotoService
@@ -20,8 +21,7 @@ class PhotoService
     public function upload(Event $event, UploadedFile $file, User $user, string $type = 'event_photo', ?string $description = null): Photo
     {
         $path = $this->storeFile($event, $file);
-
-         $url = '/storage/' . ltrim($path, '/');
+        $url = StorageHelper::url($path);
         
         $photo = $event->photos()->create([
             'uploaded_by_user_id' => $user->id,
@@ -69,18 +69,20 @@ class PhotoService
         $directory = dirname($path);
 
         try {
-            $disk = Storage::disk('public');
-            if (!$disk->exists($directory)) {
-                $disk->makeDirectory($directory);
-            }
-
-            $stored = $disk->put($path, file_get_contents($file->getRealPath()));
-            
-            if (!$stored) {
-                throw new \RuntimeException('Impossible de stocker le fichier sur le disque.');
-            }
+            $disk = StorageHelper::disk();
+            // Ne pas envoyer d'ACL si le bucket n'autorise pas les ACLs (Block Public Access)
+            $disk->put($path, file_get_contents($file->getRealPath()));
         } catch (\Exception $e) {
-            throw new \RuntimeException('Erreur lors du stockage du fichier: ' . $e->getMessage(), 0, $e);
+            $previous = $e->getPrevious();
+            Log::error('Photo storage failed', [
+                'event_id' => $event->id,
+                'path' => $path,
+                'error' => $e->getMessage(),
+                'aws_error' => $previous ? $previous->getMessage() : null,
+                'aws_exception' => $previous ? get_class($previous) : null,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new \RuntimeException('Impossible d’enregistrer la photo. Veuillez réessayer.', 0, $e);
         }
 
         return $path;
@@ -91,45 +93,47 @@ class PhotoService
      */
     public function generateThumbnail(string $sourcePath, int $width = 300, int $height = 300): ?string
     {
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         if (!$disk->exists($sourcePath)) {
             return null;
         }
 
-        // Get the directory and filename
         $pathInfo = pathinfo($sourcePath);
         $thumbnailPath = $pathInfo['dirname'] . '/thumbnails/' . $pathInfo['basename'];
-
-        // Ensure thumbnail directory exists
-        $thumbnailDir = $pathInfo['dirname'] . '/thumbnails';
-        if (!$disk->exists($thumbnailDir)) {
-            $disk->makeDirectory($thumbnailDir);
-        }
 
         // Check if intervention/image is available
         $imageManagerClass = 'Intervention\Image\ImageManager';
         if (!class_exists($imageManagerClass)) {
-            // Fallback: copy original as thumbnail
             $disk->copy($sourcePath, $thumbnailPath);
             return $thumbnailPath;
         }
 
         try {
-            // Use Intervention Image if available
-            /** @var object $manager */
-            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
-            $manager = new $imageManagerClass(
-                new $driverClass()
-            );
+            $content = $disk->get($sourcePath);
+            $tempPath = storage_path('app/temp/' . Str::uuid() . '.' . ($pathInfo['extension'] ?? 'jpg'));
+            $tempDir = dirname($tempPath);
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+            file_put_contents($tempPath, $content);
 
-            $image = $manager->read($disk->path($sourcePath));
+            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
+            $manager = new $imageManagerClass(new $driverClass());
+            $image = $manager->read($tempPath);
             $image->cover($width, $height);
-            $image->save($disk->path($thumbnailPath));
+
+            $thumbnailTempPath = $tempDir . '/thumb_' . basename($tempPath);
+            $image->save($thumbnailTempPath);
+
+            $thumbnailContent = file_get_contents($thumbnailTempPath);
+            $disk->put($thumbnailPath, $thumbnailContent);
+
+            @unlink($tempPath);
+            @unlink($thumbnailTempPath);
 
             return $thumbnailPath;
         } catch (\Exception $e) {
-            // Fallback: copy original as thumbnail
             $disk->copy($sourcePath, $thumbnailPath);
             return $thumbnailPath;
         }
@@ -140,27 +144,34 @@ class PhotoService
      */
     public function compress(string $sourcePath, int $quality = 80): bool
     {
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         if (!$disk->exists($sourcePath)) {
             return false;
         }
 
-        // Check if intervention/image is available
         $imageManagerClass = 'Intervention\Image\ImageManager';
         if (!class_exists($imageManagerClass)) {
-            return true; // Skip compression if library not available
+            return true;
         }
 
         try {
-            /** @var object $manager */
-            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
-            $manager = new $imageManagerClass(
-                new $driverClass()
-            );
+            $content = $disk->get($sourcePath);
+            $pathInfo = pathinfo($sourcePath);
+            $tempPath = storage_path('app/temp/' . Str::uuid() . '.' . ($pathInfo['extension'] ?? 'jpg'));
+            $tempDir = dirname($tempPath);
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+            file_put_contents($tempPath, $content);
 
-            $image = $manager->read($disk->path($sourcePath));
-            $image->save($disk->path($sourcePath), $quality);
+            $driverClass = 'Intervention\Image\Drivers\Gd\Driver';
+            $manager = new $imageManagerClass(new $driverClass());
+            $image = $manager->read($tempPath);
+            $image->save($tempPath, $quality);
+
+            $disk->put($sourcePath, file_get_contents($tempPath));
+            @unlink($tempPath);
 
             return true;
         } catch (\Exception $e) {
@@ -177,20 +188,18 @@ class PhotoService
         $event = $photo->event;
         $isCoverPhoto = $event->cover_photo_id === $photo->id;
 
-        // Extract paths from URLs
-        $mainPath = $this->urlToPath($photo->url);
-        $thumbnailPath = $this->urlToPath($photo->thumbnail_url);
+        $mainPath = StorageHelper::urlToPath($photo->url);
+        $thumbnailPath = StorageHelper::urlToPath($photo->thumbnail_url);
 
-        $disk = Storage::disk('public');
+        $mainDisk = StorageHelper::diskForUrl($photo->url);
+        $thumbDisk = StorageHelper::diskForUrl($photo->thumbnail_url);
 
-        // Delete main file
-        if ($mainPath && $disk->exists($mainPath)) {
-            $disk->delete($mainPath);
+        if ($mainPath && $mainDisk->exists($mainPath)) {
+            $mainDisk->delete($mainPath);
         }
 
-        // Delete thumbnail (if different from main)
-        if ($thumbnailPath && $thumbnailPath !== $mainPath && $disk->exists($thumbnailPath)) {
-            $disk->delete($thumbnailPath);
+        if ($thumbnailPath && $thumbnailPath !== $mainPath && $thumbDisk->exists($thumbnailPath)) {
+            $thumbDisk->delete($thumbnailPath);
         }
 
         // Delete the photo record
@@ -204,16 +213,6 @@ class PhotoService
         return true;
     }
 
-    /**
-     * Convert storage URL to path.
-     */
-    protected function urlToPath(string $url): ?string
-    {
-        // Remove /storage/ prefix to get the path
-        $path = str_replace('/storage/', '', $url);
-
-        return $path ?: null;
-    }
 
     /**
      * Toggle featured status.
@@ -441,7 +440,7 @@ class PhotoService
         foreach ($files as $file) {
             if ($file instanceof UploadedFile && $file->isValid()) {
                 $path = $this->storeFile($event, $file);
-                $url = '/storage/' . ltrim($path, '/');
+                $url = StorageHelper::url($path);
 
                 // Create photo without user (public upload)
                 $photo = $event->photos()->create([
@@ -489,10 +488,9 @@ class PhotoService
             throw new \Exception('Impossible de créer le fichier ZIP.');
         }
 
-        $disk = Storage::disk('public');
-
         foreach ($photos as $photo) {
-            $path = $this->urlToPath($photo->url);
+            $path = StorageHelper::urlToPath($photo->url);
+            $disk = StorageHelper::diskForUrl($photo->url);
             if ($path && $disk->exists($path)) {
                 $fileContent = $disk->get($path);
                 // Generate filename from photo ID and extension

@@ -7,6 +7,7 @@ use App\Models\RefreshToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Log;
 
 class RefreshTokenController extends Controller
 {
@@ -18,6 +19,12 @@ class RefreshTokenController extends Controller
         $rawToken = $request->cookie('refresh_token');
 
         if (!$rawToken) {
+            Log::warning('Refresh token missing from cookie', [
+                'origin' => $request->header('Origin'),
+                'user_agent' => $request->userAgent(),
+                'ip' => $request->ip(),
+            ]);
+
             return response()->json([
                 'message' => 'Token de rafraîchissement manquant. Veuillez vous reconnecter.',
             ], 401);
@@ -33,6 +40,12 @@ class RefreshTokenController extends Controller
             ->first();
 
         if (!$refreshToken || !$refreshToken->user) {
+            Log::warning('Refresh token invalid or expired', [
+                'token_found' => !!$refreshToken,
+                'user_found' => $refreshToken?->user ? true : false,
+                'ip' => $request->ip(),
+            ]);
+
             Cookie::queue(Cookie::forget('refresh_token', '/'));
 
             return response()->json([
@@ -69,7 +82,7 @@ class RefreshTokenController extends Controller
         $refreshToken->forceFill(['last_used_at' => now()])->save();
 
         // Création d’un nouveau token d’accès Sanctum
-        $accessToken = $user->createToken('auth-token')->plainTextToken;
+        $accessToken = $user->createToken('auth-token|' . $refreshToken->id)->plainTextToken;
 
         return response()->json([
             'message' => 'Token rafraîchi avec succès.',

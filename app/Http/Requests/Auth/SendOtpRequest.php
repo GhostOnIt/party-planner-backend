@@ -56,7 +56,7 @@ class SendOtpRequest extends FormRequest
             // Add Cameroon country code if missing
             if ($phone && !str_starts_with($phone, '+')) {
                 if (str_starts_with($phone, '6') && strlen($phone) === 9) {
-                    $phone = '+237' . $phone;
+                    $phone = '+242' . $phone;
                 } elseif (str_starts_with($phone, '237')) {
                     $phone = '+' . $phone;
                 }

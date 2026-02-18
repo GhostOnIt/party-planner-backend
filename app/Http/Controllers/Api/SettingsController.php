@@ -23,7 +23,7 @@ class SettingsController extends Controller
         private CustomRoleService $customRoleService
     ) {}
     /**
-     * Get user's event types.
+     * Liste des types d'événement de l'utilisateur connecté (visibles uniquement par lui).
      */
     public function getEventTypes(Request $request): JsonResponse
     {
@@ -79,17 +79,11 @@ class SettingsController extends Controller
 
     /**
      * Update an event type.
+     * Le type d'événement est résolu via la liaison de route (uniquement celui de l'utilisateur connecté).
      */
     public function updateEventType(Request $request, UserEventType $eventType): JsonResponse
     {
         $user = $request->user();
-
-        // Ensure the event type belongs to the user
-        if ($eventType->user_id !== $user->id) {
-            return response()->json([
-                'message' => 'Type d\'événement non trouvé.',
-            ], 404);
-        }
 
         // Prevent editing default types (optional - you can remove this if you want to allow editing)
         if ($eventType->is_default) {
@@ -121,17 +115,11 @@ class SettingsController extends Controller
 
     /**
      * Delete an event type.
+     * Le type d'événement est résolu via la liaison de route (uniquement celui de l'utilisateur connecté).
      */
     public function deleteEventType(Request $request, UserEventType $eventType): JsonResponse
     {
         $user = $request->user();
-
-        // Ensure the event type belongs to the user
-        if ($eventType->user_id !== $user->id) {
-            return response()->json([
-                'message' => 'Type d\'événement non trouvé.',
-            ], 404);
-        }
 
         // Prevent deleting default types
         if ($eventType->is_default) {
@@ -160,20 +148,22 @@ class SettingsController extends Controller
 
     /**
      * Reorder event types.
+     * Seuls les types d'événement de l'utilisateur connecté sont acceptés.
      */
     public function reorderEventTypes(Request $request): JsonResponse
     {
         $user = $request->user();
+        $userEventTypeIds = $user->eventTypes()->pluck('id')->toArray();
 
         $validated = $request->validate([
             'order' => 'required|array',
-            'order.*.id' => 'required|exists:user_event_types,id',
+            'order.*.id' => ['required', Rule::in($userEventTypeIds)],
             'order.*.order' => 'required|integer|min:0',
         ]);
 
         foreach ($validated['order'] as $item) {
-            $eventType = UserEventType::find($item['id']);
-            if ($eventType && $eventType->user_id === $user->id) {
+            $eventType = $user->eventTypes()->find($item['id']);
+            if ($eventType) {
                 $eventType->update(['order' => $item['order']]);
             }
         }
@@ -343,7 +333,7 @@ class SettingsController extends Controller
     }
 
     /**
-     * Get user's budget categories.
+     * Liste des catégories de budget de l'utilisateur connecté (visibles uniquement par lui).
      */
     public function getBudgetCategories(Request $request): JsonResponse
     {
@@ -399,17 +389,11 @@ class SettingsController extends Controller
 
     /**
      * Update a budget category.
+     * La catégorie est résolue via la liaison de route (uniquement celle de l'utilisateur connecté).
      */
     public function updateBudgetCategory(Request $request, UserBudgetCategory $category): JsonResponse
     {
         $user = $request->user();
-
-        // Ensure the category belongs to the user
-        if ($category->user_id !== $user->id) {
-            return response()->json([
-                'message' => 'Catégorie de budget non trouvée.',
-            ], 404);
-        }
 
         // Prevent editing default categories
         if ($category->is_default) {
@@ -441,17 +425,11 @@ class SettingsController extends Controller
 
     /**
      * Delete a budget category.
+     * La catégorie est résolue via la liaison de route (uniquement celle de l'utilisateur connecté).
      */
     public function deleteBudgetCategory(Request $request, UserBudgetCategory $category): JsonResponse
     {
         $user = $request->user();
-
-        // Ensure the category belongs to the user
-        if ($category->user_id !== $user->id) {
-            return response()->json([
-                'message' => 'Catégorie de budget non trouvée.',
-            ], 404);
-        }
 
         // Prevent deleting default categories
         if ($category->is_default) {
@@ -482,20 +460,22 @@ class SettingsController extends Controller
 
     /**
      * Reorder budget categories.
+     * Seules les catégories de budget de l'utilisateur connecté sont acceptées.
      */
     public function reorderBudgetCategories(Request $request): JsonResponse
     {
         $user = $request->user();
+        $userCategoryIds = $user->budgetCategories()->pluck('id')->toArray();
 
         $validated = $request->validate([
             'order' => 'required|array',
-            'order.*.id' => 'required|exists:user_budget_categories,id',
+            'order.*.id' => ['required', Rule::in($userCategoryIds)],
             'order.*.order' => 'required|integer|min:0',
         ]);
 
         foreach ($validated['order'] as $item) {
-            $category = UserBudgetCategory::find($item['id']);
-            if ($category && $category->user_id === $user->id) {
+            $category = $user->budgetCategories()->find($item['id']);
+            if ($category) {
                 $category->update(['order' => $item['order']]);
             }
         }

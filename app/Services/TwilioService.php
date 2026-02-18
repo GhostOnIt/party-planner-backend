@@ -334,7 +334,7 @@ class TwilioService
         if (!str_starts_with($phone, '+')) {
             // Assume Cameroon number if starts with 6
             if (str_starts_with($phone, '6') && strlen($phone) === 9) {
-                $phone = '+237' . $phone;
+                $phone = '+242' . $phone;
             } elseif (str_starts_with($phone, '237')) {
                 $phone = '+' . $phone;
             }

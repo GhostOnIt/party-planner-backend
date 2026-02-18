@@ -16,7 +16,7 @@ return new class extends Migration
     {
         if (!Schema::hasColumn('custom_roles', 'user_id')) {
             Schema::table('custom_roles', function (Blueprint $table) {
-                $table->foreignId('user_id')->nullable()->after('id')->constrained()->nullOnDelete();
+                $table->foreignUuid('user_id')->nullable()->after('id')->constrained()->nullOnDelete();
             });
             DB::table('custom_roles')->update([
                 'user_id' => DB::raw('created_by'),
@@ -44,6 +44,7 @@ return new class extends Migration
         if (Schema::hasColumn('custom_roles', 'event_id')) {
             Schema::table('custom_roles', function (Blueprint $table) {
                 $table->dropUnique(['event_id', 'name']);
+                $table->dropIndex(['event_id', 'is_system']);
                 $table->dropForeign(['event_id']);
                 $table->dropColumn('event_id');
             });
@@ -67,7 +68,7 @@ return new class extends Migration
                 if ($driver === 'pgsql') {
                     DB::statement('ALTER TABLE custom_roles ALTER COLUMN user_id SET NOT NULL');
                 } else {
-                    DB::statement('ALTER TABLE custom_roles MODIFY user_id BIGINT UNSIGNED NOT NULL');
+                    DB::statement('ALTER TABLE custom_roles MODIFY user_id CHAR(36) NOT NULL');
                 }
             } catch (\Throwable $e) {
                 // Column might already be NOT NULL
@@ -100,7 +101,7 @@ return new class extends Migration
         });
 
         Schema::table('custom_roles', function (Blueprint $table) {
-            $table->foreignId('event_id')->nullable()->after('id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('event_id')->nullable()->after('id')->constrained()->cascadeOnDelete();
         });
 
         // We cannot reliably backfill event_id from user_id (user may have many events).

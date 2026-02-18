@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StorageHelper;
 use App\Models\Event;
 use App\Models\EventTemplate;
 use App\Services\AdminActivityService;
@@ -178,15 +179,13 @@ class EventTemplateController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        // Handle cover photo upload
         if ($request->hasFile('cover_photo')) {
             $file = $request->file('cover_photo');
             $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('templates/cover_photos', $filename, 'public');
-            $validated['cover_photo_url'] = '/storage/' . $path;
+            $path = $file->storeAs('templates/cover_photos', $filename, 's3');
+            $validated['cover_photo_url'] = StorageHelper::url($path);
         }
 
-        // Remove cover_photo from validated data as it's not a database field
         unset($validated['cover_photo']);
 
         $template = EventTemplate::create($validated);
@@ -246,18 +245,17 @@ class EventTemplateController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        // Handle cover photo upload
         if ($request->hasFile('cover_photo')) {
-            // Delete old cover photo if exists
             if ($template->cover_photo_url) {
-                $oldPath = str_replace('/storage/', '', $template->cover_photo_url);
-                \Storage::disk('public')->delete($oldPath);
+                $oldPath = StorageHelper::urlToPath($template->cover_photo_url);
+                if ($oldPath) {
+                    StorageHelper::diskForUrl($template->cover_photo_url)->delete($oldPath);
+                }
             }
-            
             $file = $request->file('cover_photo');
             $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('templates/cover_photos', $filename, 'public');
-            $validated['cover_photo_url'] = '/storage/' . $path;
+            $path = $file->storeAs('templates/cover_photos', $filename, 's3');
+            $validated['cover_photo_url'] = StorageHelper::url($path);
         }
 
         // Remove cover_photo from validated data as it's not a database field

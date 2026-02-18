@@ -46,8 +46,12 @@ class CollaborationInvitationMail extends Mailable implements ShouldQueue
             $roleLabel = $roleNames[0] ?? 'Collaborateur';
         }
 
-        $frontendUrl = config('app.frontend_url', config('app.url'));
-        $eventId = $this->collaborator->event->id;
+        $frontendUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
+        $token = $this->collaborator->invitation_token;
+        $inviteeEmail = $this->collaborator->user->email ?? null;
+        $inviteUrl = $token
+            ? "{$frontendUrl}/invite/{$token}" . ($inviteeEmail ? '?email=' . urlencode($inviteeEmail) : '')
+            : "{$frontendUrl}/invitations";
 
         return new Content(
             markdown: 'emails.collaboration-invitation',
@@ -57,7 +61,7 @@ class CollaborationInvitationMail extends Mailable implements ShouldQueue
                 'inviter' => $this->collaborator->event->user,
                 'invitee' => $this->collaborator->user,
                 'roleLabel' => $roleLabel,
-                'invitationsUrl' => "{$frontendUrl}/invitations",
+                'inviteUrl' => $inviteUrl,
             ],
         );
     }

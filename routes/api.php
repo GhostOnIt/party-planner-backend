@@ -9,12 +9,14 @@ use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\GlobalGuestController;
 use App\Http\Controllers\Api\GuestController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\TaskController;
@@ -122,6 +124,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/profile/avatar', [ProfileController::class, 'deleteAvatar']);
     Route::delete('/user', [ProfileController::class, 'destroy']);
 
+    // User sessions (active devices)
+    Route::get('/user/sessions', [SessionController::class, 'index']);
+    Route::delete('/user/sessions/{id}', [SessionController::class, 'destroy']);
+    Route::post('/user/sessions/revoke-others', [SessionController::class, 'revokeOthers']);
+
     /*
     |--------------------------------------------------------------------------
     | Events
@@ -130,7 +137,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Specific routes must be defined BEFORE the resource route to avoid conflicts
     Route::get('events/upcoming', [DashboardController::class, 'upcoming']);
     Route::get('events/{event}/permissions', [EventController::class, 'getPermissions']);
+    Route::post('events/{event}/duplicate', [EventController::class, 'duplicate']);
     Route::apiResource('events', EventController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Global Guest Directory
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/guests', [GlobalGuestController::class, 'index']);
+    Route::get('/guests/export', [GlobalGuestController::class, 'export']);
+    Route::post('/guests/campaign', [GlobalGuestController::class, 'sendCampaign']);
 
     /*
     |--------------------------------------------------------------------------
@@ -232,7 +249,11 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     | User Invitations (invitations à collaborer reçues)
     |--------------------------------------------------------------------------
     */
+    Route::get('/invitations/by-token/{token}', [CollaboratorController::class, 'getByToken']);
     Route::get('/user/invitations', [CollaboratorController::class, 'pendingInvitations']);
+
+    // Event created for you (admin created event for non-registered email)
+    Route::post('/event-creation-invitations/{token}/claim', [\App\Http\Controllers\Api\EventCreationInvitationController::class, 'claim']);
     Route::post('/user/invitations/{id}/accept', [CollaboratorController::class, 'acceptInvitationById']);
     Route::post('/user/invitations/{id}/reject', [CollaboratorController::class, 'rejectInvitationById']);
 

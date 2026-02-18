@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('top_ups', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('subscription_id')->nullable()->constrained()->nullOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('subscription_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('credits'); // Number of event creation credits
             $table->unsignedInteger('price')->default(0); // Price paid in FCFA
             $table->timestamp('purchased_at')->useCurrent();

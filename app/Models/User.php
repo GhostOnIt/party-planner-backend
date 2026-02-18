@@ -6,7 +6,9 @@ use App\Enums\UserRole;
 use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Helpers\StorageHelper;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasUuids, Notifiable;
 
     /**
      * Send the email verification notification.
@@ -94,7 +96,7 @@ class User extends Authenticatable implements MustVerifyEmail
         if (!$this->avatar) {
             return null;
         }
-        return '/storage/' . ltrim($this->avatar, '/');
+        return StorageHelper::url($this->avatar);
     }
 
     /**

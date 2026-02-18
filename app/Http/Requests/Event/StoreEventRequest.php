@@ -33,19 +33,25 @@ class StoreEventRequest extends FormRequest
         $defaultTypeSlugs = array_column(\App\Enums\EventType::cases(), 'value');
         $allowedTypeSlugs = array_merge($userEventTypeSlugs, $defaultTypeSlugs);
 
-        return [
+        $rules = [
             'title' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', Rule::in($allowedTypeSlugs)],
             'description' => ['nullable', 'string', 'max:5000'],
             'date' => ['required', 'date', 'after_or_equal:today'],
             'time' => ['required', 'date_format:H:i'],
             'location' => ['required', 'string', 'max:255'],
-            'estimated_budget' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
             'theme' => ['nullable', 'string', 'max:255'],
             'expected_guests_count' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'template_id' => ['nullable', 'exists:event_templates,id'],
             'cover_photo' => ['nullable', 'image', 'mimes:' . implode(',', $allowedTypes), "max:{$maxSize}"],
         ];
+
+        // Admins may create an event for another user by providing email
+        if ($user->isAdmin()) {
+            $rules['owner_email'] = ['nullable', 'email', 'max:255'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -70,8 +76,6 @@ class StoreEventRequest extends FormRequest
             'time.date_format' => 'Le format de l\'heure est invalide (HH:MM).',
             'location.required' => 'Le lieu de l\'événement est requis.',
             'location.max' => 'Le lieu ne peut pas dépasser 255 caractères.',
-            'estimated_budget.numeric' => 'Le budget doit être un nombre.',
-            'estimated_budget.min' => 'Le budget ne peut pas être négatif.',
             'expected_guests_count.integer' => 'Le nombre d\'invités doit être un entier.',
             'expected_guests_count.min' => 'Le nombre d\'invités doit être au moins 1.',
             'cover_photo.image' => 'Le fichier doit être une image.',
@@ -94,9 +98,9 @@ class StoreEventRequest extends FormRequest
             'date' => 'date',
             'time' => 'heure',
             'location' => 'lieu',
-            'estimated_budget' => 'budget estimé',
             'theme' => 'thème',
             'expected_guests_count' => 'nombre d\'invités',
+            'owner_email' => 'email de l\'utilisateur',
             'cover_photo' => 'photo de couverture',
         ];
     }

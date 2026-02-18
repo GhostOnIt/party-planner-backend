@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Otp extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'user_id',
@@ -49,7 +50,7 @@ class Otp extends Model
     /**
      * OTP expiration time in minutes
      */
-    public const EXPIRATION_MINUTES = 10;
+    public const EXPIRATION_MINUTES = 5;
 
     /**
      * Get the user that owns the OTP.
