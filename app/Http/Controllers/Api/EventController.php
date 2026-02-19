@@ -20,6 +20,7 @@ use App\Services\QuotaService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
@@ -244,11 +245,34 @@ class EventController extends Controller
         // Indiquer si l'utilisateur a fourni une photo de couverture
         $validated['_has_cover_photo'] = $hasUserCoverPhoto;
 
-        // Créer l'événement pour le propriétaire (owner) via EventService
+        // Créer l'événement et consommer le quota dans une transaction pour garantir la cohérence
         $finalTemplateId = ($request->has('template_id') && $templateId !== null && $templateId !== '')
             ? (int) $templateId
             : -1;
-        $event = $this->eventService->create($owner, $validated, $finalTemplateId);
+
+        try {
+            $event = DB::transaction(function () use ($owner, $validated, $finalTemplateId) {
+                $ev = $this->eventService->create($owner, $validated, $finalTemplateId);
+
+                // Consommer un crédit de création pour le propriétaire (owner) de l'événement
+                if (!$this->quotaService->consumeCreation($owner)) {
+                    Log::error('Event creation: consumeCreation failed for owner', [
+                        'owner_id' => $owner->id,
+                        'event_id' => $ev->id,
+                    ]);
+                    throw new \RuntimeException(
+                        'Impossible de mettre à jour le quota de création. L\'événement n\'a pas été créé.'
+                    );
+                }
+
+                return $ev;
+            });
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => 'quota_consumption_failed',
+            ], 500);
+        }
 
         // If admin created the event for another user, notify that user by email
         if ($owner->id !== $user->id) {
@@ -259,9 +283,8 @@ class EventController extends Controller
             app(\App\Services\EventCreationInvitationService::class)
                 ->createPendingInvitation($event, $ownerEmail, $user);
         }
-        
+
         // Récupérer l'URL de la photo de couverture du template si elle existe
-        // L'EventService stocke cette info dans un attribut temporaire
         $templateCoverPhotoUrl = null;
         if ($finalTemplateId > 0) {
             $template = \App\Models\EventTemplate::find($finalTemplateId);
@@ -269,9 +292,6 @@ class EventController extends Controller
                 $templateCoverPhotoUrl = $template->cover_photo_url;
             }
         }
-
-        // Consommer un crédit de création pour le propriétaire (owner) de l'événement
-        $this->quotaService->consumeCreation($owner);
 
         // Si une photo de couverture est fournie par l'utilisateur, l'uploader et la marquer comme featured
         // Sinon, si le template a une photo de couverture, l'utiliser
