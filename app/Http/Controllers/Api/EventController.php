@@ -250,13 +250,19 @@ class EventController extends Controller
             ? (int) $templateId
             : -1;
 
+        $creatingForAnotherUser = $owner->id !== $user->id;
+
         try {
-            $event = DB::transaction(function () use ($owner, $validated, $finalTemplateId) {
+            $event = DB::transaction(function () use ($owner, $user, $validated, $finalTemplateId, $creatingForAnotherUser) {
                 $ev = $this->eventService->create($owner, $validated, $finalTemplateId);
 
-                // Consommer un crédit de création pour le propriétaire (owner) de l'événement
-                if (!$this->quotaService->consumeCreation($owner)) {
-                    Log::error('Event creation: consumeCreation failed for owner', [
+                // Consommer un crédit pour le propriétaire (owner)
+                // Si admin crée pour lui-même : pas d'abonnement requis, consume peut échouer → on continue
+                // Si création pour un autre user : consume DOIT réussir (quota vérifié avant)
+                $consumed = $this->quotaService->consumeCreation($owner);
+
+                if ($creatingForAnotherUser && !$consumed) {
+                    Log::error('Event creation: consumeCreation failed for target user', [
                         'owner_id' => $owner->id,
                         'event_id' => $ev->id,
                     ]);
