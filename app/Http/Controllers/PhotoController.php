@@ -279,6 +279,20 @@ class PhotoController extends Controller
                 ->with('error', 'Photo introuvable.');
         }
 
-        return $disk->download($path);
+        $filename = basename($path);
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION) ?: '');
+        $mimeTypes = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp'];
+        $mimeType = $mimeTypes[$ext] ?? 'application/octet-stream';
+
+        return response()->streamDownload(
+            function () use ($disk, $path) {
+                echo $disk->get($path);
+            },
+            $filename,
+            [
+                'Content-Type' => $mimeType,
+            ],
+            'attachment'
+        );
     }
 }

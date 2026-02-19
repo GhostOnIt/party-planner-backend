@@ -24,11 +24,11 @@ class NotifyGuestsOfStatusChangeJob implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param  int  $eventId  The event ID when the status changed
+     * @param  string  $eventId  The event ID (UUID) when the status changed
      * @param  string  $statusValue  The status value that triggered the notification (upcoming, ongoing, completed, cancelled)
      */
     public function __construct(
-        public int $eventId,
+        public string $eventId,
         public string $statusValue
     ) {}
 
