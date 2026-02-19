@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Jobs\StoreActivityLogJob;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ActivityLog extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'activity_logs';
 

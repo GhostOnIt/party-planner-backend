@@ -135,7 +135,7 @@ class OtpController extends Controller
     public function resend(Request $request): JsonResponse
     {
         $request->validate([
-            'otp_id' => ['required', 'integer', 'exists:otps,id'],
+            'otp_id' => ['required', 'string', 'exists:otps,id'],
         ]);
 
         $result = $this->otpService->resend($request->otp_id);

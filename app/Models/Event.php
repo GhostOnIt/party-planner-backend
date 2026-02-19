@@ -275,18 +275,16 @@ class Event extends Model
 
     /**
      * Resolve the route binding value.
-     * Handle special cases like 'upcoming' that should not be treated as IDs.
-     * This prevents SQL errors when non-numeric values are passed as event IDs.
+     * Reject known non-ID route segments (e.g. /events/upcoming, /events/create)
+     * that should not be treated as event IDs.
      */
     public function resolveRouteBinding($value, $field = null)
     {
-        // If the value is 'upcoming' or any other non-numeric string, return null
-        // This will cause Laravel to return a 404, which is the correct behavior
-        if (!is_numeric($value)) {
+        $reserved = ['upcoming', 'create'];
+        if (in_array($value, $reserved, true)) {
             return null;
         }
 
-        // Use the default route binding behavior for numeric IDs
         return $this->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }

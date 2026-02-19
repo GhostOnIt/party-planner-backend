@@ -6,6 +6,7 @@ use App\Jobs\StoreActivityLogJob;
 use App\Models\ActivityLog;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
 class LogApiActivity
@@ -170,7 +171,8 @@ class LogApiActivity
     }
 
     /**
-     * Extraire les données pertinentes de la requête (en excluant les champs sensibles).
+     * Extraire les données pertinentes de la requête (en excluant les champs sensibles et les fichiers).
+     * Les UploadedFile ne peuvent pas être sérialisés dans les jobs.
      */
     protected function extractRequestData(Request $request, string $method): ?array
     {
@@ -185,10 +187,29 @@ class LogApiActivity
             return null;
         }
 
+        // Remplacer les UploadedFile par un placeholder (non sérialisables dans les jobs)
+        $data = $this->sanitizeForSerialization($data);
+
         // Limiter la taille des données capturées
         $encoded = json_encode($data);
         if ($encoded && strlen($encoded) > 5000) {
             return ['_truncated' => true, '_size' => strlen($encoded)];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Remplacer récursivement les UploadedFile par un placeholder sérialisable.
+     */
+    protected function sanitizeForSerialization(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if ($value instanceof UploadedFile) {
+                $data[$key] = ['_file' => true, 'name' => $value->getClientOriginalName()];
+            } elseif (is_array($value)) {
+                $data[$key] = $this->sanitizeForSerialization($value);
+            }
         }
 
         return $data;
