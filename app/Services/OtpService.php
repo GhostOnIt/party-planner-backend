@@ -168,7 +168,7 @@ class OtpService
     /**
      * Resend an OTP.
      */
-    public function resend(int $otpId): array
+    public function resend(string|int $otpId): array
     {
         $otp = Otp::find($otpId);
 

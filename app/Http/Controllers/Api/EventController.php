@@ -151,13 +151,26 @@ class EventController extends Controller
             $targetUser = User::where('email', $ownerEmail)->first();
             if ($targetUser) {
                 $owner = $targetUser;
+                // L'admin ne peut pas créer d'événement pour un utilisateur sans abonnement actif ou dont le quota est à 0
+                if (!$this->quotaService->canCreateEvent($owner)) {
+                    $quota = $this->quotaService->getCreationsQuota($owner);
+                    $subscription = $this->subscriptionService->getUserActiveSubscription($owner);
+                    $message = !$subscription
+                        ? "Impossible de créer un événement pour cet utilisateur : il n'a pas d'abonnement actif."
+                        : "Impossible de créer un événement pour cet utilisateur : son quota de création est atteint (0 événement disponible).";
+
+                    return response()->json([
+                        'message' => $message,
+                        'error' => !$subscription ? 'target_no_subscription' : 'target_quota_exceeded',
+                        'quota' => $quota,
+                    ], 403);
+                }
             }
             // If no user found, event will be created for admin; pending invitation + email sent
         }
 
- 
-        // Les admins n'ont pas besoin d'abonnement pour créer un événement
-        // Vérifier le quota avant de créer l'événement (sauf pour les admins qui créent pour eux-mêmes ou pour un autre)
+        // Les admins n'ont pas besoin d'abonnement pour créer un événement pour eux-mêmes
+        // Vérifier le quota avant de créer l'événement (sauf pour les admins qui créent pour eux-mêmes)
         if (!$user->isAdmin() && !$this->quotaService->canCreateEvent($user)) {
  
             $quota = $this->quotaService->getCreationsQuota($user);
@@ -257,8 +270,8 @@ class EventController extends Controller
             }
         }
 
-        // Consommer un crédit de création d'événement
-        $this->quotaService->consumeCreation($user);
+        // Consommer un crédit de création pour le propriétaire (owner) de l'événement
+        $this->quotaService->consumeCreation($owner);
 
         // Si une photo de couverture est fournie par l'utilisateur, l'uploader et la marquer comme featured
         // Sinon, si le template a une photo de couverture, l'utiliser

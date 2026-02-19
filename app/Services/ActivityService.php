@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Jobs\StoreActivityLogJob;
 use App\Models\ActivityLog;
+use Illuminate\Support\Str;
 use App\Models\Event;
 use App\Models\EventTemplate;
 use App\Models\Subscription;
@@ -302,6 +303,7 @@ class ActivityService
             $action = $event['action'] ?? 'page_view';
 
             $logs[] = [
+                'id' => (string) Str::uuid(),
                 'user_id' => $user->id,
                 'actor_type' => $user->isAdmin() ? ActivityLog::ACTOR_ADMIN : ActivityLog::ACTOR_USER,
                 'action' => $action,
