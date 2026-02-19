@@ -505,6 +505,9 @@ class EventController extends Controller
     {
         $this->authorize('update', $event);
 
+        $maxSize = config('partyplanner.uploads.photos.max_size', 5120);
+        $allowedTypes = config('partyplanner.uploads.photos.allowed_types', ['jpeg', 'jpg', 'png', 'gif', 'webp']);
+
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'type' => 'sometimes|required|in:mariage,anniversaire,baby_shower,soiree,brunch,autre',
@@ -516,7 +519,11 @@ class EventController extends Controller
             'theme' => 'nullable|string|max:255',
             'expected_guests_count' => 'nullable|integer|min:1',
             'status' => 'sometimes|required|in:upcoming,ongoing,completed,cancelled',
+            'cover_photo' => ['nullable', 'image', 'mimes:' . implode(',', $allowedTypes), "max:{$maxSize}"],
         ]);
+
+        unset($validated['cover_photo']);
+        $coverPhoto = $request->file('cover_photo');
 
         // Validate status transition rules (for all users including admins)
         if (isset($validated['status'])) {
@@ -534,11 +541,34 @@ class EventController extends Controller
 
         $event->update($validated);
 
+        // Upload new cover photo if provided
+        if ($coverPhoto && $coverPhoto->isValid()) {
+            try {
+                $photo = $this->photoService->upload(
+                    $event,
+                    $coverPhoto,
+                    $request->user(),
+                    'event_photo'
+                );
+                $this->photoService->setAsFeatured($photo);
+            } catch (\Exception $e) {
+                Log::error('Event update: cover photo upload failed', [
+                    'event_id' => $event->id,
+                    'error' => $e->getMessage(),
+                ]);
+                return response()->json([
+                    'message' => 'L\'upload de la photo de couverture a échoué. Veuillez réessayer.',
+                ], 422);
+            }
+        }
+
         // Dispatch delayed job to notify guests (2 min) when status actually changed
         if (isset($validated['status']) && $previousStatus !== $validated['status']) {
             NotifyGuestsOfStatusChangeJob::dispatch($event->id, $validated['status'])
                 ->delay(now()->addMinutes(2));
         }
+
+        $event->load(['coverPhoto:id,event_id,url,thumbnail_url', 'featuredPhoto:id,event_id,url,thumbnail_url']);
 
         return response()->json($event);
     }

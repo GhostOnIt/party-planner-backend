@@ -8,6 +8,8 @@ class StorageHelper
 {
     /**
      * Get the Storage disk for uploads (S3 only).
+     *
+     * @return \Illuminate\Filesystem\FilesystemAdapter
      */
     public static function disk()
     {
@@ -26,7 +28,10 @@ class StorageHelper
             return rtrim($cdnUrl, '/') . '/' . ltrim($path, '/');
         }
 
-        return self::disk()->url($path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('s3');
+
+        return $disk->url($path);
     }
 
     /**
