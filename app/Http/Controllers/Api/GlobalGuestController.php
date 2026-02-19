@@ -8,7 +8,6 @@ use App\Models\Guest;
 use App\Services\GuestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Jobs\SendCampaignEmailJob;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -26,21 +25,34 @@ class GlobalGuestController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        
-        // 1. Get IDs of events the user can access (owner or collaborator)
-        $eventIds = Event::query()
-            ->where('user_id', $user->id)
-            ->orWhereHas('collaborators', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->pluck('id');
 
-        // 2. Build the base query
+        // 1. Get IDs of events the user can access (owner or accepted collaborator only)
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique()->values();
+
+        // 2. Early return if user has no accessible events
+        if ($eventIds->isEmpty()) {
+            return response()->json([
+                'data' => [],
+                'meta' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => (int) $request->input('per_page', 20),
+                    'total' => 0,
+                ],
+                'stats' => ['total' => 0, 'with_email' => 0, 'with_phone' => 0],
+            ]);
+        }
+
+        // 3. Build the base query - restrict to user's events only
         $query = Guest::query()
             ->with(['event:id,title,date'])
             ->whereIn('event_id', $eventIds);
 
-        // 3. Apply Filters
+        // 4. Apply Filters
         
         // Event Filter
         if ($request->filled('event_id') && $request->event_id !== 'all') {
@@ -77,10 +89,10 @@ class GlobalGuestController extends Controller
             }
         }
 
-        // 4. Fetch all matching guests (ordered by created_at desc for deduplication priority)
+        // 5. Fetch all matching guests (ordered by created_at desc for deduplication priority)
         $allGuests = $query->orderBy('created_at', 'desc')->get();
 
-        // 5. Deduplicate in PHP
+        // 6. Deduplicate in PHP
         // Group by email (if exists), then phone (if exists), else unique ID
         $uniqueGuests = $allGuests->unique(function ($guest) {
             if (!empty($guest->email)) {
@@ -92,7 +104,7 @@ class GlobalGuestController extends Controller
             return 'id:' . $guest->id;
         });
 
-        // 6. Manual Pagination
+        // 7. Manual Pagination
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 20);
         $offset = ($page - 1) * $perPage;
@@ -107,7 +119,7 @@ class GlobalGuestController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        // 7. Calculate Stats (on the full unique set)
+        // 8. Calculate Stats (on the full unique set)
         $stats = [
             'total' => $uniqueGuests->count(),
             'with_email' => $uniqueGuests->whereNotNull('email')->count(),
@@ -136,12 +148,19 @@ class GlobalGuestController extends Controller
         // Note: For export, we might want ALL results, not paginated.
         
         $user = $request->user();
-        $eventIds = Event::query()
-            ->where('user_id', $user->id)
-            ->orWhereHas('collaborators', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->pluck('id');
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique()->values();
+
+        if ($eventIds->isEmpty()) {
+            return response()->streamDownload(function () {
+                echo "\xEF\xBB\xBF" . "Nom,Email,Téléphone,Événement,Date Événement,Statut,Dernière interaction\n";
+            }, 'invites_export.csv', [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+            ]);
+        }
 
         $query = Guest::query()
             ->with(['event:id,title,date'])
@@ -218,19 +237,20 @@ class GlobalGuestController extends Controller
         $subject = $request->input('subject');
         $message = $request->input('message');
 
-        // Fetch guests ensuring they belong to user's events
+        // Fetch guests ensuring they belong to user's events only
         $user = $request->user();
-        $eventIds = Event::query()
-            ->where('user_id', $user->id)
-            ->orWhereHas('collaborators', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->pluck('id');
+        $ownedEventIds = $user->events()->pluck('id');
+        $collaboratingEventIds = $user->collaborations()
+            ->whereNotNull('accepted_at')
+            ->pluck('event_id');
+        $eventIds = $ownedEventIds->merge($collaboratingEventIds)->unique()->values();
 
-        $guests = Guest::whereIn('id', $guestIds)
-            ->whereIn('event_id', $eventIds)
-            ->whereNotNull('email') // Only email supported for now
-            ->get();
+        $guests = $eventIds->isEmpty()
+            ? collect()
+            : Guest::whereIn('id', $guestIds)
+                ->whereIn('event_id', $eventIds)
+                ->whereNotNull('email') // Only email supported for now
+                ->get();
 
         $count = 0;
         foreach ($guests as $guest) {
