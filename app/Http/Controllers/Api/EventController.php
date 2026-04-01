@@ -469,6 +469,8 @@ class EventController extends Controller
             'coverPhoto:id,event_id,url,thumbnail_url',
             'featuredPhoto:id,event_id,url,thumbnail_url',
             'collaborators.user:id,name,avatar',
+            'subscription:id,event_id,plan_id,plan_type,payment_status,status,expires_at',
+            'subscription.plan:id,name,title,slug',
         ]);
 
         // Ajouter les compteurs de statistiques
