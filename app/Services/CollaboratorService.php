@@ -11,9 +11,12 @@ use App\Models\Event;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class CollaboratorService
 {
+    public const MAX_ROLES_PER_COLLABORATOR = 3;
+
     /**
      * Invite a user to collaborate on an event.
      */
@@ -27,6 +30,8 @@ class CollaboratorService
      */
     public function inviteWithRoles(Event $event, User $user, array $roles, array $customRoleIds = [], bool $sendNotification = true): Collaborator
     {
+        self::assertRolesWithinLimit($roles, $customRoleIds);
+
         $collaborator = $event->collaborators()->create([
             'user_id' => $user->id,
             'role' => $roles[0] ?? null, // Keep primary role for backward compatibility
@@ -105,6 +110,8 @@ class CollaboratorService
      */
     public function createPendingInvitation(Event $event, string $email, array $roles, array $customRoleIds = []): CollaborationInvitation
     {
+        self::assertRolesWithinLimit($roles, $customRoleIds);
+
         $invitation = $event->collaborationInvitations()->create([
             'email' => $email,
             'roles' => $roles,
@@ -146,6 +153,8 @@ class CollaboratorService
                 $invitation->delete();
                 continue;
             }
+
+            [$roles, $customRoleIds] = self::trimRolesToMax($roles, $customRoleIds);
 
             $this->inviteWithRoles($event, $user, $roles, $customRoleIds, false);
             $invitation->delete();
@@ -208,6 +217,8 @@ class CollaboratorService
         if ($collaborator->hasRole('owner')) {
             return $collaborator;
         }
+
+        self::assertRolesWithinLimit($roles, $customRoleIds);
 
         // Update the primary role for backward compatibility
         $collaborator->update([
@@ -561,5 +572,44 @@ class CollaboratorService
             'message' => "Vous avez été retiré de l'événement \"{$collaborator->event->title}\".",
             'sent_via' => 'push',
         ]);
+    }
+
+    /**
+     * @param  array<int|string>  $roles
+     * @param  array<int|string>  $customRoleIds
+     */
+    private static function assertRolesWithinLimit(array $roles, array $customRoleIds): void
+    {
+        $roles = array_values(array_unique(array_filter($roles)));
+        $customIds = array_values(array_unique(array_map('intval', $customRoleIds)));
+        if (count($roles) + count($customIds) > self::MAX_ROLES_PER_COLLABORATOR) {
+            throw ValidationException::withMessages([
+                'roles' => ['Un collaborateur ne peut avoir que 3 rôles au maximum (rôles système et personnalisés).'],
+            ]);
+        }
+    }
+
+    /**
+     * Réduit la liste pour les invitations historiques (>3 rôles) lors de la réclamation.
+     *
+     * @param  array<int|string>  $roles
+     * @param  array<int|string>  $customRoleIds
+     * @return array{0: array<int, string>, 1: array<int, int>}
+     */
+    private static function trimRolesToMax(array $roles, array $customRoleIds, int $max = self::MAX_ROLES_PER_COLLABORATOR): array
+    {
+        $roles = array_values(array_unique(array_filter($roles)));
+        $customRoleIds = array_values(array_unique(array_map('intval', $customRoleIds)));
+        while (count($roles) + count($customRoleIds) > $max) {
+            if (count($customRoleIds) > 0) {
+                array_pop($customRoleIds);
+            } elseif (count($roles) > 0) {
+                array_pop($roles);
+            } else {
+                break;
+            }
+        }
+
+        return [$roles, $customRoleIds];
     }
 }
