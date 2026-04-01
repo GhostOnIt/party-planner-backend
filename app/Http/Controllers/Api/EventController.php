@@ -82,9 +82,40 @@ class EventController extends Controller
             $query->where('type', $type);
         }
 
-        // Search by title
+        // Search by title, location, month, year
         if ($search = $request->input('search')) {
-            $query->where('title', 'ilike', "%{$search}%");
+            $searchLower = mb_strtolower(trim($search));
+
+            $monthMap = [
+                'janvier' => 1, 'january' => 1, 'jan' => 1,
+                'fevrier' => 2, 'février' => 2, 'february' => 2, 'feb' => 2,
+                'mars' => 3, 'march' => 3,
+                'avril' => 4, 'april' => 4, 'avr' => 4,
+                'mai' => 5, 'may' => 5,
+                'juin' => 6, 'june' => 6,
+                'juillet' => 7, 'july' => 7, 'jul' => 7,
+                'aout' => 8, 'août' => 8, 'august' => 8, 'aug' => 8,
+                'septembre' => 9, 'september' => 9, 'sep' => 9,
+                'octobre' => 10, 'october' => 10, 'oct' => 10,
+                'novembre' => 11, 'november' => 11, 'nov' => 11,
+                'decembre' => 12, 'décembre' => 12, 'december' => 12, 'dec' => 12,
+            ];
+
+            $query->where(function ($subQuery) use ($search, $searchLower, $monthMap) {
+                $subQuery
+                    ->where('title', 'ilike', "%{$search}%")
+                    ->orWhere('location', 'ilike', "%{$search}%")
+                    // Support text month search from DB formatted date (depends on DB locale)
+                    ->orWhereRaw("to_char(date, 'TMMonth YYYY') ilike ?", ["%{$search}%"])
+                    ->orWhereRaw("to_char(date, 'Month YYYY') ilike ?", ["%{$search}%"])
+                    // Support numeric month/year search (e.g. 02, 2026, 02/2026)
+                    ->orWhereRaw("to_char(date, 'MM/YYYY') ilike ?", ["%{$search}%"])
+                    ->orWhereRaw("to_char(date, 'YYYY') ilike ?", ["%{$search}%"]);
+
+                if (isset($monthMap[$searchLower])) {
+                    $subQuery->orWhereMonth('date', $monthMap[$searchLower]);
+                }
+            });
         }
 
         // Sorting
