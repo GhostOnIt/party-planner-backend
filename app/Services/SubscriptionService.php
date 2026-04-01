@@ -11,6 +11,10 @@ use Illuminate\Support\Collection;
 
 class SubscriptionService
 {
+    public function __construct(
+        protected EntitlementService $entitlementService
+    ) {}
+
     /**
      * Calculate price for a subscription.
      */
@@ -461,11 +465,9 @@ class SubscriptionService
      */
     public function handleExpiration(): int
     {
-        $count = Subscription::where('expires_at', '<', now())
+        return Subscription::where('expires_at', '<', now())
             ->whereNotIn('status', ['cancelled', 'expired'])
             ->update(['status' => 'expired']);
-
-        return $count;
     }
 
     /**
@@ -474,5 +476,99 @@ class SubscriptionService
     public function resetCreationsUsed(Subscription $subscription): void
     {
         $subscription->update(['creations_used' => 0]);
+    }
+
+    /**
+     * Sync limits for all user events after an account-level subscription change.
+     * Returns number of updated events.
+     */
+    public function syncAccountEventLimits(Subscription $subscription): int
+    {
+        // We only sync from account-level subscriptions.
+        if ($subscription->event_id !== null) {
+            return 0;
+        }
+
+        $user = $subscription->user;
+        if (! $user) {
+            return 0;
+        }
+
+        $guestLimit = $this->entitlementService->limit($user, 'guests.max_per_event');
+        $collaboratorLimit = $this->entitlementService->limit($user, 'collaborators.max_per_event');
+        $photosLimit = $this->entitlementService->limit($user, 'photos.max_per_event');
+
+        $entitlements = $this->entitlementService->getEffectiveEntitlements($user);
+        $newEnabledFeatures = array_keys(
+            array_filter($entitlements['features'] ?? [], fn ($value) => $value === true)
+        );
+
+        $updatedCount = 0;
+
+        $user->events()->get()->each(function (Event $event) use (
+            $guestLimit,
+            $collaboratorLimit,
+            $photosLimit,
+            $newEnabledFeatures,
+            &$updatedCount
+        ) {
+            $updates = $this->buildEventLimitUpdates(
+                $event,
+                $guestLimit,
+                $collaboratorLimit,
+                $photosLimit,
+                $newEnabledFeatures
+            );
+
+            if ($updates !== []) {
+                $event->update($updates);
+                $updatedCount++;
+            }
+        });
+
+        return $updatedCount;
+    }
+
+    /**
+     * Build update payload for event limits/features.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildEventLimitUpdates(
+        Event $event,
+        int $guestLimit,
+        int $collaboratorLimit,
+        int $photosLimit,
+        array $newEnabledFeatures
+    ): array {
+        $updates = [];
+
+        if ($event->max_guests_allowed === null || $event->max_guests_allowed < $guestLimit) {
+            $updates['max_guests_allowed'] = $guestLimit;
+        }
+
+        if (
+            $event->max_collaborators_allowed === null
+            || $event->max_collaborators_allowed < $collaboratorLimit
+        ) {
+            $updates['max_collaborators_allowed'] = $collaboratorLimit;
+        }
+
+        if ($event->max_photos_allowed === null || $event->max_photos_allowed < $photosLimit) {
+            $updates['max_photos_allowed'] = $photosLimit;
+        }
+
+        $existingFeatures = is_array($event->features_enabled) ? $event->features_enabled : [];
+        $mergedFeatures = array_values(array_unique(array_merge($existingFeatures, $newEnabledFeatures)));
+
+        sort($existingFeatures);
+        $sortedMergedFeatures = $mergedFeatures;
+        sort($sortedMergedFeatures);
+
+        if ($sortedMergedFeatures !== $existingFeatures) {
+            $updates['features_enabled'] = $mergedFeatures;
+        }
+
+        return $updates;
     }
 }

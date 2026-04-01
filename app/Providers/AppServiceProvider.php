@@ -9,7 +9,9 @@ use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Models\PersonalAccessToken;
+use App\Models\Subscription;
 use App\Models\User;
+use App\Observers\SubscriptionObserver;
 use App\Observers\UserObserver;
 use App\Policies\AdminPolicy;
 use App\Policies\BudgetPolicy;
@@ -63,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register observers
         User::observe(UserObserver::class);
+        Subscription::observe(SubscriptionObserver::class);
 
         // Settings: types d'événement et catégories de budget visibles uniquement par leur propriétaire
         Route::bind('eventType', function (string $value) {
