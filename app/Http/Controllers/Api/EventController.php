@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\EventStatus;
+use App\Enums\EventType;
 use App\Helpers\StorageHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Event\DuplicateEventRequest;
@@ -22,6 +23,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class EventController extends Controller
 {
@@ -542,12 +544,18 @@ class EventController extends Controller
     {
         $this->authorize('update', $event);
 
+        $user = $request->user();
+        $allowedTypeSlugs = array_merge(
+            $user->eventTypes()->pluck('slug')->toArray(),
+            array_column(EventType::cases(), 'value')
+        );
+
         $maxSize = config('partyplanner.uploads.photos.max_size', 5120);
         $allowedTypes = config('partyplanner.uploads.photos.allowed_types', ['jpeg', 'jpg', 'png', 'gif', 'webp']);
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
-            'type' => 'sometimes|required|in:mariage,anniversaire,baby_shower,soiree,brunch,autre',
+            'type' => ['sometimes', 'required', 'string', Rule::in($allowedTypeSlugs)],
             'description' => 'nullable|string',
             'date' => 'sometimes|required|date',
             'time' => 'nullable|date_format:H:i',
