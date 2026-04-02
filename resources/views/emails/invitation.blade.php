@@ -45,12 +45,12 @@ Si vous ne parvenez pas à cliquer sur le bouton, copiez et collez l'URL suivant
 ---
 ## Check-in (jour de l'événement)
 
-@if(!empty($checkInQrDataUri))
+@if(!empty($checkInQrEmbedded))
 Le portier pourra scanner ce QR code pour effectuer le check-in.
 
 <div style="text-align:center; margin: 14px 0;">
   <img
-    src="{{ $checkInQrDataUri }}"
+    src="{{ $message->embedData($checkInQrEmbedded['binary'], $checkInQrEmbedded['filename'], $checkInQrEmbedded['mime']) }}"
     alt="QR code de check-in"
     width="180"
     height="180"

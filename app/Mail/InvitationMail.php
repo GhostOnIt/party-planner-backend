@@ -15,55 +15,54 @@ class InvitationMail extends Mailable
     use Queueable, SerializesModels;
     use \App\Mail\Concerns\EmbedsMailLogo;
 
-    private function generateCheckInQrDataUri(string $checkInUrl): ?string
+    /**
+     * Binaire + métadonnées pour intégration email (CID), pas data-URI : Gmail / Outlook
+     * bloquent souvent les images en src="data:image/...".
+     *
+     * @return array{binary: string, mime: string, filename: string}|null
+     */
+    private function generateCheckInQrForEmail(string $checkInUrl): ?array
     {
-        // La lib `endroid/qr-code` sera dispo en production. En dev, on tolère l'absence
-        // de la dépendance ou de certaines extensions (ex: GD) en retournant `null`.
         if (!class_exists(\Endroid\QrCode\QrCode::class)) {
             return null;
         }
 
+        $makeQr = fn (): \Endroid\QrCode\QrCode => new \Endroid\QrCode\QrCode(
+            data: $checkInUrl,
+            encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
+            errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::High,
+            size: 240,
+            margin: 10,
+            roundBlockSizeMode: \Endroid\QrCode\RoundBlockSizeMode::Margin,
+            foregroundColor: new \Endroid\QrCode\Color\Color(0, 0, 0),
+            backgroundColor: new \Endroid\QrCode\Color\Color(255, 255, 255),
+        );
+
         try {
-            // 1) PNG (le plus compatible mail clients) si disponible
             if (class_exists(\Endroid\QrCode\Writer\PngWriter::class)) {
-                $qrCode = new \Endroid\QrCode\QrCode(
-                    data: $checkInUrl,
-                    encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
-                    errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::High,
-                    size: 240,
-                    margin: 10,
-                    roundBlockSizeMode: \Endroid\QrCode\RoundBlockSizeMode::Margin,
-                    foregroundColor: new \Endroid\QrCode\Color\Color(0, 0, 0),
-                    backgroundColor: new \Endroid\QrCode\Color\Color(255, 255, 255),
-                );
-
                 $writer = new \Endroid\QrCode\Writer\PngWriter();
-                $result = $writer->write($qrCode);
+                $result = $writer->write($makeQr());
 
-                return $result->getDataUri();
+                return [
+                    'binary' => $result->getString(),
+                    'mime' => $result->getMimeType(),
+                    'filename' => 'checkin-qr.png',
+                ];
             }
         } catch (\Throwable) {
-            // Fallback en-dessous (SVG)
+            // Fallback SVG
         }
 
         try {
-            // 2) SVG (utile même sans extension GD)
             if (class_exists(\Endroid\QrCode\Writer\SvgWriter::class)) {
-                $qrCode = new \Endroid\QrCode\QrCode(
-                    data: $checkInUrl,
-                    encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
-                    errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::High,
-                    size: 240,
-                    margin: 10,
-                    roundBlockSizeMode: \Endroid\QrCode\RoundBlockSizeMode::Margin,
-                    foregroundColor: new \Endroid\QrCode\Color\Color(0, 0, 0),
-                    backgroundColor: new \Endroid\QrCode\Color\Color(255, 255, 255),
-                );
-
                 $writer = new \Endroid\QrCode\Writer\SvgWriter();
-                $result = $writer->write($qrCode);
+                $result = $writer->write($makeQr());
 
-                return $result->getDataUri();
+                return [
+                    'binary' => $result->getString(),
+                    'mime' => $result->getMimeType(),
+                    'filename' => 'checkin-qr.svg',
+                ];
             }
         } catch (\Throwable) {
             return null;
@@ -99,7 +98,7 @@ class InvitationMail extends Mailable
     {
         $frontendUrl = config('app.frontend_url', config('app.url'));
         $checkInUrl = $frontendUrl . '/check-in/' . $this->guest->invitation_token;
-        $checkInQrDataUri = $this->generateCheckInQrDataUri($checkInUrl);
+        $checkInQrEmbedded = $this->generateCheckInQrForEmail($checkInUrl);
 
         return new Content(
             markdown: 'emails.invitation',
@@ -109,7 +108,7 @@ class InvitationMail extends Mailable
                 'invitation' => $this->invitation,
                 'invitationUrl' => $this->invitation->public_url,
                 'checkInUrl' => $checkInUrl,
-                'checkInQrDataUri' => $checkInQrDataUri,
+                'checkInQrEmbedded' => $checkInQrEmbedded,
                 'customMessage' => $this->invitation->custom_message,
             ],
         );
