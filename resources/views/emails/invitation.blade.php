@@ -42,11 +42,10 @@ Merci,<br>
 Si vous ne parvenez pas à cliquer sur le bouton, copiez et collez l'URL suivante dans votre navigateur : [{{ $invitationUrl }}]({{ $invitationUrl }})
 </x-mail::subcopy>
 
-@if(!empty($checkInQrDataUri))
-
 ---
 ## Check-in (jour de l'événement)
 
+@if(!empty($checkInQrDataUri))
 Le portier pourra scanner ce QR code pour effectuer le check-in.
 
 <div style="text-align:center; margin: 14px 0;">
@@ -60,6 +59,8 @@ Le portier pourra scanner ce QR code pour effectuer le check-in.
 </div>
 
 Si le QR ne se scanne pas, vous pouvez aussi ouvrir ce lien :
-[{{ $checkInUrl }}]({{ $checkInUrl }})
+@else
+Pour le check-in le jour de l'événement, ouvrez ce lien (le QR n’a pas pu être généré automatiquement) :
 @endif
+[{{ $checkInUrl }}]({{ $checkInUrl }})
 </x-mail::message>
