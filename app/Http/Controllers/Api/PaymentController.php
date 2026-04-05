@@ -380,7 +380,11 @@ class PaymentController extends Controller
         // Remove spaces, dashes and other separators
         $phone = preg_replace('/[\s\-\.]/', '', $phone);
 
-        // Remove country code +242 if present
+        if (str_starts_with($phone, '00242')) {
+            $phone = substr($phone, 5);
+        }
+
+        // Remove country code +242 or 242 if present
         $phone = preg_replace('/^(\+?242)/', '', $phone);
 
         // Remove leading 0 if present
@@ -413,6 +417,10 @@ class PaymentController extends Controller
         $mtnConfig = config('partyplanner.payments.mtn_mobile_money');
         if ($mtnConfig['environment'] === 'sandbox' && str_starts_with($phone, '467')) {
             return $phone;
+        }
+
+        if (str_starts_with($phone, '00242')) {
+            return '+242' . substr($phone, 5);
         }
 
         // If starts with +242, keep as is
