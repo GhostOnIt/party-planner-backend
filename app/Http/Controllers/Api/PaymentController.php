@@ -28,11 +28,15 @@ class PaymentController extends Controller
         $userId = $request->user()->id;
 
         $payments = Payment::query()
-            ->whereHas('subscription', function ($query) use ($userId) {
-                $query->where(function ($q) use ($userId) {
-                    $q->where('user_id', $userId)->whereNull('event_id');
-                })->orWhereHas('event', function ($eventQuery) use ($userId) {
-                    $eventQuery->where('user_id', $userId);
+            ->where(function ($outer) use ($userId) {
+                $outer->whereHas('subscription', function ($query) use ($userId) {
+                    $query->where(function ($q) use ($userId) {
+                        $q->where('user_id', $userId)->whereNull('event_id');
+                    })->orWhereHas('event', function ($eventQuery) use ($userId) {
+                        $eventQuery->where('user_id', $userId);
+                    });
+                })->orWhereHas('subscription.event.collaborators', function ($c) use ($userId) {
+                    $c->where('user_id', $userId)->whereNotNull('accepted_at');
                 });
             })
             ->with(['subscription.event:id,title', 'subscription.user:id,name,email'])
