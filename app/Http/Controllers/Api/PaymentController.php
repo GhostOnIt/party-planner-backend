@@ -8,8 +8,10 @@ use App\Models\Payment;
 use App\Models\Subscription;
 use App\Services\PaymentService;
 use App\Services\SubscriptionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class PaymentController extends Controller
 {
@@ -23,14 +25,46 @@ class PaymentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $payments = Payment::whereHas('subscription.event', function ($query) use ($request) {
-            $query->where('user_id', $request->user()->id);
-        })
-            ->with(['subscription.event:id,title'])
+        $userId = $request->user()->id;
+
+        $payments = Payment::query()
+            ->whereHas('subscription', function ($query) use ($userId) {
+                $query->where(function ($q) use ($userId) {
+                    $q->where('user_id', $userId)->whereNull('event_id');
+                })->orWhereHas('event', function ($eventQuery) use ($userId) {
+                    $eventQuery->where('user_id', $userId);
+                });
+            })
+            ->with(['subscription.event:id,title', 'subscription.user:id,name,email'])
             ->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
 
         return response()->json($payments);
+    }
+
+    /**
+     * Download PDF receipt for a completed payment.
+     */
+    public function receipt(Request $request, Payment $payment): Response|JsonResponse
+    {
+        $this->authorize('viewReceipt', $payment);
+
+        if (!$payment->isCompleted()) {
+            return response()->json([
+                'message' => 'Le reçu PDF est disponible une fois le paiement confirmé.',
+            ], 422);
+        }
+
+        $payment->load(['subscription.user', 'subscription.event']);
+
+        $pdf = Pdf::loadView('payments.receipt', [
+            'payment' => $payment,
+            'issuedAt' => now(),
+        ]);
+
+        $filename = 'recu-paiement-' . $payment->id . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     /**
@@ -45,6 +79,7 @@ class PaymentController extends Controller
             'amount' => 'sometimes|numeric|min:0',
             'plan' => 'sometimes|string|in:starter,pro',
             'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
+            'idempotency_key' => 'nullable|string|uuid',
         ]);
 
         $user = $request->user();
@@ -102,6 +137,12 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
+        $idempotentResponse = $this->respondIfIdempotentPayment($subscription, $idempotencyKey);
+        if ($idempotentResponse) {
+            return $idempotentResponse;
+        }
+
         // Detect provider from phone number
         $provider = $this->detectProvider($validated['phone_number']);
         $phone = $this->normalizePhone($validated['phone_number']);
@@ -114,8 +155,8 @@ class PaymentController extends Controller
 
         // Initiate payment based on provider
         $result = $provider === 'mtn'
-            ? $this->paymentService->initiateMtnPayment($subscription, $phone)
-            : $this->paymentService->initiateAirtelPayment($subscription, $phone);
+            ? $this->paymentService->initiateMtnPayment($subscription, $phone, $idempotencyKey)
+            : $this->paymentService->initiateAirtelPayment($subscription, $phone, $idempotencyKey);
 
         if (!$result['success']) {
             return response()->json([
@@ -143,6 +184,7 @@ class PaymentController extends Controller
             'plan' => 'sometimes|string|in:starter,pro',
             'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
             'amount' => 'sometimes|numeric|min:0',
+            'idempotency_key' => 'nullable|string|uuid',
         ]);
 
         $user = $request->user();
@@ -190,8 +232,14 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
+        $idempotentResponse = $this->respondIfIdempotentPayment($subscription, $idempotencyKey);
+        if ($idempotentResponse) {
+            return $idempotentResponse;
+        }
+
         $phone = $this->normalizePhone($validated['phone_number']);
-        $result = $this->paymentService->initiateMtnPayment($subscription, $phone);
+        $result = $this->paymentService->initiateMtnPayment($subscription, $phone, $idempotencyKey);
 
         if (!$result['success']) {
             return response()->json([
@@ -218,6 +266,7 @@ class PaymentController extends Controller
             'plan' => 'sometimes|string|in:starter,pro',
             'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
             'amount' => 'sometimes|numeric|min:0',
+            'idempotency_key' => 'nullable|string|uuid',
         ]);
 
         $user = $request->user();
@@ -265,8 +314,14 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
+        $idempotentResponse = $this->respondIfIdempotentPayment($subscription, $idempotencyKey);
+        if ($idempotentResponse) {
+            return $idempotentResponse;
+        }
+
         $phone = $this->normalizePhone($validated['phone_number']);
-        $result = $this->paymentService->initiateAirtelPayment($subscription, $phone);
+        $result = $this->paymentService->initiateAirtelPayment($subscription, $phone, $idempotencyKey);
 
         if (!$result['success']) {
             return response()->json([
@@ -287,7 +342,7 @@ class PaymentController extends Controller
     public function status(Request $request, Payment $payment): JsonResponse
     {
         // Verify ownership
-        if (!$this->userCanAccessPayment($request->user(), $payment)) {
+        if (!$payment->canBeAccessedBy($request->user())) {
             return response()->json([
                 'message' => 'Paiement non trouvé.',
             ], 404);
@@ -307,7 +362,7 @@ class PaymentController extends Controller
      */
     public function poll(Request $request, Payment $payment): JsonResponse
     {
-        if (!$this->userCanAccessPayment($request->user(), $payment)) {
+        if (!$payment->canBeAccessedBy($request->user())) {
             return response()->json([
                 'message' => 'Paiement non trouvé.',
             ], 404);
@@ -335,7 +390,7 @@ class PaymentController extends Controller
      */
     public function retry(Request $request, Payment $payment): JsonResponse
     {
-        if (!$this->userCanAccessPayment($request->user(), $payment)) {
+        if (!$payment->canBeAccessedBy($request->user())) {
             return response()->json([
                 'message' => 'Paiement non trouvé.',
             ], 404);
@@ -355,8 +410,8 @@ class PaymentController extends Controller
         $phone = $this->normalizePhone($validated['phone_number']);
 
         $result = $payment->payment_method === 'mtn_mobile_money'
-            ? $this->paymentService->initiateMtnPayment($subscription, $phone)
-            : $this->paymentService->initiateAirtelPayment($subscription, $phone);
+            ? $this->paymentService->initiateMtnPayment($subscription, $phone, null)
+            : $this->paymentService->initiateAirtelPayment($subscription, $phone, null);
 
         if (!$result['success']) {
             return response()->json([
@@ -368,6 +423,40 @@ class PaymentController extends Controller
             'message' => 'Nouveau paiement initié. Veuillez confirmer sur votre téléphone.',
             'payment' => $result['payment'],
             'reference' => $result['reference'] ?? null,
+        ]);
+    }
+
+    /**
+     * Return existing payment response when idempotency_key matches a pending or completed payment.
+     */
+    protected function respondIfIdempotentPayment(Subscription $subscription, ?string $idempotencyKey): ?JsonResponse
+    {
+        if (!$idempotencyKey) {
+            return null;
+        }
+
+        $existing = Payment::where('subscription_id', $subscription->id)
+            ->where('idempotency_key', $idempotencyKey)
+            ->first();
+
+        if (!$existing) {
+            return null;
+        }
+
+        if ($existing->isFailed() || $existing->isRefunded()) {
+            $existing->update(['idempotency_key' => null]);
+
+            return null;
+        }
+
+        $provider = $existing->payment_method === 'mtn_mobile_money' ? 'mtn' : 'airtel';
+
+        return response()->json([
+            'message' => 'Paiement existant (idempotent).',
+            'payment' => $existing->load('subscription.event:id,title'),
+            'reference' => $existing->transaction_reference,
+            'provider' => $provider,
+            'idempotent' => true,
         ]);
     }
 
@@ -442,36 +531,4 @@ class PaymentController extends Controller
         return '+2420' . $phone;
     }
 
-    /**
-     * Check if user can access payment.
-     */
-    protected function userCanAccessPayment($user, Payment $payment): bool
-    {
-        $subscription = $payment->subscription;
-        if (!$subscription) {
-            return false;
-        }
-
-        // For account-level subscriptions (no event), check if user owns the subscription
-        if ($subscription->event_id === null) {
-            return $subscription->user_id === $user->id;
-        }
-
-        // For event-level subscriptions, check event access
-        $event = $subscription->event;
-        if (!$event) {
-            return false;
-        }
-
-        // Owner can access
-        if ($event->user_id === $user->id) {
-            return true;
-        }
-
-        // Accepted collaborator can access
-        return $event->collaborators()
-            ->where('user_id', $user->id)
-            ->whereNotNull('accepted_at')
-            ->exists();
-    }
 }

@@ -78,26 +78,30 @@ class PaymentService
     /**
      * Initiate MTN Mobile Money payment.
      */
-    public function initiateMtnPayment(Subscription $subscription, string $phoneNumber): array
+    public function initiateMtnPayment(Subscription $subscription, string $phoneNumber, ?string $idempotencyKey = null): array
     {
-        $payment = $this->createPayment($subscription, 'mtn_mobile_money');
+        $payment = $this->createPayment($subscription, 'mtn_mobile_money', $idempotencyKey);
 
         // Validate phone number format for MTN (starts with 06 in Congo)
         if (!$this->isValidMtnNumber($phoneNumber)) {
+            $payment->markInitiationFailed();
+
             return [
                 'success' => false,
                 'message' => 'Numéro MTN invalide. Le numéro doit commencer par 06.',
-                'payment' => $payment,
+                'payment' => $payment->fresh(),
             ];
         }
 
         $config = config('partyplanner.payments.mtn_mobile_money');
 
         if (!$config['enabled']) {
+            $payment->markInitiationFailed();
+
             return [
                 'success' => false,
                 'message' => 'MTN Mobile Money n\'est pas disponible actuellement.',
-                'payment' => $payment,
+                'payment' => $payment->fresh(),
             ];
         }
 
@@ -191,26 +195,30 @@ class PaymentService
     /**
      * Initiate Airtel Money payment.
      */
-    public function initiateAirtelPayment(Subscription $subscription, string $phoneNumber): array
+    public function initiateAirtelPayment(Subscription $subscription, string $phoneNumber, ?string $idempotencyKey = null): array
     {
-        $payment = $this->createPayment($subscription, 'airtel_money');
+        $payment = $this->createPayment($subscription, 'airtel_money', $idempotencyKey);
 
         // Validate phone number format for Airtel (starts with 04 or 05 in Congo)
         if (!$this->isValidAirtelNumber($phoneNumber)) {
+            $payment->markInitiationFailed();
+
             return [
                 'success' => false,
                 'message' => 'Numéro Airtel invalide. Le numéro doit commencer par 04 ou 05.',
-                'payment' => $payment,
+                'payment' => $payment->fresh(),
             ];
         }
 
         $config = config('partyplanner.payments.airtel_money');
 
         if (!$config['enabled']) {
+            $payment->markInitiationFailed();
+
             return [
                 'success' => false,
                 'message' => 'Airtel Money n\'est pas disponible actuellement.',
-                'payment' => $payment,
+                'payment' => $payment->fresh(),
             ];
         }
 
@@ -470,10 +478,11 @@ class PaymentService
     /**
      * Create a payment record.
      */
-    protected function createPayment(Subscription $subscription, string $method): Payment
+    protected function createPayment(Subscription $subscription, string $method, ?string $idempotencyKey = null): Payment
     {
         return Payment::create([
             'subscription_id' => $subscription->id,
+            'idempotency_key' => $idempotencyKey,
             'amount' => $subscription->total_price,
             'currency' => config('partyplanner.currency.code', 'XAF'),
             'payment_method' => $method,

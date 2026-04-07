@@ -680,6 +680,18 @@ class DashboardController extends Controller
     {
         $query = Payment::with(['subscription.user', 'subscription.event.user']);
 
+        if ($search = $request->input('search')) {
+            $search = trim((string) $search);
+            $query->where(function ($q) use ($search) {
+                $q->where('transaction_reference', 'like', '%'.$search.'%')
+                    ->orWhere('id', 'like', '%'.$search.'%')
+                    ->orWhereHas('subscription.user', function ($uq) use ($search) {
+                        $uq->where('email', 'like', '%'.$search.'%')
+                            ->orWhere('name', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
         // Filter by status
         if ($status = $request->input('status')) {
             $query->where('status', $status);

@@ -33,7 +33,15 @@ class PaymentPolicy
      */
     public function view(User $user, Payment $payment): bool
     {
-        return $payment->subscription->user_id === $user->id;
+        return $payment->canBeAccessedBy($user);
+    }
+
+    /**
+     * PDF receipt (same access as viewing payment details).
+     */
+    public function viewReceipt(User $user, Payment $payment): bool
+    {
+        return $payment->canBeAccessedBy($user);
     }
 
     /**
@@ -49,7 +57,7 @@ class PaymentPolicy
      */
     public function initiate(User $user, Payment $payment): bool
     {
-        return $payment->subscription->user_id === $user->id;
+        return $payment->canBeAccessedBy($user);
     }
 
     /**
@@ -57,7 +65,7 @@ class PaymentPolicy
      */
     public function checkStatus(User $user, Payment $payment): bool
     {
-        return $payment->subscription->user_id === $user->id;
+        return $payment->canBeAccessedBy($user);
     }
 
     /**
@@ -65,7 +73,7 @@ class PaymentPolicy
      */
     public function retry(User $user, Payment $payment): bool
     {
-        if ($payment->subscription->user_id !== $user->id) {
+        if (!$payment->canBeAccessedBy($user)) {
             return false;
         }
 
@@ -77,7 +85,7 @@ class PaymentPolicy
      */
     public function requestRefund(User $user, Payment $payment): bool
     {
-        if ($payment->subscription->user_id !== $user->id) {
+        if (!$payment->canBeAccessedBy($user)) {
             return false;
         }
 
@@ -89,7 +97,7 @@ class PaymentPolicy
      */
     public function cancel(User $user, Payment $payment): bool
     {
-        if ($payment->subscription->user_id !== $user->id) {
+        if (!$payment->canBeAccessedBy($user)) {
             return false;
         }
 
