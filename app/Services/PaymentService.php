@@ -39,6 +39,7 @@ class PaymentService
         $config = config('partyplanner.payments.mtn_mobile_money');
 
         $options = [
+            'base_uri' => MomoApi::getBaseUrl($config['environment']),
             'timeout' => $config['http']['timeout'] ?? 30,
             'max_redirects' => 5,
         ];
