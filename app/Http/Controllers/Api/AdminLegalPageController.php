@@ -24,7 +24,7 @@ class AdminLegalPageController extends Controller
     /**
      * Get a specific legal page by ID (admin).
      */
-    public function show(int $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
         $page = LegalPage::with('updatedBy:id,name')->findOrFail($id);
 
@@ -34,7 +34,7 @@ class AdminLegalPageController extends Controller
     /**
      * Update a legal page (admin).
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
         $page = LegalPage::findOrFail($id);
 
@@ -74,7 +74,7 @@ class AdminLegalPageController extends Controller
     /**
      * Delete a legal page (admin).
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         $page = LegalPage::findOrFail($id);
         $page->delete();

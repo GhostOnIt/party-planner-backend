@@ -18,6 +18,7 @@ class Payment extends Model
      */
     protected $fillable = [
         'subscription_id',
+        'idempotency_key',
         'amount',
         'currency',
         'payment_method',
@@ -45,6 +46,35 @@ class Payment extends Model
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(Subscription::class);
+    }
+
+    /**
+     * Owner of subscription, event owner, or accepted collaborator may access this payment.
+     */
+    public function canBeAccessedBy(User $user): bool
+    {
+        $subscription = $this->subscription;
+        if (!$subscription) {
+            return false;
+        }
+
+        if ($subscription->event_id === null) {
+            return $subscription->user_id === $user->id;
+        }
+
+        $event = $subscription->event;
+        if (!$event) {
+            return false;
+        }
+
+        if ($event->user_id === $user->id) {
+            return true;
+        }
+
+        return $event->collaborators()
+            ->where('user_id', $user->id)
+            ->whereNotNull('accepted_at')
+            ->exists();
     }
 
     /**
@@ -131,13 +161,27 @@ class Payment extends Model
      */
     public function markAsFailed(): void
     {
-        $this->update(['status' => 'failed']);
+        $this->update([
+            'status' => 'failed',
+            'idempotency_key' => null,
+        ]);
         $this->subscription->update(['payment_status' => 'failed']);
     }
 
     /**
      * Mark as refunded.
      */
+    /**
+     * Failed initiation (validation / provider off) without changing subscription payment_status.
+     */
+    public function markInitiationFailed(): void
+    {
+        $this->update([
+            'status' => 'failed',
+            'idempotency_key' => null,
+        ]);
+    }
+
     public function markAsRefunded(?string $reason = null): void
     {
         $metadata = $this->metadata ?? [];
@@ -146,6 +190,7 @@ class Payment extends Model
 
         $this->update([
             'status' => 'refunded',
+            'idempotency_key' => null,
             'metadata' => $metadata,
         ]);
 

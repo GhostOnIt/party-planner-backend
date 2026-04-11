@@ -69,8 +69,13 @@ class MobileMoneyWebhookController extends Controller
     {
         $secret = config('partyplanner.payments.mtn_mobile_money.webhook_secret');
 
-        // If no secret is configured, skip validation (development mode)
         if (empty($secret)) {
+            // En production, rejeter tout callback sans secret configuré
+            if (app()->isProduction()) {
+                Log::error('MTN webhook: MTN_WEBHOOK_SECRET non configuré en production — callback rejeté');
+                return false;
+            }
+            // En local/staging, autoriser sans validation
             return true;
         }
 
@@ -92,8 +97,11 @@ class MobileMoneyWebhookController extends Controller
     {
         $secret = config('partyplanner.payments.airtel_money.webhook_secret');
 
-        // If no secret is configured, skip validation (development mode)
         if (empty($secret)) {
+            if (app()->isProduction()) {
+                Log::error('Airtel webhook: AIRTEL_WEBHOOK_SECRET non configuré en production — callback rejeté');
+                return false;
+            }
             return true;
         }
 

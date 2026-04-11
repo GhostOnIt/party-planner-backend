@@ -819,6 +819,7 @@ class DashboardService
         $guestsAccepted = 0;
         $guestsDeclined = 0;
         $guestsPending = 0;
+        $guestsMaybe = 0;
         $totalGuests = 0;
 
         foreach ($events as $event) {
@@ -827,6 +828,7 @@ class DashboardService
             $guestsAccepted += $guests->where('rsvp_status', 'accepted')->count();
             $guestsDeclined += $guests->where('rsvp_status', 'declined')->count();
             $guestsPending += $guests->where('rsvp_status', 'pending')->count();
+            $guestsMaybe += $guests->where('rsvp_status', 'maybe')->count();
         }
 
         // Tasks breakdown
@@ -874,6 +876,7 @@ class DashboardService
                     ['label' => 'Acceptés', 'value' => $guestsAccepted, 'color' => '#10B981'],
                     ['label' => 'Déclinés', 'value' => $guestsDeclined, 'color' => '#EF4444'],
                     ['label' => 'En attente', 'value' => $guestsPending, 'color' => '#F97316'],
+                    ['label' => 'Peut-être', 'value' => $guestsMaybe, 'color' => '#8B5CF6'],
                 ],
             ],
             'tasks' => [
@@ -933,6 +936,7 @@ class DashboardService
             $confirmed = $guests->where('rsvp_status', 'accepted')->count();
             $declined = $guests->where('rsvp_status', 'declined')->count();
             $pending = $guests->where('rsvp_status', 'pending')->count();
+            $maybe = $guests->where('rsvp_status', 'maybe')->count();
             $total = $guests->count();
             $confirmRate = $total > 0 ? round(($confirmed / $total) * 100) : 0;
 
@@ -945,6 +949,7 @@ class DashboardService
                 'confirmed' => $confirmed,
                 'declined' => $declined,
                 'pending' => $pending,
+                'maybe' => $maybe,
                 'total' => $total,
                 'confirmRate' => $confirmRate,
             ];
@@ -966,11 +971,8 @@ class DashboardService
         $offset = ($page - 1) * $perPage;
         $paginatedEvents = $eventsData->slice($offset, $perPage)->values();
 
-        // Calculate totals
-        $totalConfirmed = $eventsData->sum('confirmed');
-        $totalDeclined = $eventsData->sum('declined');
-        $totalPending = $eventsData->sum('pending');
-        $totalInvites = $totalConfirmed + $totalDeclined + $totalPending;
+        // Total invités = somme des invités par événement (tous statuts RSVP)
+        $totalInvites = $eventsData->sum('total');
 
         return [
             'events' => $paginatedEvents->toArray(),

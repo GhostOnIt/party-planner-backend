@@ -409,7 +409,7 @@ class GuestService
 
     /**
      * Check in a guest.
-     * Check-in is only allowed from 24 hours before the event start.
+     * Check-in is only allowed during the event day.
      */
     public function checkIn(Guest $guest): Guest
     {
@@ -421,12 +421,13 @@ class GuestService
         $guest->load('event');
         $event = $guest->event;
         if ($event && $event->date) {
-            $timeStr = $event->time ? $event->time->format('H:i') : '00:00';
-            $eventStart = $event->date->copy()->setTimeFromTimeString($timeStr);
-            $checkInOpensAt = $eventStart->copy()->subHours(24);
-            if (now()->lt($checkInOpensAt)) {
+            // Check-in possible uniquement le jour de l'événement (pas 24h avant).
+            $eventDayStart = $event->date->copy()->startOfDay();
+            $eventDayEnd = $event->date->copy()->endOfDay();
+
+            if (now()->lt($eventDayStart) || now()->gt($eventDayEnd)) {
                 throw new \InvalidArgumentException(
-                    'Le check-in n\'est possible qu\'à partir de 24 h avant le début de l\'événement.'
+                    'Le check-in n\'est possible que le jour de l\'événement.'
                 );
             }
         }

@@ -18,6 +18,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('admin_activity_logs')) {
+            // Bases sans cette table (ex. jamais migrées avec create_admin_activity_logs) :
+            // la migration 2026_02_19 crée activity_logs à la place.
+            return;
+        }
+
         // 1. Supprimer la FK AVANT de renommer la table (PostgreSQL garde le nom original)
         Schema::table('admin_activity_logs', function (Blueprint $table) {
             $table->dropForeign(['admin_id']);
@@ -31,7 +37,11 @@ return new class extends Migration
             $table->renameColumn('admin_id', 'user_id');
         });
 
-        // 4. Ajouter la nouvelle FK et les nouvelles colonnes
+        // 4. Ajouter la génération automatique d'UUID pour la colonne id (si pas déjà présente)
+        // Note: PostgreSQL nécessite une modification explicite de la colonne pour ajouter le default
+        DB::statement('ALTER TABLE activity_logs ALTER COLUMN id SET DEFAULT gen_random_uuid()');
+
+        // 5. Ajouter la nouvelle FK et les nouvelles colonnes
         Schema::table('activity_logs', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
 
@@ -63,7 +73,7 @@ return new class extends Migration
             $table->index('s3_archived_at', 'activity_logs_s3_archived_at_index');
         });
 
-        // 3. Mettre à jour les données existantes : tous les anciens logs sont de type admin/api
+        // 6. Mettre à jour les données existantes : tous les anciens logs sont de type admin/api
         DB::table('activity_logs')
             ->whereNull('actor_type')
             ->orWhere('actor_type', '')
@@ -78,6 +88,18 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('activity_logs')) {
+            return;
+        }
+
+        // Ne pas inverser si up() n'a pas fait la transformation (ex. activity_logs créée par 2026_02_19).
+        $hasTransformIndex = collect(Schema::getIndexes('activity_logs'))
+            ->contains(fn (array $index) => strcasecmp((string) ($index['name'] ?? ''), 'activity_logs_s3_archived_at_index') === 0);
+
+        if (! $hasTransformIndex) {
+            return;
+        }
+
         Schema::table('activity_logs', function (Blueprint $table) {
             // Supprimer les nouveaux index
             $table->dropIndex('activity_logs_actor_type_created_at_index');

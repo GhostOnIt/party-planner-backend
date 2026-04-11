@@ -366,6 +366,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/initiate', [PaymentController::class, 'initiate']);
         Route::post('/mtn/initiate', [PaymentController::class, 'initiateMtn']);
         Route::post('/airtel/initiate', [PaymentController::class, 'initiateAirtel']);
+        Route::get('/{payment}/receipt', [PaymentController::class, 'receipt']);
         Route::get('/{payment}/status', [PaymentController::class, 'status']);
         Route::get('/{payment}/poll', [PaymentController::class, 'poll']);
         Route::post('/{payment}/retry', [PaymentController::class, 'retry']);

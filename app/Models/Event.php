@@ -82,7 +82,7 @@ class Event extends Model
     }
 
     /**
-     * Check if guest check-in is allowed (from 24 hours before event start).
+     * Check if guest check-in is allowed only during the event day.
      */
     public function getCanCheckInAttribute(): bool
     {
@@ -90,11 +90,12 @@ class Event extends Model
             return false;
         }
 
-        $timeStr = $this->time ? $this->time->format('H:i') : '00:00';
-        $eventStart = $this->date->copy()->setTimeFromTimeString($timeStr);
-        $checkInOpensAt = $eventStart->copy()->subHours(24);
+        // Check-in possible uniquement le jour de l'événement (pas 24h avant).
+        $eventDayStart = $this->date->copy()->startOfDay();
+        $eventDayEnd = $this->date->copy()->endOfDay();
 
-        return now()->gte($checkInOpensAt);
+        $now = now();
+        return $now->gte($eventDayStart) && $now->lte($eventDayEnd);
     }
 
     /**

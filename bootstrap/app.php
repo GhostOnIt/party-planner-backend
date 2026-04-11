@@ -5,8 +5,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -52,6 +54,22 @@ return Application::configure(basePath: dirname(__DIR__))
             // Authentification : 401 et non 500
             if ($e instanceof AuthenticationException) {
                 return response()->json(['message' => $e->getMessage()], 401);
+            }
+
+            // Modèle introuvable (route model binding) : 404 avec message clair pour l'API
+            if ($e instanceof ModelNotFoundException) {
+                $message = 'L\'événement demandé est introuvable ou vous n\'y avez pas accès.';
+                if (!str_contains($e->getMessage(), 'Event')) {
+                    $message = 'Ressource introuvable.';
+                }
+                return response()->json(['message' => $message], 404);
+            }
+            if ($e instanceof NotFoundHttpException && str_contains($e->getMessage(), 'No query results for model')) {
+                return response()->json([
+                    'message' => str_contains($e->getMessage(), 'Event')
+                        ? 'L\'événement demandé est introuvable ou vous n\'y avez pas accès.'
+                        : 'Ressource introuvable.',
+                ], 404);
             }
 
             $status = $e instanceof HttpException ? $e->getStatusCode() : 500;

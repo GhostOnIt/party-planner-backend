@@ -8,6 +8,8 @@ use Illuminate\Validation\Rule;
 
 class UpdateCollaboratorRequest extends FormRequest
 {
+    private const MAX_ROLES_PER_COLLABORATOR = 3;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -75,6 +77,33 @@ class UpdateCollaboratorRequest extends FormRequest
         if (is_null($customRoleIds) && !is_null($legacy)) {
             $this->merge(['custom_role_ids' => [$legacy]]);
         }
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $roles = $this->input('roles');
+            if (! is_array($roles)) {
+                $roles = [];
+            }
+            $role = $this->input('role');
+            if (empty($roles) && $role) {
+                $roles = [$role];
+            }
+            $roles = array_values(array_unique(array_filter($roles)));
+            $customIds = $this->input('custom_role_ids');
+            if (! is_array($customIds)) {
+                $customIds = [];
+            }
+            $customIds = array_values(array_unique(array_map('intval', $customIds)));
+
+            if (count($roles) + count($customIds) > self::MAX_ROLES_PER_COLLABORATOR) {
+                $validator->errors()->add(
+                    'roles',
+                    'Un collaborateur ne peut avoir que 3 rôles au maximum (rôles système et personnalisés).'
+                );
+            }
+        });
     }
 
     /**

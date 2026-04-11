@@ -87,6 +87,8 @@ Route::get('/api/docs/openapi.yaml', function () {
 // Mobile Money callbacks
 Route::post('/webhooks/mtn', [MobileMoneyWebhookController::class, 'handleMtn'])->name('webhooks.mtn');
 Route::post('/webhooks/airtel', [MobileMoneyWebhookController::class, 'handleAirtel'])->name('webhooks.airtel');
+// MTN Congo partner registration (same handler as /webhooks/mtn); must match MTN_CALLBACK_URL e.g. https://api.example.com/momo/callback
+Route::post('/momo/callback', [MobileMoneyWebhookController::class, 'handleMtn'])->name('webhooks.momo.callback');
 
 // Stripe webhooks
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
