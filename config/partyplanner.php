@@ -93,16 +93,18 @@ return [
             'enabled' => env('MTN_ENABLED', false),
             'simulate' => env('MTN_SIMULATE', false), // Set to true for local dev without real API
             'name' => 'MTN Mobile Money',
-            'api_user' => env('MTN_API_USER'),      // UUID created in sandbox portal
-            'api_key' => env('MTN_API_KEY'),        // Key generated for the API User
-            'subscription_key' => env('MTN_SUBSCRIPTION_KEY'), // Ocp-Apim-Subscription-Key
-            'callback_url' => env('MTN_CALLBACK_URL'),
-            'environment' => env('MTN_ENVIRONMENT', 'sandbox'), // sandbox, mtncongo, mtncameroon, etc.
-            'currency' => env('MTN_CURRENCY', 'XAF'), // EUR for sandbox, XAF/XOF for production
+            'api_user' => env('MTN_API_USER'),                   // UUID — sandbox: auto-généré / prod: fourni par MTN
+            'api_key' => env('MTN_API_KEY'),                     // Secret — sandbox: auto-généré / prod: fourni par MTN
+            'subscription_key' => env('MTN_SUBSCRIPTION_KEY'),  // Primary Key (Ocp-Apim-Subscription-Key)
+            'subscription_key_secondary' => env('MTN_SUBSCRIPTION_KEY_SECONDARY'), // Secondary Key (backup)
+            'callback_url' => env('MTN_CALLBACK_URL'),           // HTTPS obligatoire en production
+            'webhook_secret' => env('MTN_WEBHOOK_SECRET'),       // Secret HMAC pour valider les callbacks MTN
+            'environment' => env('MTN_ENVIRONMENT', 'sandbox'), // sandbox | mtncongo | mtncameroon | mtnuganda …
+            'currency' => env('MTN_CURRENCY', 'XAF'), // EUR pour sandbox, XAF pour Congo/Cameroun en prod
             // HTTP client configuration for momo-api (Symfony HttpClient)
             'http' => [
                 'timeout' => env('MTN_HTTP_TIMEOUT', 30),
-                'verify_ssl' => env('MTN_HTTP_VERIFY_SSL', true), // false only in sandbox!
+                'verify_ssl' => env('MTN_HTTP_VERIFY_SSL', true), // Toujours true en production
             ],
         ],
         'airtel_money' => [
