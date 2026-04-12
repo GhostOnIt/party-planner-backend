@@ -54,6 +54,7 @@ class PaymentService
             $verifySsl = $config['http']['verify_ssl'] ?? true;
 
             // Step 1 — Get Bearer token
+            /** @var \Illuminate\Http\Client\Response $tokenResponse */
             $tokenResponse = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
                 ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
@@ -107,6 +108,7 @@ class PaymentService
                 $headers['X-Callback-Url'] = $config['callback_url'];
             }
 
+            /** @var \Illuminate\Http\Client\Response $payResponse */
             $payResponse = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
                 ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
@@ -220,6 +222,7 @@ class PaymentService
         try {
             $externalId = 'PP-' . Str::upper(Str::random(12));
 
+            /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->getAirtelAccessToken(),
                 'Content-Type' => 'application/json',
@@ -434,6 +437,7 @@ class PaymentService
             $timeout   = (int) ($config['http']['timeout'] ?? 30);
             $verifySsl = $config['http']['verify_ssl'] ?? true;
 
+            /** @var \Illuminate\Http\Client\Response $tokenResponse */
             $tokenResponse = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
                 ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
@@ -447,6 +451,7 @@ class PaymentService
 
             $accessToken = $tokenResponse->json('access_token');
 
+            /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
                 ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
@@ -478,6 +483,7 @@ class PaymentService
     {
         $config = config('partyplanner.payments.airtel_money');
 
+        /** @var \Illuminate\Http\Client\Response $response */
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->getAirtelAccessToken(),
         ])->get($config['api_url'] . "/standard/v1/payments/{$reference}");
@@ -516,6 +522,7 @@ class PaymentService
     {
         $config = config('partyplanner.payments.airtel_money');
 
+        /** @var \Illuminate\Http\Client\Response $response */
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->post($config['api_url'] . '/auth/oauth2/token', [
