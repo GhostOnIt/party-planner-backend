@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\PaymentMethod;
 use App\Jobs\ProcessPaymentCallbackJob;
 use App\Jobs\SendPaymentConfirmationJob;
 use App\Models\Payment;
@@ -11,71 +10,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Lepresk\MomoApi\MomoApi;
-use Lepresk\MomoApi\Products\CollectionApi;
-use Lepresk\MomoApi\Models\PaymentRequest;
-use Symfony\Component\HttpClient\HttpClient;
 
 class PaymentService
 {
-    /**
-     * MoMo Collection instance (lazy-loaded).
-     */
-    protected ?CollectionApi $momoCollection = null;
-
-    /**
-     * HTTP client initialization flag.
-     */
-    protected static bool $httpClientInitialized = false;
-
-    /**
-     * Initialize custom HTTP client for MoMo API.
-     */
-    protected function initializeMomoHttpClient(): void
-    {
-        if (self::$httpClientInitialized) {
-            return;
-        }
-
-        $config = config('partyplanner.payments.mtn_mobile_money');
-
-        $options = [
-            'base_uri' => MomoApi::getBaseUrl($config['environment']),
-            'timeout' => $config['http']['timeout'] ?? 30,
-            'max_redirects' => 5,
-        ];
-
-        // Disable SSL verification only in sandbox or when explicitly disabled
-        if ($config['environment'] === 'sandbox' || !($config['http']['verify_ssl'] ?? true)) {
-            $options['verify_peer'] = false;
-            $options['verify_host'] = false;
-        }
-
-        MomoApi::useClient(HttpClient::create($options));
-        self::$httpClientInitialized = true;
-    }
-
-    /**
-     * Get MTN MoMo Collection instance (lazy-loaded).
-     */
-    protected function getMomoCollection(): CollectionApi
-    {
-        $this->initializeMomoHttpClient();
-
-        if ($this->momoCollection === null) {
-            $config = config('partyplanner.payments.mtn_mobile_money');
-
-            $this->momoCollection = MomoApi::collection([
-                'environment' => $config['environment'],
-                'subscription_key' => $config['subscription_key'],
-                'api_user' => $config['api_user'],
-                'api_key' => $config['api_key'],
-                'callback_url' => $config['callback_url'],
-            ]);
-        }
-
-        return $this->momoCollection;
-    }
-
     /**
      * Initiate MTN Mobile Money payment.
      */
@@ -112,75 +49,134 @@ class PaymentService
         }
 
         try {
-            $collection = $this->getMomoCollection();
+            $baseUrl  = MomoApi::getBaseUrl($config['environment']);
+            $timeout  = (int) ($config['http']['timeout'] ?? 30);
+            $verifySsl = $config['http']['verify_ssl'] ?? true;
 
-            // Format phone number for MTN API
+            // Step 1 — Get Bearer token
+            /** @var \Illuminate\Http\Client\Response $tokenResponse */
+            $tokenResponse = Http::baseUrl($baseUrl)
+                ->timeout($timeout)
+                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->withBasicAuth($config['api_user'], $config['api_key'])
+                ->withHeaders(['Ocp-Apim-Subscription-Key' => $config['subscription_key']])
+                ->post('/collection/token/');
+
+            if (!$tokenResponse->successful()) {
+                Log::error('MTN token request failed', [
+                    'subscription_id' => $subscription->id,
+                    'status'          => $tokenResponse->status(),
+                    'body'            => $tokenResponse->body(),
+                ]);
+                $payment->markInitiationFailed();
+                return [
+                    'success' => false,
+                    'message' => 'Authentification MTN échouée (code ' . $tokenResponse->status() . ').',
+                    'payment' => $payment->fresh(),
+                ];
+            }
+
+            $accessToken = $tokenResponse->json('access_token');
+
+            // Step 2 — Build payment params
             $formattedPhone = $this->formatPhoneNumber($phoneNumber, true);
-
-            // Determine currency (EUR for sandbox, configured currency for production)
             $currency = $config['environment'] === 'sandbox'
                 ? 'EUR'
                 : ($config['currency'] ?? config('partyplanner.currency.code', 'XAF'));
 
-            // Amount (minimum 100 for sandbox)
-            $amount = $subscription->total_price > 0 ? (string) $subscription->total_price : '100';
-
-            // Generate external ID (UUID)
+            // TODO TEST — montant fixé à 2 XAF pour tests prod. Retirer avant vrai déploiement.
+            $amount     = '2';
             $externalId = Str::uuid()->toString();
 
-            // Build payment description
-            $description = "Paiement Party Planner";
+            $description = 'Paiement Party Planner';
             if ($subscription->event) {
-                $description .= " - {$subscription->event->title}";
+                $description .= ' - ' . $subscription->event->title;
             } else {
-                $planName = $subscription->plan?->name ?? $subscription->plan_type ?? 'Plan';
+                $planName    = $subscription->plan?->name ?? $subscription->plan_type ?? 'Plan';
                 $description .= " - Abonnement {$planName}";
             }
 
-            // Create payment request using momo-api
-            $paymentRequest = PaymentRequest::make(
-                $amount,
-                $formattedPhone,
-                $externalId,
-                $currency,
-                $description,
-                "Subscription #{$subscription->id}"
-            );
+            // Step 3 — RequestToPay
+            $headers = [
+                'Ocp-Apim-Subscription-Key' => $config['subscription_key'],
+                'X-Reference-Id'            => $externalId,
+                'X-Target-Environment'      => $config['environment'],
+                'Authorization'             => 'Bearer ' . $accessToken,
+            ];
 
-            // Initiate payment via momo-api
-            $paymentId = $collection->requestToPay($paymentRequest);
+            if (!empty($config['callback_url'])) {
+                $headers['X-Callback-Url'] = $config['callback_url'];
+            }
 
-            Log::info('MTN requesttopay initiated via momo-api', [
-                'payment_id' => $paymentId,
-                'external_id' => $externalId,
-                'amount' => $amount,
-                'currency' => $currency,
-                'phone' => $formattedPhone,
+            /** @var \Illuminate\Http\Client\Response $payResponse */
+            $payResponse = Http::baseUrl($baseUrl)
+                ->timeout($timeout)
+                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->withHeaders($headers)
+                ->post('/collection/v1_0/requesttopay', [
+                    'amount'       => $amount,
+                    'currency'     => $currency,
+                    'externalId'   => $externalId,
+                    'payer'        => ['partyIdType' => 'MSISDN', 'partyId' => $formattedPhone],
+                    'payerMessage' => $description,
+                    'payeeNote'    => "Subscription #{$subscription->id}",
+                ]);
+
+            Log::info('MTN requesttopay response', [
+                'subscription_id' => $subscription->id,
+                'status'          => $payResponse->status(),
+                'body'            => $payResponse->body(),
+                'x_reference_id'  => $externalId,
+                'phone'           => $formattedPhone,
+                'amount'          => $amount,
+                'currency'        => $currency,
+                'environment'     => $config['environment'],
             ]);
 
-            // Update payment record
-            $payment->update([
-                'transaction_reference' => $paymentId,
-                'metadata' => array_merge($payment->metadata ?? [], [
-                    'phone_number' => $phoneNumber,
-                    'external_id' => $externalId,
-                    'momo_payment_id' => $paymentId,
-                    'initiated_at' => now()->toIso8601String(),
-                ]),
+            if ($payResponse->status() === 202) {
+                $payment->update([
+                    'transaction_reference' => $externalId,
+                    'metadata' => array_merge($payment->metadata ?? [], [
+                        'phone_number'    => $phoneNumber,
+                        'external_id'     => $externalId,
+                        'momo_payment_id' => $externalId,
+                        'initiated_at'    => now()->toIso8601String(),
+                    ]),
+                ]);
+
+                return [
+                    'success'   => true,
+                    'message'   => 'Paiement initié. Veuillez confirmer sur votre téléphone.',
+                    'payment'   => $payment->fresh(),
+                    'reference' => $externalId,
+                ];
+            }
+
+            // Non-202 — log the raw body so we can see exactly what MTN returned
+            $errorJson = $payResponse->json() ?? [];
+            Log::error('MTN requesttopay rejected', [
+                'subscription_id' => $subscription->id,
+                'status'          => $payResponse->status(),
+                'raw_body'        => $payResponse->body(),
+                'error_code'      => $errorJson['code'] ?? null,
+                'error_message'   => $errorJson['message'] ?? null,
             ]);
+
+            $payment->markAsFailed();
 
             return [
-                'success' => true,
-                'message' => 'Paiement initié. Veuillez confirmer sur votre téléphone.',
-                'payment' => $payment->fresh(),
-                'reference' => $paymentId,
+                'success' => false,
+                'message' => 'Paiement MTN refusé (code ' . $payResponse->status() . '). Vérifiez le numéro et réessayez.',
+                'payment' => $payment,
             ];
 
         } catch (\Exception $e) {
-            Log::error('MTN payment exception via momo-api', [
+            Log::error('MTN payment exception', [
                 'subscription_id' => $subscription->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'error_class'     => get_class($e),
+                'error'           => $e->getMessage(),
+                'mtn_environment' => $config['environment'],
+                'mtn_base_url'    => MomoApi::getBaseUrl($config['environment']),
             ]);
 
             $payment->markAsFailed();
@@ -226,6 +222,7 @@ class PaymentService
         try {
             $externalId = 'PP-' . Str::upper(Str::random(12));
 
+            /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->getAirtelAccessToken(),
                 'Content-Type' => 'application/json',
@@ -430,29 +427,50 @@ class PaymentService
     }
 
     /**
-     * Check MTN payment status using momo-api.
+     * Check MTN payment status via direct HTTP call.
      */
     protected function checkMtnStatus(string $reference): ?string
     {
         try {
-            $collection = $this->getMomoCollection();
-            $transaction = $collection->getPaymentStatus($reference);
+            $config    = config('partyplanner.payments.mtn_mobile_money');
+            $baseUrl   = MomoApi::getBaseUrl($config['environment']);
+            $timeout   = (int) ($config['http']['timeout'] ?? 30);
+            $verifySsl = $config['http']['verify_ssl'] ?? true;
 
-            // momo-api returns a Transaction object with status property
-            if (is_object($transaction) && isset($transaction->status)) {
-                return $transaction->status;
+            /** @var \Illuminate\Http\Client\Response $tokenResponse */
+            $tokenResponse = Http::baseUrl($baseUrl)
+                ->timeout($timeout)
+                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->withBasicAuth($config['api_user'], $config['api_key'])
+                ->withHeaders(['Ocp-Apim-Subscription-Key' => $config['subscription_key']])
+                ->post('/collection/token/');
+
+            if (!$tokenResponse->successful()) {
+                return null;
             }
 
-            // If it returns a string directly
-            if (is_string($transaction)) {
-                return $transaction;
+            $accessToken = $tokenResponse->json('access_token');
+
+            /** @var \Illuminate\Http\Client\Response $response */
+            $response = Http::baseUrl($baseUrl)
+                ->timeout($timeout)
+                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->withHeaders([
+                    'Ocp-Apim-Subscription-Key' => $config['subscription_key'],
+                    'X-Target-Environment'      => $config['environment'],
+                    'Authorization'             => 'Bearer ' . $accessToken,
+                ])
+                ->get('/collection/v1_0/requesttopay/' . $reference);
+
+            if ($response->successful()) {
+                return $response->json('status');
             }
 
             return null;
         } catch (\Exception $e) {
-            Log::warning('MTN status check failed via momo-api', [
+            Log::warning('MTN status check failed', [
                 'reference' => $reference,
-                'error' => $e->getMessage(),
+                'error'     => $e->getMessage(),
             ]);
             return null;
         }
@@ -465,6 +483,7 @@ class PaymentService
     {
         $config = config('partyplanner.payments.airtel_money');
 
+        /** @var \Illuminate\Http\Client\Response $response */
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->getAirtelAccessToken(),
         ])->get($config['api_url'] . "/standard/v1/payments/{$reference}");
@@ -503,6 +522,7 @@ class PaymentService
     {
         $config = config('partyplanner.payments.airtel_money');
 
+        /** @var \Illuminate\Http\Client\Response $response */
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->post($config['api_url'] . '/auth/oauth2/token', [
@@ -575,11 +595,6 @@ class PaymentService
         // If has 8 digits and starts with 6, 4, or 5, add 2420
         if (strlen($phone) === 8 && preg_match('/^[456]/', $phone)) {
             return '2420' . $phone;
-        }
-
-        // If has 9 digits and starts with 0, add 242
-        if (strlen($phone) === 9 && str_starts_with($phone, '0')) {
-            return '242' . substr($phone, 1);
         }
 
         return $phone;

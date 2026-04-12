@@ -18,6 +18,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('admin_activity_logs')) {
+            // Bases sans cette table (ex. jamais migrées avec create_admin_activity_logs) :
+            // la migration 2026_02_19 crée activity_logs à la place.
+            return;
+        }
+
         // 1. Supprimer la FK AVANT de renommer la table (PostgreSQL garde le nom original)
         Schema::table('admin_activity_logs', function (Blueprint $table) {
             $table->dropForeign(['admin_id']);
@@ -82,6 +88,18 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('activity_logs')) {
+            return;
+        }
+
+        // Ne pas inverser si up() n'a pas fait la transformation (ex. activity_logs créée par 2026_02_19).
+        $hasTransformIndex = collect(Schema::getIndexes('activity_logs'))
+            ->contains(fn (array $index) => strcasecmp((string) ($index['name'] ?? ''), 'activity_logs_s3_archived_at_index') === 0);
+
+        if (! $hasTransformIndex) {
+            return;
+        }
+
         Schema::table('activity_logs', function (Blueprint $table) {
             // Supprimer les nouveaux index
             $table->dropIndex('activity_logs_actor_type_created_at_index');
