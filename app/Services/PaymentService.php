@@ -97,6 +97,7 @@ class PaymentService
             }
 
             // Step 3 — RequestToPay
+            // Use asJson() so Content-Type is set once (avoid duplicate headers vs manual Content-Type + WAF/proxy 500s).
             $headers = [
                 'Ocp-Apim-Subscription-Key' => $config['subscription_key'],
                 'X-Reference-Id'            => $externalId,
@@ -108,19 +109,39 @@ class PaymentService
                 $headers['X-Callback-Url'] = $config['callback_url'];
             }
 
+            // MTN: keep payerMessage readable; strip only risky chars / cap length (empty message can cause API errors).
+            $payerMessage = trim(preg_replace('/[^\p{L}\p{N}\s\-.,]/u', '', $description) ?? '');
+            if ($payerMessage === '') {
+                $payerMessage = 'Party Planner payment';
+            }
+            $payerMessage = Str::substr($payerMessage, 0, 140);
+
+            $payeeNote = 'Subscription ' . $subscription->id;
+
+            $requestToPayPayload = [
+                'amount'       => $amount,
+                'currency'     => $currency,
+                'externalId'   => $externalId,
+                'payer'        => ['partyIdType' => 'MSISDN', 'partyId' => $formattedPhone],
+                'payerMessage' => $payerMessage,
+                'payeeNote'    => $payeeNote,
+            ];
+
+            Log::info('MTN requesttopay outgoing request', [
+                'subscription_id' => $subscription->id,
+                'payment_id'      => $payment->id,
+                'environment'     => $config['environment'],
+                'endpoint'        => $baseUrl . '/collection/v1_0/requesttopay',
+                'payload'         => $requestToPayPayload,
+            ]);
+
             /** @var \Illuminate\Http\Client\Response $payResponse */
             $payResponse = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
                 ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->asJson()
                 ->withHeaders($headers)
-                ->post('/collection/v1_0/requesttopay', [
-                    'amount'       => $amount,
-                    'currency'     => $currency,
-                    'externalId'   => $externalId,
-                    'payer'        => ['partyIdType' => 'MSISDN', 'partyId' => $formattedPhone],
-                    'payerMessage' => $description,
-                    'payeeNote'    => "Subscription #{$subscription->id}",
-                ]);
+                ->post('/collection/v1_0/requesttopay', $requestToPayPayload);
 
             Log::info('MTN requesttopay response', [
                 'subscription_id' => $subscription->id,
@@ -152,21 +173,45 @@ class PaymentService
                 ];
             }
 
-            // Non-202 — log the raw body so we can see exactly what MTN returned
+            // Non-202 — WAF/firewall HTML vs real MTN JSON error
+            $rawBody    = $payResponse->body();
+            $isWafBlock = str_contains($rawBody, 'Request Rejected') || str_starts_with(ltrim($rawBody), '<');
+
+            if ($isWafBlock) {
+                Log::error('MTN requesttopay blocked by WAF/firewall', [
+                    'subscription_id' => $subscription->id,
+                    'status'          => $payResponse->status(),
+                    'raw_body'        => $rawBody,
+                    'callback_url'    => $config['callback_url'] ?? null,
+                ]);
+
+                $payment->markInitiationFailed();
+
+                return [
+                    'success' => false,
+                    'message' => 'Service MTN temporairement indisponible. Veuillez réessayer dans quelques minutes.',
+                    'payment' => $payment->fresh(),
+                ];
+            }
+
             $errorJson = $payResponse->json() ?? [];
             Log::error('MTN requesttopay rejected', [
                 'subscription_id' => $subscription->id,
                 'status'          => $payResponse->status(),
-                'raw_body'        => $payResponse->body(),
+                'raw_body'        => $rawBody,
                 'error_code'      => $errorJson['code'] ?? null,
                 'error_message'   => $errorJson['message'] ?? null,
             ]);
 
             $payment->markAsFailed();
 
+            $userMessage = $payResponse->status() >= 500
+                ? 'Erreur côté MTN. Réessayez plus tard ou contactez le support.'
+                : 'Paiement MTN refusé (code ' . $payResponse->status() . '). Vérifiez le numéro et réessayez.';
+
             return [
                 'success' => false,
-                'message' => 'Paiement MTN refusé (code ' . $payResponse->status() . '). Vérifiez le numéro et réessayez.',
+                'message' => $userMessage,
                 'payment' => $payment,
             ];
 
