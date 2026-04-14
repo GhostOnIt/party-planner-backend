@@ -131,8 +131,11 @@ class PaymentService
                 'subscription_id' => $subscription->id,
                 'payment_id'      => $payment->id,
                 'environment'     => $config['environment'],
+                'method'          => 'POST',
                 'endpoint'        => $baseUrl . '/collection/v1_0/requesttopay',
+                'headers'         => $headers,
                 'payload'         => $requestToPayPayload,
+                'content_type'    => 'application/json (set by Http::asJson())',
             ]);
 
             /** @var \Illuminate\Http\Client\Response $payResponse */
