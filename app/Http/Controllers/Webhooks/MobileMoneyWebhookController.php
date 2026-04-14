@@ -64,23 +64,25 @@ class MobileMoneyWebhookController extends Controller
 
     /**
      * Validate MTN webhook signature.
+     *
+     * MTN MoMo does not send HMAC signatures in callbacks by default.
+     * If MTN_WEBHOOK_SECRET is set, we expect X-Callback-Signature (for partners that support it).
+     * If empty, we accept all callbacks and rely on the providerCallbackHost registered at MTN.
      */
     protected function validateMtnSignature(Request $request): bool
     {
         $secret = config('partyplanner.payments.mtn_mobile_money.webhook_secret');
 
         if (empty($secret)) {
-            // En production, rejeter tout callback sans secret configuré
             if (app()->isProduction()) {
-                Log::error('MTN webhook: MTN_WEBHOOK_SECRET non configuré en production — callback rejeté');
-                return false;
+                Log::warning('MTN webhook: MTN_WEBHOOK_SECRET non configuré — callback accepté sans validation de signature');
             }
-            // En local/staging, autoriser sans validation
             return true;
         }
 
         $signature = $request->header('X-Callback-Signature');
         if (!$signature) {
+            Log::warning('MTN webhook: X-Callback-Signature header absent alors que MTN_WEBHOOK_SECRET est configuré');
             return false;
         }
 
