@@ -85,7 +85,7 @@ class PaymentService
                 : ($config['currency'] ?? config('partyplanner.currency.code', 'XAF'));
 
             // TODO TEST — montant fixé à 2 XAF pour tests prod. Retirer avant vrai déploiement.
-            $amount     = '2';
+            $amount     = '25';
             $externalId = Str::uuid()->toString();
 
             $description = 'Paiement Party Planner';
