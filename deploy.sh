@@ -22,7 +22,7 @@ git config --global --add safe.directory $APP_DIR || true
 
 # Installation des dépendances
 echo "📦 Nettoyage vendor si nécessaire"
-rm -rf vendor
+# rm -rf vendor
 
 echo "📦 Installation des dépendances Composer..."
 # Désactivation temporaire de set -e pour gérer l'erreur du lock file
