@@ -78,7 +78,7 @@ class OtpService
         string $type,
         string $channel,
         ?string $userId = null,
-        bool $async = true
+        bool $async = false
     ): Otp {
         $otp = $this->generate($identifier, $type, $channel, $userId);
 
@@ -197,14 +197,20 @@ class OtpService
             $otp->user_id
         );
 
-        // Send asynchronously
-        $this->sendAsync($newOtp);
+        // Send OTP immediately to avoid delivery delays on critical auth flows
+        $result = $this->send($newOtp);
 
-        return [
-            'success' => true,
-            'message' => 'Un nouveau code a été envoyé.',
-            'otp' => $newOtp,
-        ];
+        return $result['success']
+            ? [
+                'success' => true,
+                'message' => 'Un nouveau code a été envoyé.',
+                'otp' => $newOtp,
+            ]
+            : [
+                'success' => false,
+                'message' => $result['message'] ?? 'Echec de l\'envoi du nouveau code.',
+                'error' => 'send_failed',
+            ];
     }
 
     /**
