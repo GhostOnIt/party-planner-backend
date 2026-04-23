@@ -387,8 +387,13 @@ class PaymentService
             SendPaymentConfirmationJob::dispatch($payment);
             Log::info('MTN payment completed', ['payment_id' => $payment->id]);
         } elseif (in_array($status, ['FAILED', 'REJECTED', 'TIMEOUT'])) {
-            $payment->markAsFailed();
-            Log::info('MTN payment failed', ['payment_id' => $payment->id, 'status' => $status]);
+            $reasonCode = $data['reason'] ?? null;
+            $payment->markAsFailed($reasonCode, $this->getFailureReasonMessage($reasonCode));
+            Log::info('MTN payment failed', [
+                'payment_id' => $payment->id,
+                'status' => $status,
+                'reason' => $reasonCode,
+            ]);
         }
     }
 
@@ -438,9 +443,11 @@ class PaymentService
         }
 
         if ($payment->isFailed()) {
+            $reasonCode = $payment->metadata['provider_reason'] ?? null;
             return [
                 'status' => 'failed',
-                'message' => 'Le paiement a échoué.',
+                'message' => $this->getFailureReasonMessage($reasonCode),
+                'failure_reason' => $reasonCode,
             ];
         }
 
@@ -453,6 +460,10 @@ class PaymentService
             'status' => $payment->status,
             'message' => $this->getStatusMessage($payment->status),
             'provider_status' => $providerStatus['status'] ?? null,
+            'failure_reason' => $providerStatus['reason'] ?? ($payment->metadata['provider_reason'] ?? null),
+            'failure_reason_message' => $this->getFailureReasonMessage(
+                $providerStatus['reason'] ?? ($payment->metadata['provider_reason'] ?? null)
+            ),
         ];
     }
 
@@ -521,6 +532,7 @@ class PaymentService
                 return [
                     'status' => strtoupper((string) $response->json('status')),
                     'provider_reference' => $response->json('financialTransactionId'),
+                    'reason' => $response->json('reason'),
                 ];
             }
 
@@ -581,7 +593,8 @@ class PaymentService
         }
 
         if (in_array($status, ['FAILED', 'REJECTED', 'TIMEOUT', 'TF'], true)) {
-            $payment->markAsFailed();
+            $reasonCode = $providerStatus['reason'] ?? null;
+            $payment->markAsFailed($reasonCode, $this->getFailureReasonMessage($reasonCode));
 
             Log::info('Payment synchronized as failed from provider poll', [
                 'payment_id' => $payment->id,
@@ -744,6 +757,29 @@ class PaymentService
             'failed' => 'Le paiement a échoué.',
             'refunded' => 'Le paiement a été remboursé.',
             default => 'Statut inconnu.',
+        };
+    }
+
+    /**
+     * Map provider failure code to a user-friendly message.
+     */
+    protected function getFailureReasonMessage(?string $reasonCode): string
+    {
+        $normalized = strtoupper((string) $reasonCode);
+
+        return match ($normalized) {
+            'LOW_BALANCE_OR_PAYEE_LIMIT_REACHED_OR_NOT_ALLOWED' =>
+                'Paiement refusé : solde insuffisant, limite atteinte ou transaction non autorisée. Vérifiez votre compte Mobile Money puis réessayez.',
+            'LOW_BALANCE', 'INSUFFICIENT_FUNDS' =>
+                'Paiement refusé : solde insuffisant. Rechargez votre compte puis réessayez.',
+            'TIMEOUT' =>
+                'Le paiement a expiré. Veuillez relancer une nouvelle tentative.',
+            'REJECTED' =>
+                'Le paiement a été rejeté par le fournisseur. Vérifiez vos informations puis réessayez.',
+            '' =>
+                'Le paiement a échoué.',
+            default =>
+                'Le paiement a échoué : ' . $normalized . '.',
         };
     }
 

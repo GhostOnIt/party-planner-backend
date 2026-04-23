@@ -162,11 +162,20 @@ class Payment extends Model
     /**
      * Mark as failed.
      */
-    public function markAsFailed(): void
+    public function markAsFailed(?string $reasonCode = null, ?string $reasonMessage = null): void
     {
+        $metadata = $this->metadata ?? [];
+        if ($reasonCode) {
+            $metadata['provider_reason'] = $reasonCode;
+        }
+        if ($reasonMessage) {
+            $metadata['provider_reason_message'] = $reasonMessage;
+        }
+
         $this->update([
             'status' => 'failed',
             'idempotency_key' => null,
+            'metadata' => $metadata,
         ]);
         $this->subscription->update(['payment_status' => 'failed']);
     }
