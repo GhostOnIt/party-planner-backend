@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Plan;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PlanService
@@ -36,7 +37,7 @@ class PlanService
                 
                 // Debug logging (remove in production)
                 if ($plan->is_trial) {
-                    \Log::info('Trial plan check', [
+                    Log::info('Trial plan check', [
                         'plan_id' => $plan->id,
                         'plan_name' => $plan->name,
                         'is_one_time_use' => $plan->is_one_time_use,
@@ -93,7 +94,7 @@ class PlanService
                 })
                 ->get(['id', 'plan_id', 'event_id', 'status', 'plan_type', 'payment_status', 'expires_at']);
             
-            \Log::info('Trial plan check for user', [
+            Log::info('Trial plan check for user', [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'plan_name' => $plan->name,
@@ -124,6 +125,23 @@ class PlanService
         // If no user provided, return the first trial (highest priority)
         if (!$user) {
             return $trialPlans->first();
+        }
+
+        // If user already has an active account-level subscription, do not show trial banner.
+        $hasActiveAccountSubscription = $user->subscriptions()
+            ->whereNull('event_id')
+            ->where(function ($query) {
+                $query->where('payment_status', 'paid')
+                    ->orWhere('status', 'trial');
+            })
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->exists();
+
+        if ($hasActiveAccountSubscription) {
+            return null;
         }
 
         // Find the first trial that the user hasn't used yet
