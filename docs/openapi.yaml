@@ -377,24 +377,70 @@ components:
       properties:
         id:
           type: integer
+        subscription_id:
+          type: integer
         amount:
           type: number
-        method:
+        currency:
+          type: string
+          example: "XAF"
+        payment_method:
           $ref: '#/components/schemas/PaymentMethod'
         status:
           $ref: '#/components/schemas/PaymentStatus'
-        reference:
+        transaction_reference:
           type: string
+          nullable: true
+        service_label:
+          type: string
+          description: Libellé métier (plan d'abonnement ou service événement)
+        metadata:
+          type: object
+          nullable: true
+        subscription:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            plan_type:
+              type: string
+              nullable: true
+            event:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: integer
+                title:
+                  type: string
+            plan:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                slug:
+                  type: string
         created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
       example:
         id: 123
+        subscription_id: 45
         amount: 15000
-        method: "mtn_mobile_money"
+        currency: "XAF"
+        payment_method: "mtn_mobile_money"
         status: "completed"
-        reference: "MTN-2024011512345"
+        transaction_reference: "MTN-2024011512345"
+        service_label: "Abonnement PRO"
         created_at: "2024-01-15T14:30:00Z"
+        updated_at: "2024-01-15T14:31:10Z"
 
     EventType:
       type: string
@@ -4567,21 +4613,24 @@ paths:
                 data:
                   - id: 123
                     amount: 15000
-                    method: "mtn_mobile_money"
+                    payment_method: "mtn_mobile_money"
                     status: "completed"
-                    reference: "MTN-2024011512345"
+                    transaction_reference: "MTN-2024011512345"
+                    service_label: "Abonnement PRO"
                     created_at: "2024-01-15T14:30:00Z"
                   - id: 124
                     amount: 25000
-                    method: "airtel_money"
+                    payment_method: "airtel_money"
                     status: "pending"
-                    reference: "AIRTEL-2024012067890"
+                    transaction_reference: "AIRTEL-2024012067890"
+                    service_label: "Service événement Mariage de Sophie"
                     created_at: "2024-01-20T10:00:00Z"
                   - id: 125
                     amount: 15000
-                    method: "mtn_mobile_money"
+                    payment_method: "mtn_mobile_money"
                     status: "failed"
-                    reference: "MTN-2024012198765"
+                    transaction_reference: "MTN-2024012198765"
+                    service_label: "Abonnement STARTER"
                     created_at: "2024-01-21T16:45:00Z"
 
   /payments/initiate:
@@ -4804,11 +4853,25 @@ paths:
             type: integer
       responses:
         '200':
-          description: Statut du paiement (Vue HTML)
+          description: Statut du paiement
           content:
-            text/html:
+            application/json:
               schema:
-                type: string
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/Payment'
+                  status_info:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      is_completed:
+                        type: boolean
+                      is_failed:
+                        type: boolean
+                      is_pending:
+                        type: boolean
         '403':
           description: Non autorise
 
@@ -4817,7 +4880,7 @@ paths:
       tags: [Payments]
       summary: Polling du statut de paiement (AJAX)
       description: |
-        Retourne une vue partielle pour le polling AJAX du statut de paiement.
+        Retourne l'état JSON du paiement pour le polling frontend.
 
         **Policy:** `PaymentPolicy@checkStatus`
       security:
@@ -4830,11 +4893,32 @@ paths:
             type: integer
       responses:
         '200':
-          description: Vue partielle du statut
+          description: Statut de paiement pour polling
           content:
-            text/html:
+            application/json:
               schema:
-                type: string
+                type: object
+                properties:
+                  payment:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      status:
+                        $ref: '#/components/schemas/PaymentStatus'
+                      amount:
+                        type: number
+                      reference:
+                        type: string
+                        nullable: true
+                  status_info:
+                    type: object
+                  is_completed:
+                    type: boolean
+                  is_failed:
+                    type: boolean
+                  is_pending:
+                    type: boolean
         '403':
           description: Non autorise
 

@@ -39,11 +39,38 @@ class PaymentController extends Controller
                     $c->where('user_id', $userId)->whereNotNull('accepted_at');
                 });
             })
-            ->with(['subscription.event:id,title', 'subscription.user:id,name,email'])
+            ->with([
+                'subscription.event:id,title',
+                'subscription.user:id,name,email',
+                'subscription.plan:id,name,slug',
+            ])
             ->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
 
+        $payments->getCollection()->transform(function (Payment $payment) {
+            $payment->setAttribute('service_label', $this->buildServiceLabel($payment));
+            return $payment;
+        });
+
         return response()->json($payments);
+    }
+
+    protected function buildServiceLabel(Payment $payment): string
+    {
+        $subscription = $payment->subscription;
+        if (!$subscription) {
+            return 'Paiement';
+        }
+
+        $eventTitle = $subscription->event?->title;
+        if ($eventTitle) {
+            return 'Service événement ' . $eventTitle;
+        }
+
+        $planName = $subscription->plan?->name
+            ?? ($subscription->plan_type ? strtoupper((string) $subscription->plan_type) : null);
+
+        return $planName ? 'Abonnement ' . $planName : 'Abonnement';
     }
 
     /**

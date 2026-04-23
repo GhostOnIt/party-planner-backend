@@ -20,3 +20,9 @@ Schedule::job(new ArchiveAndPurgeLogsJob(retentionDays: 30, batchSize: 500))
     ->timezone('UTC')
     ->withoutOverlapping()
     ->onOneServer();
+
+// Expirer automatiquement les paiements pending trop anciens.
+Schedule::command('payments:expire-pending --minutes=10')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->onOneServer();

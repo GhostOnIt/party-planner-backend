@@ -172,6 +172,24 @@ class Payment extends Model
     }
 
     /**
+     * Mark a pending payment as failed due to timeout.
+     */
+    public function markAsFailedByTimeout(): void
+    {
+        $metadata = $this->metadata ?? [];
+        $metadata['expired_by_timeout'] = true;
+        $metadata['expired_at'] = now()->toIso8601String();
+
+        $this->update([
+            'status' => 'failed',
+            'idempotency_key' => null,
+            'metadata' => $metadata,
+        ]);
+
+        $this->subscription->update(['payment_status' => 'failed']);
+    }
+
+    /**
      * Mark as refunded.
      */
     /**

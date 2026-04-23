@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Subscription\StoreSubscriptionRequest;
 use App\Models\Event;
+use App\Models\Plan;
 use App\Services\EntitlementService;
 use App\Services\QuotaService;
 use App\Services\SubscriptionService;
@@ -276,20 +277,38 @@ class SubscriptionController extends Controller
         ]);
 
         $user = $request->user();
-        $plan = \App\Models\Plan::findOrFail($validated['plan_id']);
+        $plan = Plan::findOrFail($validated['plan_id']);
 
-        // Check if user already has a subscription (active or pending)
-        $existingSubscription = $this->subscriptionService->getUserActiveSubscription($user);
-        
-        // Also check for pending subscriptions that might not be returned by getUserActiveSubscription
-        if (!$existingSubscription) {
-            $existingSubscription = $user->subscriptions()
-                ->whereNull('event_id')
-                ->where('plan_id', $plan->id)
-                ->whereIn('payment_status', ['pending', 'paid'])
-                ->latest()
-                ->first();
+        // Account-level active rights (paid or trial and not expired)
+        $activeAccountSubscription = $user->subscriptions()
+            ->whereNull('event_id')
+            ->where(function ($query) {
+                $query->where('payment_status', 'paid')
+                    ->orWhere('status', 'trial');
+            })
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->with('plan')
+            ->latest()
+            ->first();
+
+        // Business rule: cannot activate free/trial plan while an account plan is active.
+        if ($plan->is_trial && $activeAccountSubscription) {
+            return response()->json([
+                'message' => 'Vous avez déjà un abonnement actif. L\'essai gratuit n\'est pas disponible.',
+                'subscription' => $activeAccountSubscription,
+            ], 422);
         }
+
+        // Existing account-level subscription (latest paid/pending)
+        $existingSubscription = $user->subscriptions()
+            ->whereNull('event_id')
+            ->whereIn('payment_status', ['pending', 'paid'])
+            ->with('plan')
+            ->latest()
+            ->first();
         
         // If user has an active subscription to the same plan, check its status
         if ($existingSubscription && $existingSubscription->plan_id === $plan->id) {
@@ -335,31 +354,30 @@ class SubscriptionController extends Controller
         // If user has an active subscription to a different plan
         if ($existingSubscription && $existingSubscription->plan_id !== $plan->id) {
             $existingPlan = $existingSubscription->plan;
-            
+
+            $currentIsActive = ($existingSubscription->payment_status === 'paid' || $existingSubscription->status === 'trial')
+                && ($existingSubscription->expires_at === null || $existingSubscription->expires_at->isFuture());
+
             // Check if this is an upgrade (new plan is superior)
             // Compare by price first, then by sort_order (lower sort_order = better plan)
             $isUpgrade = false;
-            
             if ($existingPlan) {
-                // New plan is superior if it has higher price
-                // Or if prices are equal, check sort_order (lower = better)
                 if ($plan->price > $existingPlan->price) {
                     $isUpgrade = true;
                 } elseif ($plan->price === $existingPlan->price) {
-                    // If same price, check sort_order (lower sort_order = better/higher tier)
                     $isUpgrade = ($plan->sort_order ?? 999) < ($existingPlan->sort_order ?? 999);
                 }
             }
-            
-            if (!$isUpgrade) {
+
+            if ($currentIsActive && !$isUpgrade) {
                 // Downgrade or same tier - not allowed for active subscriptions
                 return response()->json([
                     'message' => 'Vous ne pouvez pas passer à un plan inférieur tant que votre abonnement actif est en cours. Veuillez attendre l\'expiration de votre abonnement actuel.',
                     'subscription' => $existingSubscription->load('plan'),
                 ], 400);
             }
-            
-            // It's an upgrade - cancel the old subscription and create a new one
+
+            // Cancel old account-level line before creating the new one.
             $existingSubscription->update(['status' => 'cancelled']);
         }
 
