@@ -410,7 +410,7 @@ class SubscriptionService
             'total_price' => $plan->price,
             'payment_status' => $plan->is_trial ? 'paid' : 'pending',
             'creations_used' => 0,
-            'status' => $plan->is_trial ? 'trial' : 'active',
+            'status' => $plan->is_trial ? 'trial' : 'pending',
             'starts_at' => now(),
             'expires_at' => now()->addDays($plan->duration_days),
         ]);
@@ -447,8 +447,7 @@ class SubscriptionService
         return $user->subscriptions()
             ->whereNull('event_id')
             ->where(function ($query) {
-                $query->where('status', 'active')
-                      ->orWhere('status', 'trial')
+                $query->where('status', 'trial')
                       ->orWhere('payment_status', 'paid');
             })
             ->where(function ($query) {

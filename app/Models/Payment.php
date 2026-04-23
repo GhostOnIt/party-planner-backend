@@ -153,7 +153,10 @@ class Payment extends Model
             'transaction_reference' => $reference ?? $this->transaction_reference,
         ]);
 
-        $this->subscription->update(['payment_status' => 'paid']);
+        $this->subscription->update([
+            'payment_status' => 'paid',
+            'status' => 'active',
+        ]);
     }
 
     /**

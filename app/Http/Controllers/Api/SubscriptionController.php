@@ -311,14 +311,14 @@ class SubscriptionController extends Controller
                     'guest_count' => $plan->getGuestsLimit(),
                     'total_price' => $plan->price,
                     'payment_status' => $plan->is_trial ? 'paid' : 'pending',
-                    'status' => $plan->is_trial ? 'trial' : 'active',
+                    'status' => $plan->is_trial ? 'trial' : 'pending',
                     'starts_at' => now(),
                     'expires_at' => now()->addDays($plan->duration_days),
                 ]);
                 
                 return response()->json([
-                    'message' => $plan->is_trial 
-                        ? 'Essai gratuit activé avec succès.' 
+                    'message' => $plan->is_trial
+                        ? 'Essai gratuit activé avec succès.'
                         : 'Abonnement mis à jour. Procédez au paiement.',
                     'subscription' => $existingSubscription->fresh()->load('plan'),
                     'requires_payment' => !$plan->is_trial,
@@ -367,8 +367,8 @@ class SubscriptionController extends Controller
         $subscription = $this->subscriptionService->createSubscriptionWithPlan($user, $plan);
 
         return response()->json([
-            'message' => $plan->is_trial 
-                ? 'Essai gratuit activé avec succès.' 
+            'message' => $plan->is_trial
+                ? 'Essai gratuit activé avec succès.'
                 : 'Abonnement créé. Procédez au paiement.',
             'subscription' => $subscription->load('plan'),
             'requires_payment' => !$plan->is_trial,
