@@ -438,20 +438,22 @@ class PaymentService
             ];
         }
 
-        // Check with provider
+        // Check with provider and synchronize local status if possible
         $providerStatus = $this->checkProviderStatus($payment);
+        $this->synchronizePaymentWithProviderStatus($payment, $providerStatus);
+        $payment->refresh();
 
         return [
             'status' => $payment->status,
             'message' => $this->getStatusMessage($payment->status),
-            'provider_status' => $providerStatus,
+            'provider_status' => $providerStatus['status'] ?? null,
         ];
     }
 
     /**
      * Check status with payment provider.
      */
-    protected function checkProviderStatus(Payment $payment): ?string
+    protected function checkProviderStatus(Payment $payment): ?array
     {
         if (!$payment->transaction_reference) {
             return null;
@@ -476,7 +478,7 @@ class PaymentService
     /**
      * Check MTN payment status via direct HTTP call.
      */
-    protected function checkMtnStatus(string $reference): ?string
+    protected function checkMtnStatus(string $reference): ?array
     {
         try {
             $config    = config('partyplanner.payments.mtn_mobile_money');
@@ -510,7 +512,10 @@ class PaymentService
                 ->get('/collection/v1_0/requesttopay/' . $reference);
 
             if ($response->successful()) {
-                return $response->json('status');
+                return [
+                    'status' => strtoupper((string) $response->json('status')),
+                    'provider_reference' => $response->json('financialTransactionId'),
+                ];
             }
 
             return null;
@@ -526,7 +531,7 @@ class PaymentService
     /**
      * Check Airtel payment status.
      */
-    protected function checkAirtelStatus(string $reference): ?string
+    protected function checkAirtelStatus(string $reference): ?array
     {
         $config = config('partyplanner.payments.airtel_money');
 
@@ -536,10 +541,47 @@ class PaymentService
         ])->get($config['api_url'] . "/standard/v1/payments/{$reference}");
 
         if ($response->successful()) {
-            return $response->json('data.transaction.status');
+            return [
+                'status' => strtoupper((string) $response->json('data.transaction.status')),
+                'provider_reference' => $response->json('data.transaction.airtel_money_id'),
+            ];
         }
 
         return null;
+    }
+
+    /**
+     * Synchronize local payment with provider status during polling.
+     */
+    protected function synchronizePaymentWithProviderStatus(Payment $payment, ?array $providerStatus): void
+    {
+        if (!$providerStatus || !$payment->isPending()) {
+            return;
+        }
+
+        $status = strtoupper((string) ($providerStatus['status'] ?? ''));
+        $providerReference = $providerStatus['provider_reference'] ?? null;
+
+        if (in_array($status, ['SUCCESSFUL', 'TS'], true)) {
+            $payment->markAsCompleted($providerReference);
+            SendPaymentConfirmationJob::dispatch($payment->fresh());
+
+            Log::info('Payment synchronized as completed from provider poll', [
+                'payment_id' => $payment->id,
+                'provider_status' => $status,
+            ]);
+
+            return;
+        }
+
+        if (in_array($status, ['FAILED', 'REJECTED', 'TIMEOUT', 'TF'], true)) {
+            $payment->markAsFailed();
+
+            Log::info('Payment synchronized as failed from provider poll', [
+                'payment_id' => $payment->id,
+                'provider_status' => $status,
+            ]);
+        }
     }
 
     /**
