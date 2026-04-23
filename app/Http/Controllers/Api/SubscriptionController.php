@@ -196,14 +196,16 @@ class SubscriptionController extends Controller
     public function current(Request $request): JsonResponse
     {
         $user = $request->user();
-        $subscription = $this->subscriptionService->getUserActiveSubscription($user);
+        $subscription = $this->subscriptionService->getUserLatestAccountSubscription($user);
         $quota = $this->quotaService->getCreationsQuota($user);
+        $lifecycle = $this->subscriptionService->getLifecycleInfo($subscription);
 
         if (!$subscription) {
             return response()->json([
                 'subscription' => null,
                 'quota' => $quota,
                 'has_subscription' => false,
+                'lifecycle' => $lifecycle,
             ]);
         }
 
@@ -211,6 +213,7 @@ class SubscriptionController extends Controller
             'subscription' => $subscription->load('plan'),
             'quota' => $quota,
             'has_subscription' => true,
+            'lifecycle' => $lifecycle,
         ]);
     }
 
@@ -278,6 +281,14 @@ class SubscriptionController extends Controller
 
         $user = $request->user();
         $plan = Plan::findOrFail($validated['plan_id']);
+
+        if ($plan->hasFeature('sales.contact_required')) {
+            return response()->json([
+                'message' => 'Ce plan est disponible sur devis. Veuillez contacter notre équipe commerciale.',
+                'requires_sales_contact' => true,
+                'plan' => $plan,
+            ], 422);
+        }
 
         // Account-level active rights (paid or trial and not expired)
         $activeAccountSubscription = $user->subscriptions()

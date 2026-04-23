@@ -33,6 +33,11 @@ class Subscription extends Model
         'status',
         'starts_at',
         'expires_at',
+        'renewal_reminder_sent_at',
+        'final_reminder_sent_at',
+        'grace_started_at',
+        'archived_at',
+        'non_renewal_reason',
     ];
 
     /**
@@ -50,6 +55,10 @@ class Subscription extends Model
             'creations_used' => 'integer',
             'starts_at' => 'datetime',
             'expires_at' => 'datetime',
+            'renewal_reminder_sent_at' => 'datetime',
+            'final_reminder_sent_at' => 'datetime',
+            'grace_started_at' => 'datetime',
+            'archived_at' => 'datetime',
         ];
     }
 
@@ -171,6 +180,16 @@ class Subscription extends Model
     public function isCancelled(): bool
     {
         return $this->payment_status === 'cancelled';
+    }
+
+    public function isInGracePeriod(): bool
+    {
+        return $this->status === 'grace_period';
+    }
+
+    public function isArchivedRestricted(): bool
+    {
+        return $this->status === 'archived_restricted';
     }
 
     /**

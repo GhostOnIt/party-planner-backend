@@ -447,8 +447,11 @@ class SubscriptionService
         return $user->subscriptions()
             ->whereNull('event_id')
             ->where(function ($query) {
-                $query->where('status', 'trial')
-                      ->orWhere('payment_status', 'paid');
+                $query->whereIn('status', ['active', 'trial', 'renewal_due'])
+                    ->orWhere(function ($sub) {
+                        $sub->where('payment_status', 'paid')
+                            ->whereNotIn('status', ['grace_period', 'archived_restricted', 'expired', 'cancelled']);
+                    });
             })
             ->where(function ($query) {
                 $query->whereNull('expires_at')
@@ -457,6 +460,66 @@ class SubscriptionService
             ->with('plan')
             ->latest()
             ->first();
+    }
+
+    /**
+     * Get latest account-level subscription, even if expired/restricted.
+     */
+    public function getUserLatestAccountSubscription(User $user): ?Subscription
+    {
+        return $user->subscriptions()
+            ->whereNull('event_id')
+            ->with('plan')
+            ->latest()
+            ->first();
+    }
+
+    /**
+     * Build lifecycle info for account subscription.
+     *
+     * @return array<string, mixed>
+     */
+    public function getLifecycleInfo(?Subscription $subscription): array
+    {
+        if (!$subscription) {
+            return [
+                'phase' => 'no_subscription',
+                'days_to_expiry' => null,
+                'grace_days_elapsed' => null,
+                'archive_in_days' => null,
+                'is_restricted' => false,
+                'is_archived' => false,
+            ];
+        }
+
+        $now = now();
+        $expiresAt = $subscription->expires_at;
+        $daysToExpiry = $expiresAt ? (int) floor($now->diffInDays($expiresAt, false)) : null;
+        $graceDaysElapsed = $subscription->grace_started_at
+            ? (int) floor($subscription->grace_started_at->diffInDays($now))
+            : null;
+
+        $phase = 'active';
+        if ($subscription->status === 'archived_restricted') {
+            $phase = 'archived';
+        } elseif ($subscription->status === 'grace_period') {
+            $phase = 'grace_period';
+        } elseif ($daysToExpiry !== null && $daysToExpiry <= 1 && $daysToExpiry >= 0) {
+            $phase = 'renewal_last_day';
+        } elseif ($daysToExpiry !== null && $daysToExpiry <= 7 && $daysToExpiry >= 0) {
+            $phase = 'renewal_due';
+        } elseif ($expiresAt && $expiresAt->isPast()) {
+            $phase = 'expired';
+        }
+
+        return [
+            'phase' => $phase,
+            'days_to_expiry' => $daysToExpiry,
+            'grace_days_elapsed' => $graceDaysElapsed,
+            'archive_in_days' => $graceDaysElapsed === null ? null : max(0, 90 - $graceDaysElapsed),
+            'is_restricted' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
+            'is_archived' => $phase === 'archived',
+        ];
     }
 
     /**

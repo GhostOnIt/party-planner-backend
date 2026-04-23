@@ -41,6 +41,8 @@ class EntitlementService
         'branding.custom' => false,
         'support.whatsapp_priority' => false,
         'multi_client.enabled' => false,
+        'checkin.tablet' => false,
+        'sales.contact_required' => false,
     ];
 
     /**
@@ -94,16 +96,25 @@ class EntitlementService
      */
     public function getEffectiveEntitlements(User $user): array
     {
+        $latestSubscription = $this->getLatestAccountSubscription($user);
         $subscription = $this->getActiveSubscription($user);
+        $lifecycle = $this->buildLifecyclePayload($latestSubscription);
 
         if (!$subscription || !$subscription->plan) {
             return [
                 'plan' => null,
-                'subscription' => null,
+                'subscription' => $latestSubscription ? [
+                    'id' => $latestSubscription->id,
+                    'status' => $latestSubscription->status ?? 'inactive',
+                    'starts_at' => $latestSubscription->starts_at,
+                    'expires_at' => $latestSubscription->expires_at,
+                ] : null,
                 'limits' => $this->defaultLimits,
                 'features' => $this->defaultFeatures,
                 'is_active' => false,
                 'is_trial' => false,
+                'lifecycle' => $lifecycle,
+                'restrictions' => $this->buildRestrictions($lifecycle['phase']),
             ];
         }
 
@@ -125,6 +136,8 @@ class EntitlementService
             'features' => array_merge($this->defaultFeatures, $plan->getFeaturesArray()),
             'is_active' => true,
             'is_trial' => $plan->is_trial,
+            'lifecycle' => $lifecycle,
+            'restrictions' => $this->buildRestrictions($lifecycle['phase']),
         ];
     }
 
@@ -219,9 +232,11 @@ class EntitlementService
         return $user->subscriptions()
             ->whereNull('event_id')
             ->where(function ($query) {
-                $query->where('status', 'active')
-                      ->orWhere('status', 'trial')
-                      ->orWhere('payment_status', 'paid');
+                $query->whereIn('status', ['active', 'trial', 'renewal_due'])
+                    ->orWhere(function ($paid) {
+                        $paid->where('payment_status', 'paid')
+                            ->whereNotIn('status', ['grace_period', 'archived_restricted', 'expired', 'cancelled']);
+                    });
             })
             ->where(function ($query) {
                 $query->whereNull('expires_at')
@@ -230,6 +245,75 @@ class EntitlementService
             ->with('plan')
             ->latest()
             ->first();
+    }
+
+    protected function getLatestAccountSubscription(User $user): ?Subscription
+    {
+        return $user->subscriptions()
+            ->whereNull('event_id')
+            ->with('plan')
+            ->latest()
+            ->first();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function buildLifecyclePayload(?Subscription $subscription): array
+    {
+        if (!$subscription) {
+            return [
+                'phase' => 'no_subscription',
+                'days_to_expiry' => null,
+                'grace_days_elapsed' => null,
+                'archive_in_days' => null,
+                'is_restricted' => false,
+                'is_archived' => false,
+            ];
+        }
+
+        $now = now();
+        $expiresAt = $subscription->expires_at;
+        $daysToExpiry = $expiresAt ? (int) floor($now->diffInDays($expiresAt, false)) : null;
+        $graceDaysElapsed = $subscription->grace_started_at
+            ? (int) floor($subscription->grace_started_at->diffInDays($now))
+            : null;
+
+        $phase = 'active';
+        if ($subscription->status === 'archived_restricted') {
+            $phase = 'archived';
+        } elseif ($subscription->status === 'grace_period') {
+            $phase = 'grace_period';
+        } elseif ($daysToExpiry !== null && $daysToExpiry <= 1 && $daysToExpiry >= 0) {
+            $phase = 'renewal_last_day';
+        } elseif ($daysToExpiry !== null && $daysToExpiry <= 7 && $daysToExpiry >= 0) {
+            $phase = 'renewal_due';
+        } elseif ($expiresAt && $expiresAt->isPast()) {
+            $phase = 'expired';
+        }
+
+        return [
+            'phase' => $phase,
+            'days_to_expiry' => $daysToExpiry,
+            'grace_days_elapsed' => $graceDaysElapsed,
+            'archive_in_days' => $graceDaysElapsed === null ? null : max(0, 90 - $graceDaysElapsed),
+            'is_restricted' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
+            'is_archived' => $phase === 'archived',
+        ];
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    protected function buildRestrictions(string $phase): array
+    {
+        return [
+            'read_only' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
+            'hide_advanced_analytics' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
+            'disable_tablet_checkin' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
+            'block_new_events_over_free_quota' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
+            'block_guest_add_over_free_limit' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
+        ];
     }
 
     /**

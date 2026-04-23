@@ -26,3 +26,28 @@ Schedule::command('payments:expire-pending --minutes=10')
     ->everyMinute()
     ->withoutOverlapping()
     ->onOneServer();
+
+// Cycle de vie non-renouvellement des abonnements compte.
+Schedule::command('subscriptions:send-renewal-reminders')
+    ->dailyAt('08:00')
+    ->timezone('UTC')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('subscriptions:apply-non-renewal-restrictions')
+    ->hourly()
+    ->timezone('UTC')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('subscriptions:archive-exceeding-resources --after-days=90')
+    ->dailyAt('03:00')
+    ->timezone('UTC')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('subscriptions:restore-access-after-renewal')
+    ->hourly()
+    ->timezone('UTC')
+    ->withoutOverlapping()
+    ->onOneServer();

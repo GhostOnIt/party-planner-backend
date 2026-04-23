@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Enums\UserRole;
 use App\Models\Event;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\SubscriptionService;
@@ -122,7 +123,7 @@ class SubscriptionControllerTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $subscription = Subscription::factory()->starter()->paid()->create([
+        Subscription::factory()->starter()->paid()->create([
             'user_id' => $this->user->id,
             'event_id' => $this->event->id,
         ]);
@@ -338,5 +339,37 @@ class SubscriptionControllerTest extends TestCase
         $response = $this->getJson('/api/admin/subscriptions?status=paid');
 
         $response->assertOk();
+    }
+
+    public function test_current_subscription_endpoint_includes_lifecycle_payload(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $plan = Plan::factory()->create();
+        Subscription::factory()->create([
+            'user_id' => $this->user->id,
+            'event_id' => null,
+            'plan_id' => $plan->id,
+            'status' => 'renewal_due',
+            'payment_status' => 'paid',
+            'expires_at' => now()->addDays(3),
+        ]);
+
+        $response = $this->getJson('/api/user/subscription');
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'subscription',
+                'quota',
+                'has_subscription',
+                'lifecycle' => [
+                    'phase',
+                    'days_to_expiry',
+                    'grace_days_elapsed',
+                    'archive_in_days',
+                    'is_restricted',
+                    'is_archived',
+                ],
+            ]);
     }
 }
