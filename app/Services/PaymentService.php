@@ -132,7 +132,13 @@ class PaymentService
                 'environment'     => $config['environment'],
                 'method'          => 'POST',
                 'endpoint'        => $baseUrl . '/collection/v1_0/requesttopay',
-                'headers'         => $headers,
+                'headers'         => [
+                    'Ocp-Apim-Subscription-Key' => !empty($headers['Ocp-Apim-Subscription-Key']) ? '***' : null,
+                    'X-Reference-Id' => $headers['X-Reference-Id'] ?? null,
+                    'X-Target-Environment' => $headers['X-Target-Environment'] ?? null,
+                    'Authorization' => !empty($headers['Authorization']) ? 'Bearer ***' : null,
+                    'X-Callback-Url' => $headers['X-Callback-Url'] ?? null,
+                ],
                 'payload'         => $requestToPayPayload,
                 'content_type'    => 'application/json (set by Http::asJson())',
             ]);

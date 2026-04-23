@@ -99,6 +99,7 @@ return [
             'subscription_key_secondary' => env('MTN_SUBSCRIPTION_KEY_SECONDARY'), // Secondary Key (backup)
             'callback_url' => env('MTN_CALLBACK_URL'),           // HTTPS obligatoire en production
             'webhook_secret' => env('MTN_WEBHOOK_SECRET'),       // Secret HMAC pour valider les callbacks MTN
+            'webhook_require_signature' => env('MTN_WEBHOOK_REQUIRE_SIGNATURE', false), // true = rejette callbacks sans X-Callback-Signature
             'environment' => env('MTN_ENVIRONMENT', 'sandbox'), // sandbox | mtncongo | mtncameroon | mtnuganda …
             'currency' => env('MTN_CURRENCY', 'XAF'), // EUR pour sandbox, XAF pour Congo/Cameroun en prod
             // HTTP client configuration for momo-api (Symfony HttpClient)

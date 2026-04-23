@@ -72,6 +72,7 @@ class MobileMoneyWebhookController extends Controller
     protected function validateMtnSignature(Request $request): bool
     {
         $secret = config('partyplanner.payments.mtn_mobile_money.webhook_secret');
+        $requireSignature = (bool) config('partyplanner.payments.mtn_mobile_money.webhook_require_signature', false);
 
         if (empty($secret)) {
             if (app()->isProduction()) {
@@ -82,8 +83,13 @@ class MobileMoneyWebhookController extends Controller
 
         $signature = $request->header('X-Callback-Signature');
         if (!$signature) {
-            Log::warning('MTN webhook: X-Callback-Signature header absent alors que MTN_WEBHOOK_SECRET est configuré');
-            return false;
+            if ($requireSignature) {
+                Log::warning('MTN webhook: X-Callback-Signature header absent alors que MTN_WEBHOOK_REQUIRE_SIGNATURE=true');
+                return false;
+            }
+
+            Log::warning('MTN webhook: X-Callback-Signature absent — callback accepté (mode non strict)');
+            return true;
         }
 
         $payload = $request->getContent();
