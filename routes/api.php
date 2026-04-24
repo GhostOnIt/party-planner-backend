@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AdminLegalPageController;
 use App\Http\Controllers\Api\AdminPlanController;
+use App\Http\Controllers\Api\Admin\AdminQuoteRequestController;
+use App\Http\Controllers\Api\Admin\AdminQuoteStageController;
 use App\Http\Controllers\Api\CommunicationSpotController;
 use App\Http\Controllers\Api\LegalPageController;
 use App\Http\Controllers\Api\BudgetController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\QuoteRequestController;
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\SubscriptionController;
@@ -372,6 +375,11 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/{payment}/retry', [PaymentController::class, 'retry']);
     });
 
+    Route::prefix('quote-requests')->group(function () {
+        Route::post('/', [QuoteRequestController::class, 'store'])->middleware('throttle:6,1');
+        Route::get('/mine', [QuoteRequestController::class, 'myRequests']);
+    });
+
     /*
     |--------------------------------------------------------------------------
     | Dashboard & Statistics
@@ -477,6 +485,20 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::put('/plans/{plan}', [AdminPlanController::class, 'update']);
         Route::delete('/plans/{plan}', [AdminPlanController::class, 'destroy']);
         Route::post('/plans/{plan}/toggle-active', [AdminPlanController::class, 'toggleActive']);
+
+        // Quote requests management (Business plan)
+        Route::get('/quote-requests', [AdminQuoteRequestController::class, 'index']);
+        Route::get('/quote-requests/{quoteRequest}', [AdminQuoteRequestController::class, 'show']);
+        Route::patch('/quote-requests/{quoteRequest}/stage', [AdminQuoteRequestController::class, 'updateStage']);
+        Route::patch('/quote-requests/{quoteRequest}/assign', [AdminQuoteRequestController::class, 'assign']);
+        Route::post('/quote-requests/{quoteRequest}/notes', [AdminQuoteRequestController::class, 'addNote']);
+        Route::post('/quote-requests/{quoteRequest}/schedule-call', [AdminQuoteRequestController::class, 'scheduleCall']);
+        Route::patch('/quote-requests/{quoteRequest}/outcome', [AdminQuoteRequestController::class, 'updateOutcome']);
+        Route::get('/quote-request-stages', [AdminQuoteStageController::class, 'index']);
+        Route::post('/quote-request-stages', [AdminQuoteStageController::class, 'store']);
+        Route::put('/quote-request-stages/{stage}', [AdminQuoteStageController::class, 'update']);
+        Route::delete('/quote-request-stages/{stage}', [AdminQuoteStageController::class, 'destroy']);
+        Route::patch('/quote-request-stages/reorder', [AdminQuoteStageController::class, 'reorder']);
 
         // Activity Logs
         Route::get('/activity', [DashboardController::class, 'adminRecentActivity']);

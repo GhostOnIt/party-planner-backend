@@ -6926,6 +6926,28 @@ x-websocket-events:
           admin:
             type: object
 
+x-business-quote-module:
+  description: Endpoints Business Sur Devis (résumé)
+  endpoints:
+    - method: POST
+      path: /api/quote-requests
+      description: Soumettre une demande de devis Business (client authentifié)
+    - method: GET
+      path: /api/quote-requests/mine
+      description: Consulter le suivi de ses demandes
+    - method: GET
+      path: /api/admin/quote-requests
+      description: Lister et filtrer les demandes côté administration
+    - method: PATCH
+      path: /api/admin/quote-requests/{id}/stage
+      description: Changer l'étape du pipeline Kanban
+    - method: POST
+      path: /api/admin/quote-requests/{id}/schedule-call
+      description: Planifier un call de qualification
+    - method: PATCH
+      path: /api/admin/quote-requests/{id}/outcome
+      description: Marquer l'issue commerciale (offre envoyée, gagnée, perdue)
+
 x-client-integration:
   description: Guide d'integration client WebSocket
 
