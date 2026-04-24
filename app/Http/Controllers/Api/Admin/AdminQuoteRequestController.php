@@ -17,7 +17,15 @@ class AdminQuoteRequestController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = QuoteRequest::query()
-            ->with(['currentStage', 'assignedAdmin:id,name,email', 'user:id,name,email', 'plan:id,name,slug'])
+            ->with([
+                'currentStage',
+                'assignedAdmin:id,name,email',
+                'user:id,name,email',
+                'plan:id,name,slug',
+                'activities' => function ($q) {
+                    $q->latest()->limit(20);
+                },
+            ])
             ->latest();
 
         if ($request->filled('stage_id')) {
