@@ -39,6 +39,15 @@ class QuoteRequestController extends Controller
         }
 
         $stage = QuoteRequestStage::query()->orderBy('sort_order')->first();
+        if (!$stage) {
+            $stage = QuoteRequestStage::create([
+                'name' => 'Nouvelle',
+                'slug' => 'new',
+                'sort_order' => 0,
+                'is_active' => true,
+                'is_system' => true,
+            ]);
+        }
 
         $quoteRequest = QuoteRequest::create([
             ...$validated,
