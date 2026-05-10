@@ -13,46 +13,6 @@ class PlanSeeder extends Seeder
     public function run(): void
     {
         $plans = [
-            // Gratuit - acquisition
-            [
-                'name' => 'Gratuit',
-                'title' => 'Plan Gratuit - Découvrir la plateforme',
-                'slug' => 'gratuit',
-                'description' => 'Acquisition. Faire découvrir le produit.',
-                'price' => 0,
-                'duration_days' => 30,
-                'is_trial' => false,
-                'is_one_time_use' => false,
-                'is_active' => true,
-                'sort_order' => 0,
-                'limits' => [
-                    'events.creations_per_billing_period' => 2,
-                    'guests.max_per_event' => 30,
-                    'collaborators.max_per_event' => 0,
-                    'photos.max_per_event' => 10,
-                ],
-                'features' => [
-                    'budget.enabled' => true,
-                    'tasks.enabled' => true,
-                    'guests.manage' => true,
-                    'guests.import' => false,
-                    'guests.export' => false,
-                    'invitations.sms' => false,
-                    'invitations.whatsapp' => false,
-                    'collaborators.manage' => false,
-                    'roles_permissions.enabled' => false,
-                    'exports.pdf' => true,
-                    'exports.excel' => false,
-                    'exports.csv' => false,
-                    'history.enabled' => false,
-                    'reporting.enabled' => false,
-                    'branding.custom' => false,
-                    'support.whatsapp_priority' => false,
-                    'multi_client.enabled' => false,
-                    'checkin.tablet' => false,
-                ],
-            ],
-
             // Essai Gratuit - 14 jours
             [
                 'name' => 'Essai Gratuit',
@@ -89,6 +49,46 @@ class PlanSeeder extends Seeder
                     'branding.custom' => false,
                     'support.whatsapp_priority' => false,
                     'multi_client.enabled' => false,
+                ],
+            ],
+
+            // Phase pilote — accès complet, gratuit, une seule activation par compte, 3 mois
+            [
+                'name' => 'Phase pilote',
+                'title' => 'Phase pilote — accès complet pendant 3 mois (sans paiement)',
+                'slug' => 'phase-pilote',
+                'description' => 'Offre réservée à la phase pilote : toutes les fonctionnalités, sans frais, durée limitée à 3 mois, activable une fois par compte.',
+                'price' => 0,
+                'duration_days' => 90,
+                'is_trial' => false,
+                'is_one_time_use' => true,
+                'is_active' => true,
+                'sort_order' => 5,
+                'limits' => [
+                    'events.creations_per_billing_period' => -1,
+                    'guests.max_per_event' => -1,
+                    'collaborators.max_per_event' => -1,
+                    'photos.max_per_event' => -1,
+                ],
+                'features' => [
+                    'budget.enabled' => true,
+                    'tasks.enabled' => true,
+                    'guests.manage' => true,
+                    'guests.import' => true,
+                    'guests.export' => true,
+                    'invitations.sms' => true,
+                    'invitations.whatsapp' => true,
+                    'collaborators.manage' => true,
+                    'roles_permissions.enabled' => true,
+                    'exports.pdf' => true,
+                    'exports.excel' => true,
+                    'exports.csv' => true,
+                    'history.enabled' => true,
+                    'reporting.enabled' => true,
+                    'branding.custom' => true,
+                    'support.whatsapp_priority' => true,
+                    'multi_client.enabled' => true,
+                    'checkin.tablet' => true,
                 ],
             ],
 

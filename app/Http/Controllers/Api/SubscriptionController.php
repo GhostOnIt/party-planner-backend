@@ -333,6 +333,8 @@ class SubscriptionController extends Controller
             
             // If subscription exists but is pending payment, update it (keep history)
             if ($existingSubscription->isPending() || !$existingSubscription->isPaid()) {
+                $isComplimentary = $plan->is_trial || $plan->price === 0;
+
                 // Update the existing subscription instead of creating a new one
                 $existingSubscription->update([
                     'plan_id' => $plan->id,
@@ -340,18 +342,22 @@ class SubscriptionController extends Controller
                     'base_price' => $plan->price,
                     'guest_count' => $plan->getGuestsLimit(),
                     'total_price' => $plan->price,
-                    'payment_status' => $plan->is_trial ? 'paid' : 'pending',
-                    'status' => $plan->is_trial ? 'trial' : 'pending',
+                    'payment_status' => $isComplimentary ? 'paid' : 'pending',
+                    'status' => $plan->is_trial ? 'trial' : ($isComplimentary ? 'active' : 'pending'),
                     'starts_at' => now(),
                     'expires_at' => now()->addDays($plan->duration_days),
                 ]);
-                
+
+                $requiresPayment = !$plan->is_trial && $plan->price > 0;
+
                 return response()->json([
                     'message' => $plan->is_trial
                         ? 'Essai gratuit activé avec succès.'
-                        : 'Abonnement mis à jour. Procédez au paiement.',
+                        : ($plan->price === 0
+                            ? 'Abonnement gratuit activé avec succès.'
+                            : 'Abonnement mis à jour. Procédez au paiement.'),
                     'subscription' => $existingSubscription->fresh()->load('plan'),
-                    'requires_payment' => !$plan->is_trial,
+                    'requires_payment' => $requiresPayment,
                 ], 200);
             }
             
@@ -395,12 +401,16 @@ class SubscriptionController extends Controller
         // Create new subscription
         $subscription = $this->subscriptionService->createSubscriptionWithPlan($user, $plan);
 
+        $requiresPayment = !$plan->is_trial && $plan->price > 0;
+
         return response()->json([
             'message' => $plan->is_trial
                 ? 'Essai gratuit activé avec succès.'
-                : 'Abonnement créé. Procédez au paiement.',
+                : ($plan->price === 0
+                    ? 'Abonnement gratuit activé avec succès.'
+                    : 'Abonnement créé. Procédez au paiement.'),
             'subscription' => $subscription->load('plan'),
-            'requires_payment' => !$plan->is_trial,
+            'requires_payment' => $requiresPayment,
         ], 201);
     }
 }
