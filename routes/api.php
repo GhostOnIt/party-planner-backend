@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\CollaboratorController;
 use App\Http\Controllers\Api\CustomRoleController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\GlobalGuestController;
 use App\Http\Controllers\Api\GuestController;
 use App\Http\Controllers\Api\InvitationController;
@@ -132,6 +133,9 @@ Route::middleware(['auth:sanctum', 'log.activity'])->group(function () {
     Route::get('/user/sessions', [SessionController::class, 'index']);
     Route::delete('/user/sessions/{id}', [SessionController::class, 'destroy']);
     Route::post('/user/sessions/revoke-others', [SessionController::class, 'revokeOthers']);
+
+    Route::post('/feedback', [FeedbackController::class, 'store'])
+        ->middleware('throttle:10,1');
 
     /*
     |--------------------------------------------------------------------------
