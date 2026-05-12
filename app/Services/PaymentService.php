@@ -84,7 +84,7 @@ class PaymentService
                 ? 'EUR'
                 : ($config['currency'] ?? config('partyplanner.currency.code', 'XAF'));
 
-            $amount     = 25;
+            $amount     = $payment->amount;
             $externalId = Str::uuid()->toString();
 
             $description = 'Paiement Party Planner';
