@@ -399,6 +399,8 @@ class SubscriptionService
                 ->update(['status' => 'cancelled']);
         }
 
+        $isComplimentary = $plan->is_trial || $plan->price === 0;
+
         return Subscription::create([
             'user_id' => $user->id,
             'event_id' => $event?->id,
@@ -408,9 +410,9 @@ class SubscriptionService
             'guest_count' => $plan->getGuestsLimit(),
             'guest_price_per_unit' => 0,
             'total_price' => $plan->price,
-            'payment_status' => $plan->is_trial ? 'paid' : 'pending',
+            'payment_status' => $isComplimentary ? 'paid' : 'pending',
             'creations_used' => 0,
-            'status' => $plan->is_trial ? 'trial' : 'pending',
+            'status' => $plan->is_trial ? 'trial' : ($isComplimentary ? 'active' : 'pending'),
             'starts_at' => now(),
             'expires_at' => now()->addDays($plan->duration_days),
         ]);
