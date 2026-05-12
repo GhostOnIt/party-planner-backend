@@ -128,9 +128,7 @@ class SubscriptionService
      */
     public function cancel(Subscription $subscription): Subscription
     {
-        $subscription->update([
-            'expires_at' => now(),
-        ]);
+        $subscription->cancel();
 
         return $subscription->fresh();
     }

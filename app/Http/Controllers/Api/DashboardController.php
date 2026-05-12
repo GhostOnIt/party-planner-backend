@@ -813,12 +813,12 @@ class DashboardController extends Controller
             'reason' => 'nullable|string|max:500',
         ]);
 
-        $oldStatus = $subscription->payment_status;
+        $oldStatus = $subscription->status;
         $subscription->cancel($validated['reason'] ?? null);
 
         $this->activityService->logSubscriptionAction('cancel', $subscription, [
-            'old' => ['payment_status' => $oldStatus],
-            'new' => ['payment_status' => 'cancelled', 'reason' => $validated['reason'] ?? null],
+            'old' => ['status' => $oldStatus],
+            'new' => ['status' => 'cancelled', 'reason' => $validated['reason'] ?? null],
         ]);
 
         return response()->json([

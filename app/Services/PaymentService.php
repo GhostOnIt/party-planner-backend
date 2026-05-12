@@ -84,7 +84,10 @@ class PaymentService
                 ? 'EUR'
                 : ($config['currency'] ?? config('partyplanner.currency.code', 'XAF'));
 
-            $amount     = $payment->amount;
+            // MTN collection expects integer-friendly amounts for XAF; avoid sending "9900.00".
+            $amount     = $currency === 'XAF'
+                ? (string) ((int) round((float) $payment->amount))
+                : rtrim(rtrim(number_format((float) $payment->amount, 2, '.', ''), '0'), '.');
             $externalId = Str::uuid()->toString();
 
             $description = 'Paiement Party Planner';

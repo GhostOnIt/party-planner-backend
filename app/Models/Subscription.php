@@ -169,8 +169,9 @@ class Subscription extends Model
     public function cancel(?string $reason = null): void
     {
         $this->update([
-            'payment_status' => 'cancelled',
+            'status' => 'cancelled',
             'expires_at' => now(),
+            'non_renewal_reason' => $reason,
         ]);
     }
 
@@ -179,7 +180,7 @@ class Subscription extends Model
      */
     public function isCancelled(): bool
     {
-        return $this->payment_status === 'cancelled';
+        return $this->status === 'cancelled';
     }
 
     public function isInGracePeriod(): bool
@@ -197,6 +198,6 @@ class Subscription extends Model
      */
     public function canBeCancelled(): bool
     {
-        return !in_array($this->payment_status, ['cancelled', 'refunded']);
+        return !in_array($this->status, ['cancelled', 'expired'], true);
     }
 }

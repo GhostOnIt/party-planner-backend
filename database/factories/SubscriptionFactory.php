@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\PaymentStatus;
 use App\Enums\PlanType;
 use App\Models\Event;
 use App\Models\User;
@@ -34,7 +33,7 @@ class SubscriptionFactory extends Factory
             'guest_count' => $guestCount,
             'guest_price_per_unit' => $planType->pricePerExtraGuest(),
             'total_price' => $totalPrice,
-            'payment_status' => fake()->randomElement(PaymentStatus::cases())->value,
+            'payment_status' => fake()->randomElement(['pending', 'paid', 'failed', 'refunded']),
             'payment_method' => fake()->optional(0.7)->randomElement(['mtn_mobile_money', 'airtel_money']),
             'payment_reference' => fake()->optional(0.5)->uuid(),
             'expires_at' => fake()->optional(0.8)->dateTimeBetween('now', '+1 year'),
@@ -100,7 +99,7 @@ class SubscriptionFactory extends Factory
     public function pending(): static
     {
         return $this->state(fn (array $attributes) => [
-            'payment_status' => PaymentStatus::PENDING->value,
+            'payment_status' => 'pending',
         ]);
     }
 

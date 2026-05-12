@@ -157,14 +157,21 @@ class SubscriptionControllerTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        Subscription::factory()->paid()->create([
+        $subscription = Subscription::factory()->paid()->create([
             'user_id' => $this->user->id,
             'event_id' => $this->event->id,
+            'status' => 'active',
         ]);
 
         $response = $this->postJson("/api/events/{$this->event->id}/subscription/cancel");
 
         $response->assertRedirect();
+
+        $this->assertDatabaseHas('subscriptions', [
+            'id' => $subscription->id,
+            'status' => 'cancelled',
+            'payment_status' => 'paid',
+        ]);
     }
 
     public function test_user_cannot_cancel_nonexistent_subscription(): void
@@ -339,6 +346,33 @@ class SubscriptionControllerTest extends TestCase
         $response = $this->getJson('/api/admin/subscriptions?status=paid');
 
         $response->assertOk();
+    }
+
+    public function test_admin_can_cancel_subscription_without_changing_payment_status(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        Sanctum::actingAs($admin);
+
+        $subscription = Subscription::factory()->paid()->create([
+            'user_id' => $this->user->id,
+            'event_id' => $this->event->id,
+            'status' => 'active',
+        ]);
+
+        $response = $this->postJson("/api/admin/subscriptions/{$subscription->id}/cancel", [
+            'reason' => 'client_request',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('subscription.status', 'cancelled')
+            ->assertJsonPath('subscription.payment_status', 'paid');
+
+        $this->assertDatabaseHas('subscriptions', [
+            'id' => $subscription->id,
+            'status' => 'cancelled',
+            'payment_status' => 'paid',
+            'non_renewal_reason' => 'client_request',
+        ]);
     }
 
     public function test_current_subscription_endpoint_includes_lifecycle_payload(): void
