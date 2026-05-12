@@ -78,12 +78,14 @@ class OtpController extends Controller
             }
         }
 
-        // Generate and send OTP
+        // Generate and send OTP asynchronously to avoid blocking the HTTP response
+        // on slow SMTP/SMS providers (30 s frontend timeout).
         $otp = $this->otpService->generateAndSend(
             identifier: $identifier,
             type: $type,
             channel: $channel,
-            userId: $user?->id
+            userId: $user?->id,
+            async: true
         );
 
         // Record rate limit hit

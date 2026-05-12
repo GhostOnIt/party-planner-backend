@@ -49,7 +49,8 @@ class RegisteredUserController extends Controller
             identifier: $email,
             type: Otp::TYPE_LOGIN,
             channel: Otp::CHANNEL_EMAIL,
-            userId: $user->id
+            userId: $user->id,
+            async: true
         );
 
         return response()->json([
