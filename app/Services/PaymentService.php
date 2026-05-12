@@ -85,7 +85,7 @@ class PaymentService
                 : ($config['currency'] ?? config('partyplanner.currency.code', 'XAF'));
 
             // MTN collection expects integer-friendly amounts for XAF; avoid sending "9900.00".
-            $amount     = $currency === 'XAF'
+            $amount     = strtoupper(trim($currency)) === 'XAF'
                 ? (string) ((int) round((float) $payment->amount))
                 : rtrim(rtrim(number_format((float) $payment->amount, 2, '.', ''), '0'), '.');
             $externalId = Str::uuid()->toString();
@@ -576,7 +576,14 @@ class PaymentService
      */
     protected function synchronizePaymentWithProviderStatus(Payment $payment, ?array $providerStatus): void
     {
-        if (!$providerStatus || !$payment->isPending()) {
+        if (!$providerStatus) {
+            return;
+        }
+
+        // Re-fetch from DB to avoid acting on a stale in-memory state (webhook may have
+        // already updated the record while the provider HTTP call was in flight).
+        $freshPayment = $payment->fresh();
+        if (!$freshPayment || !$freshPayment->isPending()) {
             return;
         }
 
@@ -584,11 +591,11 @@ class PaymentService
         $providerReference = $providerStatus['provider_reference'] ?? null;
 
         if (in_array($status, ['SUCCESSFUL', 'TS'], true)) {
-            $payment->markAsCompleted($providerReference);
-            SendPaymentConfirmationJob::dispatch($payment->fresh());
+            $freshPayment->markAsCompleted($providerReference);
+            SendPaymentConfirmationJob::dispatch($freshPayment->fresh());
 
             Log::info('Payment synchronized as completed from provider poll', [
-                'payment_id' => $payment->id,
+                'payment_id' => $freshPayment->id,
                 'provider_status' => $status,
             ]);
 
@@ -597,10 +604,10 @@ class PaymentService
 
         if (in_array($status, ['FAILED', 'REJECTED', 'TIMEOUT', 'TF'], true)) {
             $reasonCode = $providerStatus['reason'] ?? null;
-            $payment->markAsFailed($reasonCode, $this->getFailureReasonMessage($reasonCode));
+            $freshPayment->markAsFailed($reasonCode, $this->getFailureReasonMessage($reasonCode));
 
             Log::info('Payment synchronized as failed from provider poll', [
-                'payment_id' => $payment->id,
+                'payment_id' => $freshPayment->id,
                 'provider_status' => $status,
             ]);
         }

@@ -464,11 +464,14 @@ class SubscriptionService
 
     /**
      * Get latest account-level subscription, even if expired/restricted.
+     * Excludes subscriptions whose payment definitively failed so the plan
+     * is never shown as "assigned" when the user has not actually paid.
      */
     public function getUserLatestAccountSubscription(User $user): ?Subscription
     {
         return $user->subscriptions()
             ->whereNull('event_id')
+            ->where('payment_status', '!=', 'failed')
             ->with('plan')
             ->latest()
             ->first();
