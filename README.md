@@ -71,6 +71,16 @@ php artisan migrate
 php artisan db:seed
 ```
 
+### Démo organisateurs (présentation commerciale)
+
+Après le seed de base, chargez un portfolio d'événements pour une agence (gala corporate, mariage client, événement passé) :
+
+```bash
+php artisan db:seed --class=OrganizerDemoSeeder
+```
+
+Compte principal : `alexsonicka11+1@gmail.com` / `Test@1234` (alias Gmail — les OTP arrivent sur la même boîte que l'admin). Collaborateurs : `+2`, `+3`, `+4` sur le même domaine.
+
 ### 7. Lancer le serveur
 
 ```bash
