@@ -41,8 +41,8 @@ class RefreshTokenController extends Controller
 
         if (!$refreshToken || !$refreshToken->user) {
             Log::warning('Refresh token invalid or expired', [
-                'token_found' => !!$refreshToken,
-                'user_found' => $refreshToken?->user ? true : false,
+                'token_found' => (bool) $refreshToken,
+                'user_found' => (bool) $refreshToken?->user,
                 'ip' => $request->ip(),
             ]);
 

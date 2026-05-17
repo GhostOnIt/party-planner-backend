@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Services</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Services</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="AuthTokenService.php.html#10">App\Services\AuthTokenService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#13">App\Services\BudgetService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#16">App\Services\CollaboratorService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#12">App\Services\CustomRoleService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#14">App\Services\DashboardService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitationService.php.html#10">App\Services\EventCreationInvitationService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#14">App\Services\EventService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#9">App\Services\EventTemplateService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#11">App\Services\ExportService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#16">App\Services\FirebaseService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#18">App\Services\GuestService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#14">App\Services\NotificationService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#10">App\Services\OtpService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#16">App\Services\PhotoService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#10">App\Services\PlanService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#9">App\Services\QuotaService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#20">App\Services\QuoteRequestService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#11">App\Services\S3Service</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#19">App\Services\StripeService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#8">App\Services\TaskBudgetService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#16">App\Services\TaskService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#12">App\Services\TwilioService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#14">App\Services\PaymentService</a></td><td class="text-right">24%</td></tr>
+       <tr><td><a href="PermissionService.php.html#12">App\Services\PermissionService</a></td><td class="text-right">28%</td></tr>
+       <tr><td><a href="ActivityService.php.html#16">App\Services\ActivityService</a></td><td class="text-right">32%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#11">App\Services\EntitlementService</a></td><td class="text-right">52%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#12">App\Services\SubscriptionService</a></td><td class="text-right">55%</td></tr>
+       <tr><td><a href="Support/SubscriptionLifecycle.php.html#12">App\Services\Support\SubscriptionLifecycle</a></td><td class="text-right">62%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="DashboardService.php.html#14">App\Services\DashboardService</a></td><td class="text-right">10100</td></tr>
+       <tr><td><a href="GuestService.php.html#18">App\Services\GuestService</a></td><td class="text-right">8742</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#16">App\Services\CollaboratorService</a></td><td class="text-right">4970</td></tr>
+       <tr><td><a href="EventService.php.html#14">App\Services\EventService</a></td><td class="text-right">3782</td></tr>
+       <tr><td><a href="PhotoService.php.html#16">App\Services\PhotoService</a></td><td class="text-right">3782</td></tr>
+       <tr><td><a href="S3Service.php.html#11">App\Services\S3Service</a></td><td class="text-right">3660</td></tr>
+       <tr><td><a href="PaymentService.php.html#14">App\Services\PaymentService</a></td><td class="text-right">3606</td></tr>
+       <tr><td><a href="FirebaseService.php.html#16">App\Services\FirebaseService</a></td><td class="text-right">2652</td></tr>
+       <tr><td><a href="TwilioService.php.html#12">App\Services\TwilioService</a></td><td class="text-right">2450</td></tr>
+       <tr><td><a href="ExportService.php.html#11">App\Services\ExportService</a></td><td class="text-right">1892</td></tr>
+       <tr><td><a href="TaskService.php.html#16">App\Services\TaskService</a></td><td class="text-right">1892</td></tr>
+       <tr><td><a href="PermissionService.php.html#12">App\Services\PermissionService</a></td><td class="text-right">1731</td></tr>
+       <tr><td><a href="StripeService.php.html#19">App\Services\StripeService</a></td><td class="text-right">1482</td></tr>
+       <tr><td><a href="BudgetService.php.html#13">App\Services\BudgetService</a></td><td class="text-right">1406</td></tr>
+       <tr><td><a href="NotificationService.php.html#14">App\Services\NotificationService</a></td><td class="text-right">1406</td></tr>
+       <tr><td><a href="OtpService.php.html#10">App\Services\OtpService</a></td><td class="text-right">1332</td></tr>
+       <tr><td><a href="PlanService.php.html#10">App\Services\PlanService</a></td><td class="text-right">1190</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#9">App\Services\EventTemplateService</a></td><td class="text-right">1056</td></tr>
+       <tr><td><a href="ActivityService.php.html#16">App\Services\ActivityService</a></td><td class="text-right">711</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#12">App\Services\CustomRoleService</a></td><td class="text-right">650</td></tr>
+       <tr><td><a href="QuotaService.php.html#9">App\Services\QuotaService</a></td><td class="text-right">650</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#20">App\Services\QuoteRequestService</a></td><td class="text-right">600</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#8">App\Services\TaskBudgetService</a></td><td class="text-right">420</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#12">App\Services\SubscriptionService</a></td><td class="text-right">384</td></tr>
+       <tr><td><a href="EntitlementService.php.html#11">App\Services\EntitlementService</a></td><td class="text-right">170</td></tr>
+       <tr><td><a href="EventCreationInvitationService.php.html#10">App\Services\EventCreationInvitationService</a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="Support/SubscriptionLifecycle.php.html#12">App\Services\Support\SubscriptionLifecycle</a></td><td class="text-right">29</td></tr>
+       <tr><td><a href="AuthTokenService.php.html#10">App\Services\AuthTokenService</a></td><td class="text-right">20</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="ActivityService.php.html#27"><abbr title="App\Services\ActivityService::sync">sync</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#92"><abbr title="App\Services\ActivityService::logLogin">logLogin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#119"><abbr title="App\Services\ActivityService::logLogout">logLogout</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#150"><abbr title="App\Services\ActivityService::logUserAction">logUserAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#175"><abbr title="App\Services\ActivityService::logEventAction">logEventAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#196"><abbr title="App\Services\ActivityService::logTemplateAction">logTemplateAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#220"><abbr title="App\Services\ActivityService::logSubscriptionAction">logSubscriptionAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#248"><abbr title="App\Services\ActivityService::logUserEventAction">logUserEventAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#272"><abbr title="App\Services\ActivityService::logProfileAction">logProfileAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#296"><abbr title="App\Services\ActivityService::logFrontendBatch">logFrontendBatch</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#340"><abbr title="App\Services\ActivityService::buildFrontendDescription">buildFrontendDescription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#362"><abbr title="App\Services\ActivityService::getActivityForUser">getActivityForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#373"><abbr title="App\Services\ActivityService::getActivityForAdmin">getActivityForAdmin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityService.php.html#486"><abbr title="App\Services\ActivityService::getActivityLogs">getActivityLogs</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AuthTokenService.php.html#17"><abbr title="App\Services\AuthTokenService::issueTokens">issueTokens</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AuthTokenService.php.html#65"><abbr title="App\Services\AuthTokenService::revokeCurrentRefreshToken">revokeCurrentRefreshToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#18"><abbr title="App\Services\BudgetService::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#30"><abbr title="App\Services\BudgetService::update">update</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#42"><abbr title="App\Services\BudgetService::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#50"><abbr title="App\Services\BudgetService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#87"><abbr title="App\Services\BudgetService::getByCategory">getByCategory</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#109"><abbr title="App\Services\BudgetService::getOverBudgetItems">getOverBudgetItems</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#119"><abbr title="App\Services\BudgetService::getUnpaidItems">getUnpaidItems</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#132"><abbr title="App\Services\BudgetService::getItemsDueForPayment">getItemsDueForPayment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#150"><abbr title="App\Services\BudgetService::checkBudgetAlerts">checkBudgetAlerts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#178"><abbr title="App\Services\BudgetService::sendBudgetAlert">sendBudgetAlert</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#205"><abbr title="App\Services\BudgetService::applyFromTemplate">applyFromTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#237"><abbr title="App\Services\BudgetService::markAsPaid">markAsPaid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#250"><abbr title="App\Services\BudgetService::markAsUnpaid">markAsUnpaid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#263"><abbr title="App\Services\BudgetService::duplicateFromEvent">duplicateFromEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#287"><abbr title="App\Services\BudgetService::generatePdf">generatePdf</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#305"><abbr title="App\Services\BudgetService::exportToCsv">exportToCsv</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetService.php.html#339"><abbr title="App\Services\BudgetService::getDashboardSummary">getDashboardSummary</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#23"><abbr title="App\Services\CollaboratorService::invite">invite</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#31"><abbr title="App\Services\CollaboratorService::inviteWithRoles">inviteWithRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#67"><abbr title="App\Services\CollaboratorService::inviteByEmail">inviteByEmail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#77"><abbr title="App\Services\CollaboratorService::inviteByEmailWithRoles">inviteByEmailWithRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#101"><abbr title="App\Services\CollaboratorService::hasPendingInvitation">hasPendingInvitation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#111"><abbr title="App\Services\CollaboratorService::createPendingInvitation">createPendingInvitation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#132"><abbr title="App\Services\CollaboratorService::claimPendingInvitationsForUser">claimPendingInvitationsForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#167"><abbr title="App\Services\CollaboratorService::accept">accept</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#180"><abbr title="App\Services\CollaboratorService::decline">decline</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#191"><abbr title="App\Services\CollaboratorService::updateRole">updateRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#214"><abbr title="App\Services\CollaboratorService::updateRoles">updateRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#251"><abbr title="App\Services\CollaboratorService::remove">remove</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#267"><abbr title="App\Services\CollaboratorService::leave">leave</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#283"><abbr title="App\Services\CollaboratorService::isCollaborator">isCollaborator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#291"><abbr title="App\Services\CollaboratorService::getCollaborator">getCollaborator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#299"><abbr title="App\Services\CollaboratorService::getCollaborators">getCollaborators</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#310"><abbr title="App\Services\CollaboratorService::getPendingCollaborationInvitations">getPendingCollaborationInvitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#320"><abbr title="App\Services\CollaboratorService::getPendingInvitations">getPendingInvitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#331"><abbr title="App\Services\CollaboratorService::getAcceptedCollaborators">getAcceptedCollaborators</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#342"><abbr title="App\Services\CollaboratorService::getUserPendingInvitations">getUserPendingInvitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#355"><abbr title="App\Services\CollaboratorService::getUserCollaborations">getUserCollaborations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#367"><abbr title="App\Services\CollaboratorService::canAddCollaborator">canAddCollaborator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#378"><abbr title="App\Services\CollaboratorService::getRemainingSlots">getRemainingSlots</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#386"><abbr title="App\Services\CollaboratorService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#404"><abbr title="App\Services\CollaboratorService::transferOwnership">transferOwnership</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#442"><abbr title="App\Services\CollaboratorService::getInvitationByToken">getInvitationByToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#504"><abbr title="App\Services\CollaboratorService::resendInvitation">resendInvitation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#518"><abbr title="App\Services\CollaboratorService::notifyOwnerOfAcceptance">notifyOwnerOfAcceptance</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#533"><abbr title="App\Services\CollaboratorService::notifyOwnerOfDecline">notifyOwnerOfDecline</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#548"><abbr title="App\Services\CollaboratorService::notifyRoleChange">notifyRoleChange</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#565"><abbr title="App\Services\CollaboratorService::notifyRemoval">notifyRemoval</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#581"><abbr title="App\Services\CollaboratorService::assertRolesWithinLimit">assertRolesWithinLimit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#599"><abbr title="App\Services\CollaboratorService::trimRolesToMax">trimRolesToMax</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#14"><abbr title="App\Services\CustomRoleService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#21"><abbr title="App\Services\CustomRoleService::createRole">createRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#44"><abbr title="App\Services\CustomRoleService::updateRole">updateRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#64"><abbr title="App\Services\CustomRoleService::deleteRole">deleteRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#79"><abbr title="App\Services\CustomRoleService::getRolesForEvent">getRolesForEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#90"><abbr title="App\Services\CustomRoleService::getSystemRoles">getSystemRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#114"><abbr title="App\Services\CustomRoleService::getSystemRolesForEvent">getSystemRolesForEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#122"><abbr title="App\Services\CustomRoleService::getCustomRolesForEvent">getCustomRolesForEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#145"><abbr title="App\Services\CustomRoleService::validateRoleCreationForUser">validateRoleCreationForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#169"><abbr title="App\Services\CustomRoleService::validateRoleUpdate">validateRoleUpdate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#192"><abbr title="App\Services\CustomRoleService::validatePermissions">validatePermissions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#21"><abbr title="App\Services\DashboardService::getAdminStats">getAdminStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#34"><abbr title="App\Services\DashboardService::getAdminDashboardStatsWithFilters">getAdminDashboardStatsWithFilters</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#182"><abbr title="App\Services\DashboardService::getPlanDistribution">getPlanDistribution</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#215"><abbr title="App\Services\DashboardService::getUserStats">getUserStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#232"><abbr title="App\Services\DashboardService::getUserPersonalStats">getUserPersonalStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#267"><abbr title="App\Services\DashboardService::getEventStats">getEventStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#292"><abbr title="App\Services\DashboardService::getRevenueStats">getRevenueStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#317"><abbr title="App\Services\DashboardService::getSubscriptionStats">getSubscriptionStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#336"><abbr title="App\Services\DashboardService::calculateConversionRate">calculateConversionRate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#351"><abbr title="App\Services\DashboardService::getEventDashboard">getEventDashboard</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#369"><abbr title="App\Services\DashboardService::getEventGuestStats">getEventGuestStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#388"><abbr title="App\Services\DashboardService::calculateResponseRate">calculateResponseRate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#403"><abbr title="App\Services\DashboardService::getEventTaskStats">getEventTaskStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#427"><abbr title="App\Services\DashboardService::calculateCompletionRate">calculateCompletionRate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#442"><abbr title="App\Services\DashboardService::getEventBudgetStats">getEventBudgetStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#481"><abbr title="App\Services\DashboardService::getEventTimeline">getEventTimeline</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#523"><abbr title="App\Services\DashboardService::getUpcomingTasks">getUpcomingTasks</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#536"><abbr title="App\Services\DashboardService::getRecentActivity">getRecentActivity</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#576"><abbr title="App\Services\DashboardService::getChartData">getChartData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#595"><abbr title="App\Services\DashboardService::getRevenueChartData">getRevenueChartData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#613"><abbr title="App\Services\DashboardService::getEventsChartData">getEventsChartData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#630"><abbr title="App\Services\DashboardService::getUsersChartData">getUsersChartData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#647"><abbr title="App\Services\DashboardService::getUserEventsQuery">getUserEventsQuery</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#662"><abbr title="App\Services\DashboardService::calculatePeriodDates">calculatePeriodDates</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#701"><abbr title="App\Services\DashboardService::calculatePreviousPeriodDates">calculatePreviousPeriodDates</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#719"><abbr title="App\Services\DashboardService::calculateTrend">calculateTrend</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#741"><abbr title="App\Services\DashboardService::getUserStatsWithFilters">getUserStatsWithFilters</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#808"><abbr title="App\Services\DashboardService::calculateStatsForEvents">calculateStatsForEvents</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#902"><abbr title="App\Services\DashboardService::getConfirmationsData">getConfirmationsData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#994"><abbr title="App\Services\DashboardService::getEventsByTypeData">getEventsByTypeData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#1055"><abbr title="App\Services\DashboardService::getUserRecentActivity">getUserRecentActivity</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DashboardService.php.html#1146"><abbr title="App\Services\DashboardService::formatRelativeTime">formatRelativeTime</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#52"><abbr title="App\Services\EntitlementService::can">can</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#89"><abbr title="App\Services\EntitlementService::isUnlimited">isUnlimited</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#153"><abbr title="App\Services\EntitlementService::getEventEntitlements">getEventEntitlements</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#201"><abbr title="App\Services\EntitlementService::assertCan">assertCan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#212"><abbr title="App\Services\EntitlementService::assertWithinLimit">assertWithinLimit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#284"><abbr title="App\Services\EntitlementService::hasActiveSubscription">hasActiveSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#292"><abbr title="App\Services\EntitlementService::getCurrentPlan">getCurrentPlan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EntitlementService.php.html#308"><abbr title="App\Services\EntitlementService::getEffectiveLimit">getEffectiveLimit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitationService.php.html#16"><abbr title="App\Services\EventCreationInvitationService::createPendingInvitation">createPendingInvitation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitationService.php.html#36"><abbr title="App\Services\EventCreationInvitationService::claimByToken">claimByToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitationService.php.html#64"><abbr title="App\Services\EventCreationInvitationService::getInvitationByToken">getInvitationByToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#16"><abbr title="App\Services\EventService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#35"><abbr title="App\Services\EventService::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#92"><abbr title="App\Services\EventService::update">update</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#109"><abbr title="App\Services\EventService::duplicate">duplicate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#234"><abbr title="App\Services\EventService::applyTemplate">applyTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#259"><abbr title="App\Services\EventService::autoApplyTemplate">autoApplyTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#283"><abbr title="App\Services\EventService::getEstimatedBudget">getEstimatedBudget</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#291"><abbr title="App\Services\EventService::updateStatus">updateStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#301"><abbr title="App\Services\EventService::cancel">cancel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#310"><abbr title="App\Services\EventService::complete">complete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#318"><abbr title="App\Services\EventService::recalculateActualBudget">recalculateActualBudget</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#329"><abbr title="App\Services\EventService::getBudgetSummary">getBudgetSummary</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#354"><abbr title="App\Services\EventService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#389"><abbr title="App\Services\EventService::canCreateEvent">canCreateEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventService.php.html#416"><abbr title="App\Services\EventService::getAvailableTemplates">getAvailableTemplates</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#15"><abbr title="App\Services\EventTemplateService::getActiveTemplates">getActiveTemplates</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#27"><abbr title="App\Services\EventTemplateService::getTemplatesByType">getTemplatesByType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#38"><abbr title="App\Services\EventTemplateService::getTemplate">getTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#46"><abbr title="App\Services\EventTemplateService::applyToEvent">applyToEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#79"><abbr title="App\Services\EventTemplateService::applyTasks">applyTasks</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#113"><abbr title="App\Services\EventTemplateService::applyBudgetItems">applyBudgetItems</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#139"><abbr title="App\Services\EventTemplateService::getSuggestedThemes">getSuggestedThemes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#156"><abbr title="App\Services\EventTemplateService::previewApplication">previewApplication</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#179"><abbr title="App\Services\EventTemplateService::formatTasks">formatTasks</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#198"><abbr title="App\Services\EventTemplateService::formatBudgetItems">formatBudgetItems</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#216"><abbr title="App\Services\EventTemplateService::getTemplatesGroupedByType">getTemplatesGroupedByType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#228"><abbr title="App\Services\EventTemplateService::createFromEvent">createFromEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#18"><abbr title="App\Services\ExportService::exportGuestsToCsv">exportGuestsToCsv</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#70"><abbr title="App\Services\ExportService::exportGuestsToPdf">exportGuestsToPdf</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#98"><abbr title="App\Services\ExportService::applyFilters">applyFilters</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#125"><abbr title="App\Services\ExportService::exportBudgetToCsv">exportBudgetToCsv</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#187"><abbr title="App\Services\ExportService::exportBudgetToPdf">exportBudgetToPdf</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#219"><abbr title="App\Services\ExportService::exportEventReportPdf">exportEventReportPdf</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#260"><abbr title="App\Services\ExportService::exportTasksToCsv">exportTasksToCsv</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#307"><abbr title="App\Services\ExportService::getRsvpLabel">getRsvpLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#321"><abbr title="App\Services\ExportService::getCategoryLabel">getCategoryLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#338"><abbr title="App\Services\ExportService::getStatusLabel">getStatusLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#352"><abbr title="App\Services\ExportService::getPriorityLabel">getPriorityLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#20"><abbr title="App\Services\FirebaseService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#30"><abbr title="App\Services\FirebaseService::isConfigured">isConfigured</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#38"><abbr title="App\Services\FirebaseService::sendToDevice">sendToDevice</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#90"><abbr title="App\Services\FirebaseService::sendToDevices">sendToDevices</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#156"><abbr title="App\Services\FirebaseService::sendToUser">sendToUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#189"><abbr title="App\Services\FirebaseService::sendToUsers">sendToUsers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#217"><abbr title="App\Services\FirebaseService::sendToTopic">sendToTopic</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#257"><abbr title="App\Services\FirebaseService::subscribeToTopic">subscribeToTopic</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#276"><abbr title="App\Services\FirebaseService::unsubscribeFromTopic">unsubscribeFromTopic</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#295"><abbr title="App\Services\FirebaseService::validateToken">validateToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#316"><abbr title="App\Services\FirebaseService::getAndroidConfig">getAndroidConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#331"><abbr title="App\Services\FirebaseService::getApnsConfig">getApnsConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#349"><abbr title="App\Services\FirebaseService::getWebPushConfig">getWebPushConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#373"><abbr title="App\Services\FirebaseService::isInvalidToken">isInvalidToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#381"><abbr title="App\Services\FirebaseService::isInvalidTokenError">isInvalidTokenError</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#402"><abbr title="App\Services\FirebaseService::sendEventReminder">sendEventReminder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#419"><abbr title="App\Services\FirebaseService::sendTaskDue">sendTaskDue</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#437"><abbr title="App\Services\FirebaseService::sendGuestRsvp">sendGuestRsvp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseService.php.html#456"><abbr title="App\Services\FirebaseService::sendCollaborationInvite">sendCollaborationInvite</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#20"><abbr title="App\Services\GuestService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#27"><abbr title="App\Services\GuestService::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#45"><abbr title="App\Services\GuestService::update">update</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#55"><abbr title="App\Services\GuestService::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#66"><abbr title="App\Services\GuestService::importFromCsv">importFromCsv</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#151"><abbr title="App\Services\GuestService::parseRowData">parseRowData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#175"><abbr title="App\Services\GuestService::getColumnMap">getColumnMap</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#202"><abbr title="App\Services\GuestService::normalizeRsvpStatus">normalizeRsvpStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#229"><abbr title="App\Services\GuestService::createInvitation">createInvitation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#242"><abbr title="App\Services\GuestService::regenerateToken">regenerateToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#264"><abbr title="App\Services\GuestService::sendInvitation">sendInvitation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#311"><abbr title="App\Services\GuestService::sendBulkInvitations">sendBulkInvitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#366"><abbr title="App\Services\GuestService::sendReminder">sendReminder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#391"><abbr title="App\Services\GuestService::sendReminders">sendReminders</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#414"><abbr title="App\Services\GuestService::checkIn">checkIn</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#458"><abbr title="App\Services\GuestService::undoCheckIn">undoCheckIn</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#471"><abbr title="App\Services\GuestService::updateRsvpStatus">updateRsvpStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#486"><abbr title="App\Services\GuestService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#522"><abbr title="App\Services\GuestService::canAddGuest">canAddGuest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#546"><abbr title="App\Services\GuestService::getRemainingSlots">getRemainingSlots</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#568"><abbr title="App\Services\GuestService::exportToCsv">exportToCsv</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#593"><abbr title="App\Services\GuestService::previewCsvImport">previewCsvImport</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#653"><abbr title="App\Services\GuestService::importFromExcel">importFromExcel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestService.php.html#729"><abbr title="App\Services\GuestService::previewExcelImport">previewExcelImport</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#19"><abbr title="App\Services\NotificationService::send">send</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#70"><abbr title="App\Services\NotificationService::sendTaskReminder">sendTaskReminder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#86"><abbr title="App\Services\NotificationService::sendGuestReminder">sendGuestReminder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#100"><abbr title="App\Services\NotificationService::sendBudgetAlert">sendBudgetAlert</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#120"><abbr title="App\Services\NotificationService::sendEventReminder">sendEventReminder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#136"><abbr title="App\Services\NotificationService::sendCollaborationInvite">sendCollaborationInvite</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#150"><abbr title="App\Services\NotificationService::markAsRead">markAsRead</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#160"><abbr title="App\Services\NotificationService::markAllAsRead">markAllAsRead</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#170"><abbr title="App\Services\NotificationService::getUserNotifications">getUserNotifications</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#186"><abbr title="App\Services\NotificationService::getUnreadCount">getUnreadCount</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#196"><abbr title="App\Services\NotificationService::getUserPreferences">getUserPreferences</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#220"><abbr title="App\Services\NotificationService::updatePreferences">updatePreferences</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#250"><abbr title="App\Services\NotificationService::shouldSendByType">shouldSendByType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#258"><abbr title="App\Services\NotificationService::cleanupOldNotifications">cleanupOldNotifications</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#268"><abbr title="App\Services\NotificationService::getGroupedByDate">getGroupedByDate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#284"><abbr title="App\Services\NotificationService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#299"><abbr title="App\Services\NotificationService::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#307"><abbr title="App\Services\NotificationService::bulkDelete">bulkDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#317"><abbr title="App\Services\NotificationService::registerDeviceToken">registerDeviceToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#326"><abbr title="App\Services\NotificationService::removeDeviceToken">removeDeviceToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#12"><abbr title="App\Services\OtpService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#19"><abbr title="App\Services\OtpService::generate">generate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#55"><abbr title="App\Services\OtpService::send">send</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#68"><abbr title="App\Services\OtpService::sendAsync">sendAsync</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#76"><abbr title="App\Services\OtpService::generateAndSend">generateAndSend</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#97"><abbr title="App\Services\OtpService::verify">verify</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#171"><abbr title="App\Services\OtpService::resend">resend</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#219"><abbr title="App\Services\OtpService::cleanup">cleanup</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#231"><abbr title="App\Services\OtpService::sendViaEmail">sendViaEmail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#263"><abbr title="App\Services\OtpService::sendViaSms">sendViaSms</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#287"><abbr title="App\Services\OtpService::sendViaWhatsApp">sendViaWhatsApp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#311"><abbr title="App\Services\OtpService::generateCode">generateCode</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#319"><abbr title="App\Services\OtpService::invalidateExisting">invalidateExisting</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#329"><abbr title="App\Services\OtpService::getOtpMessage">getOtpMessage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#346"><abbr title="App\Services\OtpService::getTypeLabel">getTypeLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpService.php.html#359"><abbr title="App\Services\OtpService::maskIdentifier">maskIdentifier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#253"><abbr title="App\Services\PaymentService::initiateAirtelPayment">initiateAirtelPayment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#362"><abbr title="App\Services\PaymentService::handleAirtelCallback">handleAirtelCallback</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#478"><abbr title="App\Services\PaymentService::checkProviderStatus">checkProviderStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#503"><abbr title="App\Services\PaymentService::checkMtnStatus">checkMtnStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#557"><abbr title="App\Services\PaymentService::checkAirtelStatus">checkAirtelStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#579"><abbr title="App\Services\PaymentService::synchronizePaymentWithProviderStatus">synchronizePaymentWithProviderStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#641"><abbr title="App\Services\PaymentService::getAirtelAccessToken">getAirtelAccessToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#681"><abbr title="App\Services\PaymentService::isValidAirtelNumber">isValidAirtelNumber</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#764"><abbr title="App\Services\PaymentService::getStatusMessage">getStatusMessage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#801"><abbr title="App\Services\PaymentService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#17"><abbr title="App\Services\PermissionService::getCollaboratorCustomRoles">getCollaboratorCustomRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#34"><abbr title="App\Services\PermissionService::userCan">userCan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#72"><abbr title="App\Services\PermissionService::userCanInModule">userCanInModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#110"><abbr title="App\Services\PermissionService::getUserPermissions">getUserPermissions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#147"><abbr title="App\Services\PermissionService::systemRoleCan">systemRoleCan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#156"><abbr title="App\Services\PermissionService::systemRoleCanInModule">systemRoleCanInModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#187"><abbr title="App\Services\PermissionService::getAllPermissions">getAllPermissions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#275"><abbr title="App\Services\PermissionService::getCollaborator">getCollaborator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#286"><abbr title="App\Services\PermissionService::getPermissionsGroupedByModule">getPermissionsGroupedByModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#314"><abbr title="App\Services\PermissionService::getModuleLabel">getModuleLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PermissionService.php.html#330"><abbr title="App\Services\PermissionService::getModuleIcon">getModuleIcon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#21"><abbr title="App\Services\PhotoService::upload">upload</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#44"><abbr title="App\Services\PhotoService::uploadMultiple">uploadMultiple</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#60"><abbr title="App\Services\PhotoService::storeFile">storeFile</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#94"><abbr title="App\Services\PhotoService::generateThumbnail">generateThumbnail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#145"><abbr title="App\Services\PhotoService::compress">compress</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#186"><abbr title="App\Services\PhotoService::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#222"><abbr title="App\Services\PhotoService::toggleFeatured">toggleFeatured</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#252"><abbr title="App\Services\PhotoService::setAsFeatured">setAsFeatured</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#272"><abbr title="App\Services\PhotoService::getByType">getByType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#284"><abbr title="App\Services\PhotoService::getMoodboard">getMoodboard</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#292"><abbr title="App\Services\PhotoService::getEventPhotos">getEventPhotos</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#300"><abbr title="App\Services\PhotoService::getFeatured">getFeatured</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#311"><abbr title="App\Services\PhotoService::updateDescription">updateDescription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#321"><abbr title="App\Services\PhotoService::updateType">updateType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#331"><abbr title="App\Services\PhotoService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#346"><abbr title="App\Services\PhotoService::canAddPhotos">canAddPhotos</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#359"><abbr title="App\Services\PhotoService::getMaxPhotos">getMaxPhotos</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#377"><abbr title="App\Services\PhotoService::getRemainingSlots">getRemainingSlots</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#388"><abbr title="App\Services\PhotoService::bulkDelete">bulkDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#405"><abbr title="App\Services\PhotoService::bulkUpdateType">bulkUpdateType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#415"><abbr title="App\Services\PhotoService::validatePhotoUploadToken">validatePhotoUploadToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#428"><abbr title="App\Services\PhotoService::uploadPublic">uploadPublic</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoService.php.html#468"><abbr title="App\Services\PhotoService::downloadMultiple">downloadMultiple</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#15"><abbr title="App\Services\PlanService::getAll">getAll</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#24"><abbr title="App\Services\PlanService::getActive">getActive</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#62"><abbr title="App\Services\PlanService::hasUserUsedPlan">hasUserUsedPlan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#113"><abbr title="App\Services\PlanService::getAvailableTrialPlan">getAvailableTrialPlan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#161"><abbr title="App\Services\PlanService::getById">getById</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#169"><abbr title="App\Services\PlanService::getBySlug">getBySlug</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#177"><abbr title="App\Services\PlanService::getTrialPlan">getTrialPlan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#185"><abbr title="App\Services\PlanService::getDefaultPlan">getDefaultPlan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#200"><abbr title="App\Services\PlanService::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#216"><abbr title="App\Services\PlanService::update">update</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#234"><abbr title="App\Services\PlanService::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#247"><abbr title="App\Services\PlanService::toggleActive">toggleActive</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#257"><abbr title="App\Services\PlanService::ensureUniqueSlug">ensureUniqueSlug</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanService.php.html#280"><abbr title="App\Services\PlanService::getPlanComparison">getPlanComparison</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#11"><abbr title="App\Services\QuotaService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#18"><abbr title="App\Services\QuotaService::getCreationsQuota">getCreationsQuota</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#75"><abbr title="App\Services\QuotaService::canCreateEvent">canCreateEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#84"><abbr title="App\Services\QuotaService::consumeCreation">consumeCreation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#106"><abbr title="App\Services\QuotaService::getQuotaPercentage">getQuotaPercentage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#115"><abbr title="App\Services\QuotaService::shouldWarnAboutQuota">shouldWarnAboutQuota</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#135"><abbr title="App\Services\QuotaService::getTopUpCredits">getTopUpCredits</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#156"><abbr title="App\Services\QuotaService::getActiveSubscription">getActiveSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuotaService.php.html#185"><abbr title="App\Services\QuotaService::addTopUp">addTopUp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#22"><abbr title="App\Services\QuoteRequestService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#24"><abbr title="App\Services\QuoteRequestService::generateTrackingCode">generateTrackingCode</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#29"><abbr title="App\Services\QuoteRequestService::logActivity">logActivity</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#45"><abbr title="App\Services\QuoteRequestService::ensureWorkflowStages">ensureWorkflowStages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#79"><abbr title="App\Services\QuoteRequestService::notifyAdminsNewRequest">notifyAdminsNewRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#87"><abbr title="App\Services\QuoteRequestService::notifyCustomerUpdate">notifyCustomerUpdate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#96"><abbr title="App\Services\QuoteRequestService::notifyCustomerCallScheduled">notifyCustomerCallScheduled</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#105"><abbr title="App\Services\QuoteRequestService::notifyCustomerOfferCreated">notifyCustomerOfferCreated</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#115"><abbr title="App\Services\QuoteRequestService::notifyAdminsOfferResponded">notifyAdminsOfferResponded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#134"><abbr title="App\Services\QuoteRequestService::createSubscriptionFromAcceptedOffer">createSubscriptionFromAcceptedOffer</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#168"><abbr title="App\Services\QuoteRequestService::notifyAdminsStaleRequest">notifyAdminsStaleRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#17"><abbr title="App\Services\S3Service::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#40"><abbr title="App\Services\S3Service::isConfigured">isConfigured</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#48"><abbr title="App\Services\S3Service::upload">upload</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#101"><abbr title="App\Services\S3Service::uploadContent">uploadContent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#139"><abbr title="App\Services\S3Service::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#163"><abbr title="App\Services\S3Service::deleteMultiple">deleteMultiple</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#197"><abbr title="App\Services\S3Service::exists">exists</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#217"><abbr title="App\Services\S3Service::getUrl">getUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#229"><abbr title="App\Services\S3Service::getSignedUrl">getSignedUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#257"><abbr title="App\Services\S3Service::getUploadSignedUrl">getUploadSignedUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#303"><abbr title="App\Services\S3Service::copy">copy</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#327"><abbr title="App\Services\S3Service::move">move</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#338"><abbr title="App\Services\S3Service::getMetadata">getMetadata</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#365"><abbr title="App\Services\S3Service::listFiles">listFiles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#398"><abbr title="App\Services\S3Service::setVisibility">setVisibility</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#422"><abbr title="App\Services\S3Service::generateFilename">generateFilename</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#431"><abbr title="App\Services\S3Service::buildKey">buildKey</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#439"><abbr title="App\Services\S3Service::getAcl">getAcl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#453"><abbr title="App\Services\S3Service::uploadEventPhoto">uploadEventPhoto</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#467"><abbr title="App\Services\S3Service::uploadAvatar">uploadAvatar</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#481"><abbr title="App\Services\S3Service::uploadEventDocument">uploadEventDocument</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#495"><abbr title="App\Services\S3Service::getEventPhotoUrl">getEventPhotoUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="S3Service.php.html#503"><abbr title="App\Services\S3Service::deleteEventFiles">deleteEventFiles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#23"><abbr title="App\Services\StripeService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#32"><abbr title="App\Services\StripeService::getOrCreateCustomer">getOrCreateCustomer</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#61"><abbr title="App\Services\StripeService::createCheckoutSession">createCheckoutSession</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#120"><abbr title="App\Services\StripeService::createSubscriptionCheckout">createSubscriptionCheckout</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#149"><abbr title="App\Services\StripeService::createPrice">createPrice</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#168"><abbr title="App\Services\StripeService::cancelSubscription">cancelSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#182"><abbr title="App\Services\StripeService::resumeSubscription">resumeSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#192"><abbr title="App\Services\StripeService::handleWebhook">handleWebhook</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#226"><abbr title="App\Services\StripeService::handleCheckoutCompleted">handleCheckoutCompleted</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#256"><abbr title="App\Services\StripeService::handlePaymentSucceeded">handlePaymentSucceeded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#265"><abbr title="App\Services\StripeService::handlePaymentFailed">handlePaymentFailed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#277"><abbr title="App\Services\StripeService::handleSubscriptionCreated">handleSubscriptionCreated</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#289"><abbr title="App\Services\StripeService::handleSubscriptionUpdated">handleSubscriptionUpdated</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#301"><abbr title="App\Services\StripeService::handleSubscriptionDeleted">handleSubscriptionDeleted</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#310"><abbr title="App\Services\StripeService::handleInvoicePaymentSucceeded">handleInvoicePaymentSucceeded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#322"><abbr title="App\Services\StripeService::handleInvoicePaymentFailed">handleInvoicePaymentFailed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#334"><abbr title="App\Services\StripeService::retrieveCheckoutSession">retrieveCheckoutSession</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#342"><abbr title="App\Services\StripeService::listPaymentMethods">listPaymentMethods</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#355"><abbr title="App\Services\StripeService::refund">refund</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StripeService.php.html#369"><abbr title="App\Services\StripeService::getPublishableKey">getPublishableKey</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#93"><abbr title="App\Services\SubscriptionService::upgrade">upgrade</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#155"><abbr title="App\Services\SubscriptionService::canUseFeature">canUseFeature</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#172"><abbr title="App\Services\SubscriptionService::getMaxGuests">getMaxGuests</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#182"><abbr title="App\Services\SubscriptionService::canAddGuests">canAddGuests</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#207"><abbr title="App\Services\SubscriptionService::getRemainingGuestSlots">getRemainingGuestSlots</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#255"><abbr title="App\Services\SubscriptionService::getUserSubscriptions">getUserSubscriptions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#266"><abbr title="App\Services\SubscriptionService::getActiveSubscription">getActiveSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#280"><abbr title="App\Services\SubscriptionService::checkPlanLimits">checkPlanLimits</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#329"><abbr title="App\Services\SubscriptionService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#470"><abbr title="App\Services\SubscriptionService::getUserLatestAccountSubscription">getUserLatestAccountSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#485"><abbr title="App\Services\SubscriptionService::getLifecycleInfo">getLifecycleInfo</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#503"><abbr title="App\Services\SubscriptionService::resetCreationsUsed">resetCreationsUsed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#564"><abbr title="App\Services\SubscriptionService::buildEventLimitUpdates">buildEventLimitUpdates</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#14"><abbr title="App\Services\TaskBudgetService::syncBudgetItemFromTask">syncBudgetItemFromTask</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#52"><abbr title="App\Services\TaskBudgetService::removeBudgetItemFromTask">removeBudgetItemFromTask</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#66"><abbr title="App\Services\TaskBudgetService::updateBudgetItemFromTask">updateBudgetItemFromTask</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#115"><abbr title="App\Services\TaskBudgetService::shouldCreateBudgetItem">shouldCreateBudgetItem</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#21"><abbr title="App\Services\TaskService::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#38"><abbr title="App\Services\TaskService::update">update</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#57"><abbr title="App\Services\TaskService::delete">delete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#65"><abbr title="App\Services\TaskService::assign">assign</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#84"><abbr title="App\Services\TaskService::complete">complete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#99"><abbr title="App\Services\TaskService::reopen">reopen</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#109"><abbr title="App\Services\TaskService::updateStatus">updateStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#123"><abbr title="App\Services\TaskService::updatePriority">updatePriority</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#133"><abbr title="App\Services\TaskService::applyTemplateTask">applyTemplateTask</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#161"><abbr title="App\Services\TaskService::calculateDueDate">calculateDueDate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#173"><abbr title="App\Services\TaskService::getStatistics">getStatistics</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#206"><abbr title="App\Services\TaskService::getOverdueTasks">getOverdueTasks</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#219"><abbr title="App\Services\TaskService::getTasksDueSoon">getTasksDueSoon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#232"><abbr title="App\Services\TaskService::notifyAssignment">notifyAssignment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#251"><abbr title="App\Services\TaskService::notifyCompletion">notifyCompletion</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#266"><abbr title="App\Services\TaskService::scheduleReminders">scheduleReminders</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#291"><abbr title="App\Services\TaskService::bulkUpdateStatus">bulkUpdateStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#305"><abbr title="App\Services\TaskService::reorder">reorder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#317"><abbr title="App\Services\TaskService::duplicate">duplicate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskService.php.html#332"><abbr title="App\Services\TaskService::getAssignableUsers">getAssignableUsers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#20"><abbr title="App\Services\TwilioService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#33"><abbr title="App\Services\TwilioService::isConfigured">isConfigured</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#41"><abbr title="App\Services\TwilioService::sendSms">sendSms</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#102"><abbr title="App\Services\TwilioService::sendSmsAsync">sendSmsAsync</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#110"><abbr title="App\Services\TwilioService::sendWhatsApp">sendWhatsApp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#179"><abbr title="App\Services\TwilioService::sendWhatsAppAsync">sendWhatsAppAsync</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#191"><abbr title="App\Services\TwilioService::sendWhatsAppTemplate">sendWhatsAppTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#247"><abbr title="App\Services\TwilioService::sendBulkSms">sendBulkSms</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#274"><abbr title="App\Services\TwilioService::getMessageStatus">getMessageStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#303"><abbr title="App\Services\TwilioService::validatePhoneNumber">validatePhoneNumber</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#330"><abbr title="App\Services\TwilioService::formatPhoneNumber">formatPhoneNumber</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#351"><abbr title="App\Services\TwilioService::formatWhatsAppNumber">formatWhatsAppNumber</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#366"><abbr title="App\Services\TwilioService::isRetryableError">isRetryableError</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#382"><abbr title="App\Services\TwilioService::getInvitationTemplate">getInvitationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#400"><abbr title="App\Services\TwilioService::getReminderTemplate">getReminderTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#416"><abbr title="App\Services\TwilioService::getPaymentConfirmationTemplate">getPaymentConfirmationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#435"><abbr title="App\Services\TwilioService::getRsvpConfirmationTemplate">getRsvpConfirmationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#452"><abbr title="App\Services\TwilioService::sendInvitationSms">sendInvitationSms</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#461"><abbr title="App\Services\TwilioService::sendInvitationWhatsApp">sendInvitationWhatsApp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#470"><abbr title="App\Services\TwilioService::sendReminderSms">sendReminderSms</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TwilioService.php.html#479"><abbr title="App\Services\TwilioService::sendPaymentSms">sendPaymentSms</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#21"><abbr title="App\Services\PaymentService::initiateMtnPayment">initiateMtnPayment</abbr></a></td><td class="text-right">10%</td></tr>
+       <tr><td><a href="PaymentService.php.html#441"><abbr title="App\Services\PaymentService::checkStatus">checkStatus</abbr></a></td><td class="text-right">50%</td></tr>
+       <tr><td><a href="PaymentService.php.html#692"><abbr title="App\Services\PaymentService::formatPhoneNumber">formatPhoneNumber</abbr></a></td><td class="text-right">50%</td></tr>
+       <tr><td><a href="PaymentService.php.html#408"><abbr title="App\Services\PaymentService::processAirtelCallback">processAirtelCallback</abbr></a></td><td class="text-right">52%</td></tr>
+       <tr><td><a href="ActivityService.php.html#40"><abbr title="App\Services\ActivityService::logAction">logAction</abbr></a></td><td class="text-right">61%</td></tr>
+       <tr><td><a href="Support/SubscriptionLifecycle.php.html#17"><abbr title="App\Services\Support\SubscriptionLifecycle::buildPayload">buildPayload</abbr></a></td><td class="text-right">62%</td></tr>
+       <tr><td><a href="Support/SubscriptionLifecycle.php.html#49"><abbr title="App\Services\Support\SubscriptionLifecycle::resolvePhase">resolvePhase</abbr></a></td><td class="text-right">63%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#512"><abbr title="App\Services\SubscriptionService::syncAccountEventLimits">syncAccountEventLimits</abbr></a></td><td class="text-right">65%</td></tr>
+       <tr><td><a href="PaymentService.php.html#778"><abbr title="App\Services\PaymentService::getFailureReasonMessage">getFailureReasonMessage</abbr></a></td><td class="text-right">73%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="EventService.php.html#109"><abbr title="App\Services\EventService::duplicate">duplicate</abbr></a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="PaymentService.php.html#21"><abbr title="App\Services\PaymentService::initiateMtnPayment">initiateMtnPayment</abbr></a></td><td class="text-right">275</td></tr>
+       <tr><td><a href="EventService.php.html#35"><abbr title="App\Services\EventService::create">create</abbr></a></td><td class="text-right">182</td></tr>
+       <tr><td><a href="ActivityService.php.html#486"><abbr title="App\Services\ActivityService::getActivityLogs">getActivityLogs</abbr></a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="StripeService.php.html#192"><abbr title="App\Services\StripeService::handleWebhook">handleWebhook</abbr></a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#66"><abbr title="App\Services\TaskBudgetService::updateBudgetItemFromTask">updateBudgetItemFromTask</abbr></a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="DashboardService.php.html#34"><abbr title="App\Services\DashboardService::getAdminDashboardStatsWithFilters">getAdminDashboardStatsWithFilters</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#442"><abbr title="App\Services\CollaboratorService::getInvitationByToken">getInvitationByToken</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="DashboardService.php.html#662"><abbr title="App\Services\DashboardService::calculatePeriodDates">calculatePeriodDates</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="GuestService.php.html#66"><abbr title="App\Services\GuestService::importFromCsv">importFromCsv</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="GuestService.php.html#653"><abbr title="App\Services\GuestService::importFromExcel">importFromExcel</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="DashboardService.php.html#1055"><abbr title="App\Services\DashboardService::getUserRecentActivity">getUserRecentActivity</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="ExportService.php.html#321"><abbr title="App\Services\ExportService::getCategoryLabel">getCategoryLabel</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="GuestService.php.html#414"><abbr title="App\Services\GuestService::checkIn">checkIn</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="NotificationService.php.html#19"><abbr title="App\Services\NotificationService::send">send</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="PermissionService.php.html#34"><abbr title="App\Services\PermissionService::userCan">userCan</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="PermissionService.php.html#72"><abbr title="App\Services\PermissionService::userCanInModule">userCanInModule</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#564"><abbr title="App\Services\SubscriptionService::buildEventLimitUpdates">buildEventLimitUpdates</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="DashboardService.php.html#902"><abbr title="App\Services\DashboardService::getConfirmationsData">getConfirmationsData</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="FirebaseService.php.html#90"><abbr title="App\Services\FirebaseService::sendToDevices">sendToDevices</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="PermissionService.php.html#314"><abbr title="App\Services\PermissionService::getModuleLabel">getModuleLabel</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="PermissionService.php.html#330"><abbr title="App\Services\PermissionService::getModuleIcon">getModuleIcon</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="PhotoService.php.html#468"><abbr title="App\Services\PhotoService::downloadMultiple">downloadMultiple</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="QuotaService.php.html#18"><abbr title="App\Services\QuotaService::getCreationsQuota">getCreationsQuota</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#132"><abbr title="App\Services\CollaboratorService::claimPendingInvitationsForUser">claimPendingInvitationsForUser</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="EntitlementService.php.html#308"><abbr title="App\Services\EntitlementService::getEffectiveLimit">getEffectiveLimit</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="GuestService.php.html#311"><abbr title="App\Services\GuestService::sendBulkInvitations">sendBulkInvitations</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="GuestService.php.html#593"><abbr title="App\Services\GuestService::previewCsvImport">previewCsvImport</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="PermissionService.php.html#110"><abbr title="App\Services\PermissionService::getUserPermissions">getUserPermissions</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="PhotoService.php.html#186"><abbr title="App\Services\PhotoService::delete">delete</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#280"><abbr title="App\Services\SubscriptionService::checkPlanLimits">checkPlanLimits</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="TwilioService.php.html#110"><abbr title="App\Services\TwilioService::sendWhatsApp">sendWhatsApp</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="DashboardService.php.html#808"><abbr title="App\Services\DashboardService::calculateStatsForEvents">calculateStatsForEvents</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="DashboardService.php.html#994"><abbr title="App\Services\DashboardService::getEventsByTypeData">getEventsByTypeData</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="EventService.php.html#259"><abbr title="App\Services\EventService::autoApplyTemplate">autoApplyTemplate</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#46"><abbr title="App\Services\EventTemplateService::applyToEvent">applyToEvent</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#79"><abbr title="App\Services\EventTemplateService::applyTasks">applyTasks</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="ExportService.php.html#98"><abbr title="App\Services\ExportService::applyFilters">applyFilters</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="ExportService.php.html#307"><abbr title="App\Services\ExportService::getRsvpLabel">getRsvpLabel</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="ExportService.php.html#338"><abbr title="App\Services\ExportService::getStatusLabel">getStatusLabel</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="GuestService.php.html#264"><abbr title="App\Services\GuestService::sendInvitation">sendInvitation</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="PaymentService.php.html#503"><abbr title="App\Services\PaymentService::checkMtnStatus">checkMtnStatus</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="PaymentService.php.html#579"><abbr title="App\Services\PaymentService::synchronizePaymentWithProviderStatus">synchronizePaymentWithProviderStatus</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="PaymentService.php.html#764"><abbr title="App\Services\PaymentService::getStatusMessage">getStatusMessage</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="PhotoService.php.html#428"><abbr title="App\Services\PhotoService::uploadPublic">uploadPublic</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="PlanService.php.html#113"><abbr title="App\Services\PlanService::getAvailableTrialPlan">getAvailableTrialPlan</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="TwilioService.php.html#41"><abbr title="App\Services\TwilioService::sendSms">sendSms</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="ActivityService.php.html#296"><abbr title="App\Services\ActivityService::logFrontendBatch">logFrontendBatch</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="BudgetService.php.html#205"><abbr title="App\Services\BudgetService::applyFromTemplate">applyFromTemplate</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#77"><abbr title="App\Services\CollaboratorService::inviteByEmailWithRoles">inviteByEmailWithRoles</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#169"><abbr title="App\Services\CustomRoleService::validateRoleUpdate">validateRoleUpdate</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="DashboardService.php.html#576"><abbr title="App\Services\DashboardService::getChartData">getChartData</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EntitlementService.php.html#52"><abbr title="App\Services\EntitlementService::can">can</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EntitlementService.php.html#153"><abbr title="App\Services\EntitlementService::getEventEntitlements">getEventEntitlements</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EventService.php.html#92"><abbr title="App\Services\EventService::update">update</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EventService.php.html#234"><abbr title="App\Services\EventService::applyTemplate">applyTemplate</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="ExportService.php.html#352"><abbr title="App\Services\ExportService::getPriorityLabel">getPriorityLabel</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="FirebaseService.php.html#38"><abbr title="App\Services\FirebaseService::sendToDevice">sendToDevice</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="GuestService.php.html#151"><abbr title="App\Services\GuestService::parseRowData">parseRowData</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="GuestService.php.html#729"><abbr title="App\Services\GuestService::previewExcelImport">previewExcelImport</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="OtpService.php.html#55"><abbr title="App\Services\OtpService::send">send</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="OtpService.php.html#346"><abbr title="App\Services\OtpService::getTypeLabel">getTypeLabel</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PaymentService.php.html#253"><abbr title="App\Services\PaymentService::initiateAirtelPayment">initiateAirtelPayment</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PaymentService.php.html#478"><abbr title="App\Services\PaymentService::checkProviderStatus">checkProviderStatus</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PermissionService.php.html#17"><abbr title="App\Services\PermissionService::getCollaboratorCustomRoles">getCollaboratorCustomRoles</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PhotoService.php.html#60"><abbr title="App\Services\PhotoService::storeFile">storeFile</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PhotoService.php.html#94"><abbr title="App\Services\PhotoService::generateThumbnail">generateThumbnail</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PhotoService.php.html#145"><abbr title="App\Services\PhotoService::compress">compress</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#14"><abbr title="App\Services\TaskBudgetService::syncBudgetItemFromTask">syncBudgetItemFromTask</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="TwilioService.php.html#330"><abbr title="App\Services\TwilioService::formatPhoneNumber">formatPhoneNumber</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="ActivityService.php.html#92"><abbr title="App\Services\ActivityService::logLogin">logLogin</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="ActivityService.php.html#119"><abbr title="App\Services\ActivityService::logLogout">logLogout</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="BudgetService.php.html#50"><abbr title="App\Services\BudgetService::getStatistics">getStatistics</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="BudgetService.php.html#132"><abbr title="App\Services\BudgetService::getItemsDueForPayment">getItemsDueForPayment</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="BudgetService.php.html#150"><abbr title="App\Services\BudgetService::checkBudgetAlerts">checkBudgetAlerts</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="BudgetService.php.html#339"><abbr title="App\Services\BudgetService::getDashboardSummary">getDashboardSummary</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#31"><abbr title="App\Services\CollaboratorService::inviteWithRoles">inviteWithRoles</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#214"><abbr title="App\Services\CollaboratorService::updateRoles">updateRoles</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#599"><abbr title="App\Services\CollaboratorService::trimRolesToMax">trimRolesToMax</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="DashboardService.php.html#536"><abbr title="App\Services\DashboardService::getRecentActivity">getRecentActivity</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="DashboardService.php.html#741"><abbr title="App\Services\DashboardService::getUserStatsWithFilters">getUserStatsWithFilters</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#113"><abbr title="App\Services\EventTemplateService::applyBudgetItems">applyBudgetItems</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#228"><abbr title="App\Services\EventTemplateService::createFromEvent">createFromEvent</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FirebaseService.php.html#189"><abbr title="App\Services\FirebaseService::sendToUsers">sendToUsers</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FirebaseService.php.html#217"><abbr title="App\Services\FirebaseService::sendToTopic">sendToTopic</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FirebaseService.php.html#257"><abbr title="App\Services\FirebaseService::subscribeToTopic">subscribeToTopic</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="FirebaseService.php.html#276"><abbr title="App\Services\FirebaseService::unsubscribeFromTopic">unsubscribeFromTopic</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="GuestService.php.html#175"><abbr title="App\Services\GuestService::getColumnMap">getColumnMap</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="GuestService.php.html#366"><abbr title="App\Services\GuestService::sendReminder">sendReminder</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="NotificationService.php.html#100"><abbr title="App\Services\NotificationService::sendBudgetAlert">sendBudgetAlert</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="OtpService.php.html#97"><abbr title="App\Services\OtpService::verify">verify</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="OtpService.php.html#171"><abbr title="App\Services\OtpService::resend">resend</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PhotoService.php.html#44"><abbr title="App\Services\PhotoService::uploadMultiple">uploadMultiple</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PlanService.php.html#24"><abbr title="App\Services\PlanService::getActive">getActive</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PlanService.php.html#62"><abbr title="App\Services\PlanService::hasUserUsedPlan">hasUserUsedPlan</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PlanService.php.html#216"><abbr title="App\Services\PlanService::update">update</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PlanService.php.html#257"><abbr title="App\Services\PlanService::ensureUniqueSlug">ensureUniqueSlug</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="QuotaService.php.html#115"><abbr title="App\Services\QuotaService::shouldWarnAboutQuota">shouldWarnAboutQuota</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="QuotaService.php.html#156"><abbr title="App\Services\QuotaService::getActiveSubscription">getActiveSubscription</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#134"><abbr title="App\Services\QuoteRequestService::createSubscriptionFromAcceptedOffer">createSubscriptionFromAcceptedOffer</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="S3Service.php.html#17"><abbr title="App\Services\S3Service::__construct">__construct</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="S3Service.php.html#48"><abbr title="App\Services\S3Service::upload">upload</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="S3Service.php.html#163"><abbr title="App\Services\S3Service::deleteMultiple">deleteMultiple</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="S3Service.php.html#257"><abbr title="App\Services\S3Service::getUploadSignedUrl">getUploadSignedUrl</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="S3Service.php.html#365"><abbr title="App\Services\S3Service::listFiles">listFiles</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="S3Service.php.html#439"><abbr title="App\Services\S3Service::getAcl">getAcl</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="StripeService.php.html#226"><abbr title="App\Services\StripeService::handleCheckoutCompleted">handleCheckoutCompleted</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TaskService.php.html#38"><abbr title="App\Services\TaskService::update">update</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TaskService.php.html#65"><abbr title="App\Services\TaskService::assign">assign</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TaskService.php.html#173"><abbr title="App\Services\TaskService::getStatistics">getStatistics</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TwilioService.php.html#191"><abbr title="App\Services\TwilioService::sendWhatsAppTemplate">sendWhatsAppTemplate</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PaymentService.php.html#692"><abbr title="App\Services\PaymentService::formatPhoneNumber">formatPhoneNumber</abbr></a></td><td class="text-right">19</td></tr>
+       <tr><td><a href="Support/SubscriptionLifecycle.php.html#49"><abbr title="App\Services\Support\SubscriptionLifecycle::resolvePhase">resolvePhase</abbr></a></td><td class="text-right">16</td></tr>
+       <tr><td><a href="ActivityService.php.html#340"><abbr title="App\Services\ActivityService::buildFrontendDescription">buildFrontendDescription</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="BudgetService.php.html#305"><abbr title="App\Services\BudgetService::exportToCsv">exportToCsv</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#191"><abbr title="App\Services\CollaboratorService::updateRole">updateRole</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#267"><abbr title="App\Services\CollaboratorService::leave">leave</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#404"><abbr title="App\Services\CollaboratorService::transferOwnership">transferOwnership</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#21"><abbr title="App\Services\CustomRoleService::createRole">createRole</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#44"><abbr title="App\Services\CustomRoleService::updateRole">updateRole</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#145"><abbr title="App\Services\CustomRoleService::validateRoleCreationForUser">validateRoleCreationForUser</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#192"><abbr title="App\Services\CustomRoleService::validatePermissions">validatePermissions</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="DashboardService.php.html#232"><abbr title="App\Services\DashboardService::getUserPersonalStats">getUserPersonalStats</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="DashboardService.php.html#442"><abbr title="App\Services\DashboardService::getEventBudgetStats">getEventBudgetStats</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="DashboardService.php.html#481"><abbr title="App\Services\DashboardService::getEventTimeline">getEventTimeline</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="DashboardService.php.html#719"><abbr title="App\Services\DashboardService::calculateTrend">calculateTrend</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EntitlementService.php.html#212"><abbr title="App\Services\EntitlementService::assertWithinLimit">assertWithinLimit</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EventCreationInvitationService.php.html#36"><abbr title="App\Services\EventCreationInvitationService::claimByToken">claimByToken</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EventService.php.html#389"><abbr title="App\Services\EventService::canCreateEvent">canCreateEvent</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#139"><abbr title="App\Services\EventTemplateService::getSuggestedThemes">getSuggestedThemes</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="ExportService.php.html#18"><abbr title="App\Services\ExportService::exportGuestsToCsv">exportGuestsToCsv</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="ExportService.php.html#125"><abbr title="App\Services\ExportService::exportBudgetToCsv">exportBudgetToCsv</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FirebaseService.php.html#156"><abbr title="App\Services\FirebaseService::sendToUser">sendToUser</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FirebaseService.php.html#295"><abbr title="App\Services\FirebaseService::validateToken">validateToken</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FirebaseService.php.html#381"><abbr title="App\Services\FirebaseService::isInvalidTokenError">isInvalidTokenError</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="GuestService.php.html#27"><abbr title="App\Services\GuestService::create">create</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="GuestService.php.html#471"><abbr title="App\Services\GuestService::updateRsvpStatus">updateRsvpStatus</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="GuestService.php.html#486"><abbr title="App\Services\GuestService::getStatistics">getStatistics</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="GuestService.php.html#568"><abbr title="App\Services\GuestService::exportToCsv">exportToCsv</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="NotificationService.php.html#220"><abbr title="App\Services\NotificationService::updatePreferences">updatePreferences</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="OtpService.php.html#231"><abbr title="App\Services\OtpService::sendViaEmail">sendViaEmail</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PhotoService.php.html#222"><abbr title="App\Services\PhotoService::toggleFeatured">toggleFeatured</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PhotoService.php.html#388"><abbr title="App\Services\PhotoService::bulkDelete">bulkDelete</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="QuotaService.php.html#84"><abbr title="App\Services\QuotaService::consumeCreation">consumeCreation</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#96"><abbr title="App\Services\QuoteRequestService::notifyCustomerCallScheduled">notifyCustomerCallScheduled</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#115"><abbr title="App\Services\QuoteRequestService::notifyAdminsOfferResponded">notifyAdminsOfferResponded</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#168"><abbr title="App\Services\QuoteRequestService::notifyAdminsStaleRequest">notifyAdminsStaleRequest</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="S3Service.php.html#101"><abbr title="App\Services\S3Service::uploadContent">uploadContent</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="S3Service.php.html#139"><abbr title="App\Services\S3Service::delete">delete</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="S3Service.php.html#197"><abbr title="App\Services\S3Service::exists">exists</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="S3Service.php.html#229"><abbr title="App\Services\S3Service::getSignedUrl">getSignedUrl</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="S3Service.php.html#303"><abbr title="App\Services\S3Service::copy">copy</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="S3Service.php.html#338"><abbr title="App\Services\S3Service::getMetadata">getMetadata</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="S3Service.php.html#398"><abbr title="App\Services\S3Service::setVisibility">setVisibility</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="StripeService.php.html#32"><abbr title="App\Services\StripeService::getOrCreateCustomer">getOrCreateCustomer</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#155"><abbr title="App\Services\SubscriptionService::canUseFeature">canUseFeature</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TaskService.php.html#21"><abbr title="App\Services\TaskService::create">create</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TaskService.php.html#84"><abbr title="App\Services\TaskService::complete">complete</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TaskService.php.html#133"><abbr title="App\Services\TaskService::applyTemplateTask">applyTemplateTask</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TaskService.php.html#161"><abbr title="App\Services\TaskService::calculateDueDate">calculateDueDate</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TaskService.php.html#266"><abbr title="App\Services\TaskService::scheduleReminders">scheduleReminders</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TwilioService.php.html#20"><abbr title="App\Services\TwilioService::__construct">__construct</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TwilioService.php.html#247"><abbr title="App\Services\TwilioService::sendBulkSms">sendBulkSms</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TwilioService.php.html#274"><abbr title="App\Services\TwilioService::getMessageStatus">getMessageStatus</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="TwilioService.php.html#303"><abbr title="App\Services\TwilioService::validatePhoneNumber">validatePhoneNumber</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PaymentService.php.html#408"><abbr title="App\Services\PaymentService::processAirtelCallback">processAirtelCallback</abbr></a></td><td class="text-right">9</td></tr>
+       <tr><td><a href="PaymentService.php.html#778"><abbr title="App\Services\PaymentService::getFailureReasonMessage">getFailureReasonMessage</abbr></a></td><td class="text-right">7</td></tr>
+       <tr><td><a href="Support/SubscriptionLifecycle.php.html#17"><abbr title="App\Services\Support\SubscriptionLifecycle::buildPayload">buildPayload</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="ActivityService.php.html#150"><abbr title="App\Services\ActivityService::logUserAction">logUserAction</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="ActivityService.php.html#196"><abbr title="App\Services\ActivityService::logTemplateAction">logTemplateAction</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="AuthTokenService.php.html#17"><abbr title="App\Services\AuthTokenService::issueTokens">issueTokens</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="AuthTokenService.php.html#65"><abbr title="App\Services\AuthTokenService::revokeCurrentRefreshToken">revokeCurrentRefreshToken</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="BudgetService.php.html#178"><abbr title="App\Services\BudgetService::sendBudgetAlert">sendBudgetAlert</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="BudgetService.php.html#263"><abbr title="App\Services\BudgetService::duplicateFromEvent">duplicateFromEvent</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#251"><abbr title="App\Services\CollaboratorService::remove">remove</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#504"><abbr title="App\Services\CollaboratorService::resendInvitation">resendInvitation</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CollaboratorService.php.html#581"><abbr title="App\Services\CollaboratorService::assertRolesWithinLimit">assertRolesWithinLimit</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#64"><abbr title="App\Services\CustomRoleService::deleteRole">deleteRole</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CustomRoleService.php.html#90"><abbr title="App\Services\CustomRoleService::getSystemRoles">getSystemRoles</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="DashboardService.php.html#215"><abbr title="App\Services\DashboardService::getUserStats">getUserStats</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="DashboardService.php.html#336"><abbr title="App\Services\DashboardService::calculateConversionRate">calculateConversionRate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="DashboardService.php.html#388"><abbr title="App\Services\DashboardService::calculateResponseRate">calculateResponseRate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="DashboardService.php.html#427"><abbr title="App\Services\DashboardService::calculateCompletionRate">calculateCompletionRate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="DashboardService.php.html#701"><abbr title="App\Services\DashboardService::calculatePreviousPeriodDates">calculatePreviousPeriodDates</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="DashboardService.php.html#1146"><abbr title="App\Services\DashboardService::formatRelativeTime">formatRelativeTime</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EntitlementService.php.html#201"><abbr title="App\Services\EntitlementService::assertCan">assertCan</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EventService.php.html#329"><abbr title="App\Services\EventService::getBudgetSummary">getBudgetSummary</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EventService.php.html#354"><abbr title="App\Services\EventService::getStatistics">getStatistics</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EventService.php.html#416"><abbr title="App\Services\EventService::getAvailableTemplates">getAvailableTemplates</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#179"><abbr title="App\Services\EventTemplateService::formatTasks">formatTasks</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EventTemplateService.php.html#198"><abbr title="App\Services\EventTemplateService::formatBudgetItems">formatBudgetItems</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="ExportService.php.html#260"><abbr title="App\Services\ExportService::exportTasksToCsv">exportTasksToCsv</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="FirebaseService.php.html#20"><abbr title="App\Services\FirebaseService::__construct">__construct</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="FirebaseService.php.html#349"><abbr title="App\Services\FirebaseService::getWebPushConfig">getWebPushConfig</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="FirebaseService.php.html#437"><abbr title="App\Services\FirebaseService::sendGuestRsvp">sendGuestRsvp</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GuestService.php.html#242"><abbr title="App\Services\GuestService::regenerateToken">regenerateToken</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GuestService.php.html#391"><abbr title="App\Services\GuestService::sendReminders">sendReminders</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GuestService.php.html#522"><abbr title="App\Services\GuestService::canAddGuest">canAddGuest</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GuestService.php.html#546"><abbr title="App\Services\GuestService::getRemainingSlots">getRemainingSlots</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="NotificationService.php.html#70"><abbr title="App\Services\NotificationService::sendTaskReminder">sendTaskReminder</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="NotificationService.php.html#120"><abbr title="App\Services\NotificationService::sendEventReminder">sendEventReminder</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="NotificationService.php.html#170"><abbr title="App\Services\NotificationService::getUserNotifications">getUserNotifications</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="NotificationService.php.html#196"><abbr title="App\Services\NotificationService::getUserPreferences">getUserPreferences</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OtpService.php.html#76"><abbr title="App\Services\OtpService::generateAndSend">generateAndSend</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OtpService.php.html#263"><abbr title="App\Services\OtpService::sendViaSms">sendViaSms</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OtpService.php.html#287"><abbr title="App\Services\OtpService::sendViaWhatsApp">sendViaWhatsApp</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OtpService.php.html#359"><abbr title="App\Services\OtpService::maskIdentifier">maskIdentifier</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PaymentService.php.html#557"><abbr title="App\Services\PaymentService::checkAirtelStatus">checkAirtelStatus</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PaymentService.php.html#641"><abbr title="App\Services\PaymentService::getAirtelAccessToken">getAirtelAccessToken</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PhotoService.php.html#359"><abbr title="App\Services\PhotoService::getMaxPhotos">getMaxPhotos</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PlanService.php.html#185"><abbr title="App\Services\PlanService::getDefaultPlan">getDefaultPlan</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PlanService.php.html#200"><abbr title="App\Services\PlanService::create">create</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PlanService.php.html#234"><abbr title="App\Services\PlanService::delete">delete</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="QuotaService.php.html#135"><abbr title="App\Services\QuotaService::getTopUpCredits">getTopUpCredits</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#45"><abbr title="App\Services\QuoteRequestService::ensureWorkflowStages">ensureWorkflowStages</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#79"><abbr title="App\Services\QuoteRequestService::notifyAdminsNewRequest">notifyAdminsNewRequest</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#87"><abbr title="App\Services\QuoteRequestService::notifyCustomerUpdate">notifyCustomerUpdate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="QuoteRequestService.php.html#105"><abbr title="App\Services\QuoteRequestService::notifyCustomerOfferCreated">notifyCustomerOfferCreated</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="S3Service.php.html#40"><abbr title="App\Services\S3Service::isConfigured">isConfigured</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="S3Service.php.html#217"><abbr title="App\Services\S3Service::getUrl">getUrl</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="S3Service.php.html#327"><abbr title="App\Services\S3Service::move">move</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="S3Service.php.html#431"><abbr title="App\Services\S3Service::buildKey">buildKey</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="S3Service.php.html#503"><abbr title="App\Services\S3Service::deleteEventFiles">deleteEventFiles</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="StripeService.php.html#168"><abbr title="App\Services\StripeService::cancelSubscription">cancelSubscription</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="StripeService.php.html#355"><abbr title="App\Services\StripeService::refund">refund</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#93"><abbr title="App\Services\SubscriptionService::upgrade">upgrade</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#182"><abbr title="App\Services\SubscriptionService::canAddGuests">canAddGuests</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#207"><abbr title="App\Services\SubscriptionService::getRemainingGuestSlots">getRemainingGuestSlots</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TaskBudgetService.php.html#52"><abbr title="App\Services\TaskBudgetService::removeBudgetItemFromTask">removeBudgetItemFromTask</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TaskService.php.html#109"><abbr title="App\Services\TaskService::updateStatus">updateStatus</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TaskService.php.html#232"><abbr title="App\Services\TaskService::notifyAssignment">notifyAssignment</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TaskService.php.html#291"><abbr title="App\Services\TaskService::bulkUpdateStatus">bulkUpdateStatus</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TaskService.php.html#305"><abbr title="App\Services\TaskService::reorder">reorder</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TwilioService.php.html#351"><abbr title="App\Services\TwilioService::formatWhatsAppNumber">formatWhatsAppNumber</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TwilioService.php.html#435"><abbr title="App\Services\TwilioService::getRsvpConfirmationTemplate">getRsvpConfirmationTemplate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#512"><abbr title="App\Services\SubscriptionService::syncAccountEventLimits">syncAccountEventLimits</abbr></a></td><td class="text-right">4</td></tr>
+       <tr><td><a href="PaymentService.php.html#441"><abbr title="App\Services\PaymentService::checkStatus">checkStatus</abbr></a></td><td class="text-right">4</td></tr>
+       <tr><td><a href="ActivityService.php.html#40"><abbr title="App\Services\ActivityService::logAction">logAction</abbr></a></td><td class="text-right">3</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.12</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.21</a> and <a href="https://phpunit.de/">PHPUnit 11.5.51</a> at Thu May 14 15:42:39 UTC 2026.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([22,0,0,2,1,0,2,1,0,0,0,2], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([416,0,1,0,0,0,3,4,1,0,2,33], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[32,46,"<a href=\"ActivityService.php.html#16\">App\\Services\\ActivityService<\/a>"],[100,0,"<a href=\"AdminActivityService.php.html#9\">App\\Services\\AdminActivityService<\/a>"],[0,4,"<a href=\"AuthTokenService.php.html#10\">App\\Services\\AuthTokenService<\/a>"],[0,37,"<a href=\"BudgetService.php.html#13\">App\\Services\\BudgetService<\/a>"],[0,70,"<a href=\"CollaboratorService.php.html#16\">App\\Services\\CollaboratorService<\/a>"],[0,25,"<a href=\"CustomRoleService.php.html#12\">App\\Services\\CustomRoleService<\/a>"],[0,100,"<a href=\"DashboardService.php.html#14\">App\\Services\\DashboardService<\/a>"],[52.98507462686567,36,"<a href=\"EntitlementService.php.html#11\">App\\Services\\EntitlementService<\/a>"],[0,5,"<a href=\"EventCreationInvitationService.php.html#10\">App\\Services\\EventCreationInvitationService<\/a>"],[0,61,"<a href=\"EventService.php.html#14\">App\\Services\\EventService<\/a>"],[100,13,"<a href=\"EventStatusService.php.html#8\">App\\Services\\EventStatusService<\/a>"],[0,32,"<a href=\"EventTemplateService.php.html#9\">App\\Services\\EventTemplateService<\/a>"],[0,43,"<a href=\"ExportService.php.html#11\">App\\Services\\ExportService<\/a>"],[0,51,"<a href=\"FirebaseService.php.html#16\">App\\Services\\FirebaseService<\/a>"],[0,93,"<a href=\"GuestService.php.html#18\">App\\Services\\GuestService<\/a>"],[0,37,"<a href=\"NotificationService.php.html#14\">App\\Services\\NotificationService<\/a>"],[0,36,"<a href=\"OtpService.php.html#10\">App\\Services\\OtpService<\/a>"],[24.843423799582464,91,"<a href=\"PaymentService.php.html#14\">App\\Services\\PaymentService<\/a>"],[28.87323943661972,68,"<a href=\"PermissionService.php.html#12\">App\\Services\\PermissionService<\/a>"],[0,61,"<a href=\"PhotoService.php.html#16\">App\\Services\\PhotoService<\/a>"],[0,34,"<a href=\"PlanService.php.html#10\">App\\Services\\PlanService<\/a>"],[0,25,"<a href=\"QuotaService.php.html#9\">App\\Services\\QuotaService<\/a>"],[0,24,"<a href=\"QuoteRequestService.php.html#20\">App\\Services\\QuoteRequestService<\/a>"],[0,60,"<a href=\"S3Service.php.html#11\">App\\Services\\S3Service<\/a>"],[0,38,"<a href=\"StripeService.php.html#19\">App\\Services\\StripeService<\/a>"],[55.14950166112956,60,"<a href=\"SubscriptionService.php.html#12\">App\\Services\\SubscriptionService<\/a>"],[62.857142857142854,16,"<a href=\"Support\/SubscriptionLifecycle.php.html#12\">App\\Services\\Support\\SubscriptionLifecycle<\/a>"],[0,20,"<a href=\"TaskBudgetService.php.html#8\">App\\Services\\TaskBudgetService<\/a>"],[0,43,"<a href=\"TaskService.php.html#16\">App\\Services\\TaskService<\/a>"],[0,49,"<a href=\"TwilioService.php.html#12\">App\\Services\\TwilioService<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[0,1,"<a href=\"ActivityService.php.html#27\">App\\Services\\ActivityService::sync<\/a>"],[61.29032258064516,3,"<a href=\"ActivityService.php.html#40\">App\\Services\\ActivityService::logAction<\/a>"],[0,4,"<a href=\"ActivityService.php.html#92\">App\\Services\\ActivityService::logLogin<\/a>"],[0,4,"<a href=\"ActivityService.php.html#119\">App\\Services\\ActivityService::logLogout<\/a>"],[0,2,"<a href=\"ActivityService.php.html#150\">App\\Services\\ActivityService::logUserAction<\/a>"],[0,1,"<a href=\"ActivityService.php.html#175\">App\\Services\\ActivityService::logEventAction<\/a>"],[0,2,"<a href=\"ActivityService.php.html#196\">App\\Services\\ActivityService::logTemplateAction<\/a>"],[0,1,"<a href=\"ActivityService.php.html#220\">App\\Services\\ActivityService::logSubscriptionAction<\/a>"],[0,1,"<a href=\"ActivityService.php.html#248\">App\\Services\\ActivityService::logUserEventAction<\/a>"],[0,1,"<a href=\"ActivityService.php.html#272\">App\\Services\\ActivityService::logProfileAction<\/a>"],[0,5,"<a href=\"ActivityService.php.html#296\">App\\Services\\ActivityService::logFrontendBatch<\/a>"],[0,3,"<a href=\"ActivityService.php.html#340\">App\\Services\\ActivityService::buildFrontendDescription<\/a>"],[0,1,"<a href=\"ActivityService.php.html#362\">App\\Services\\ActivityService::getActivityForUser<\/a>"],[0,1,"<a href=\"ActivityService.php.html#373\">App\\Services\\ActivityService::getActivityForAdmin<\/a>"],[100,1,"<a href=\"ActivityService.php.html#381\">App\\Services\\ActivityService::getRecentActivity<\/a>"],[97.36842105263158,3,"<a href=\"ActivityService.php.html#391\">App\\Services\\ActivityService::getActivityStats<\/a>"],[0,12,"<a href=\"ActivityService.php.html#486\">App\\Services\\ActivityService::getActivityLogs<\/a>"],[0,2,"<a href=\"AuthTokenService.php.html#17\">App\\Services\\AuthTokenService::issueTokens<\/a>"],[0,2,"<a href=\"AuthTokenService.php.html#65\">App\\Services\\AuthTokenService::revokeCurrentRefreshToken<\/a>"],[0,1,"<a href=\"BudgetService.php.html#18\">App\\Services\\BudgetService::create<\/a>"],[0,1,"<a href=\"BudgetService.php.html#30\">App\\Services\\BudgetService::update<\/a>"],[0,1,"<a href=\"BudgetService.php.html#42\">App\\Services\\BudgetService::delete<\/a>"],[0,4,"<a href=\"BudgetService.php.html#50\">App\\Services\\BudgetService::getStatistics<\/a>"],[0,1,"<a href=\"BudgetService.php.html#87\">App\\Services\\BudgetService::getByCategory<\/a>"],[0,1,"<a href=\"BudgetService.php.html#109\">App\\Services\\BudgetService::getOverBudgetItems<\/a>"],[0,1,"<a href=\"BudgetService.php.html#119\">App\\Services\\BudgetService::getUnpaidItems<\/a>"],[0,4,"<a href=\"BudgetService.php.html#132\">App\\Services\\BudgetService::getItemsDueForPayment<\/a>"],[0,4,"<a href=\"BudgetService.php.html#150\">App\\Services\\BudgetService::checkBudgetAlerts<\/a>"],[0,2,"<a href=\"BudgetService.php.html#178\">App\\Services\\BudgetService::sendBudgetAlert<\/a>"],[0,5,"<a href=\"BudgetService.php.html#205\">App\\Services\\BudgetService::applyFromTemplate<\/a>"],[0,1,"<a href=\"BudgetService.php.html#237\">App\\Services\\BudgetService::markAsPaid<\/a>"],[0,1,"<a href=\"BudgetService.php.html#250\">App\\Services\\BudgetService::markAsUnpaid<\/a>"],[0,2,"<a href=\"BudgetService.php.html#263\">App\\Services\\BudgetService::duplicateFromEvent<\/a>"],[0,1,"<a href=\"BudgetService.php.html#287\">App\\Services\\BudgetService::generatePdf<\/a>"],[0,3,"<a href=\"BudgetService.php.html#305\">App\\Services\\BudgetService::exportToCsv<\/a>"],[0,4,"<a href=\"BudgetService.php.html#339\">App\\Services\\BudgetService::getDashboardSummary<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#23\">App\\Services\\CollaboratorService::invite<\/a>"],[0,4,"<a href=\"CollaboratorService.php.html#31\">App\\Services\\CollaboratorService::inviteWithRoles<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#67\">App\\Services\\CollaboratorService::inviteByEmail<\/a>"],[0,5,"<a href=\"CollaboratorService.php.html#77\">App\\Services\\CollaboratorService::inviteByEmailWithRoles<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#101\">App\\Services\\CollaboratorService::hasPendingInvitation<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#111\">App\\Services\\CollaboratorService::createPendingInvitation<\/a>"],[0,7,"<a href=\"CollaboratorService.php.html#132\">App\\Services\\CollaboratorService::claimPendingInvitationsForUser<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#167\">App\\Services\\CollaboratorService::accept<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#180\">App\\Services\\CollaboratorService::decline<\/a>"],[0,3,"<a href=\"CollaboratorService.php.html#191\">App\\Services\\CollaboratorService::updateRole<\/a>"],[0,4,"<a href=\"CollaboratorService.php.html#214\">App\\Services\\CollaboratorService::updateRoles<\/a>"],[0,2,"<a href=\"CollaboratorService.php.html#251\">App\\Services\\CollaboratorService::remove<\/a>"],[0,3,"<a href=\"CollaboratorService.php.html#267\">App\\Services\\CollaboratorService::leave<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#283\">App\\Services\\CollaboratorService::isCollaborator<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#291\">App\\Services\\CollaboratorService::getCollaborator<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#299\">App\\Services\\CollaboratorService::getCollaborators<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#310\">App\\Services\\CollaboratorService::getPendingCollaborationInvitations<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#320\">App\\Services\\CollaboratorService::getPendingInvitations<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#331\">App\\Services\\CollaboratorService::getAcceptedCollaborators<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#342\">App\\Services\\CollaboratorService::getUserPendingInvitations<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#355\">App\\Services\\CollaboratorService::getUserCollaborations<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#367\">App\\Services\\CollaboratorService::canAddCollaborator<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#378\">App\\Services\\CollaboratorService::getRemainingSlots<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#386\">App\\Services\\CollaboratorService::getStatistics<\/a>"],[0,3,"<a href=\"CollaboratorService.php.html#404\">App\\Services\\CollaboratorService::transferOwnership<\/a>"],[0,10,"<a href=\"CollaboratorService.php.html#442\">App\\Services\\CollaboratorService::getInvitationByToken<\/a>"],[0,2,"<a href=\"CollaboratorService.php.html#504\">App\\Services\\CollaboratorService::resendInvitation<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#518\">App\\Services\\CollaboratorService::notifyOwnerOfAcceptance<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#533\">App\\Services\\CollaboratorService::notifyOwnerOfDecline<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#548\">App\\Services\\CollaboratorService::notifyRoleChange<\/a>"],[0,1,"<a href=\"CollaboratorService.php.html#565\">App\\Services\\CollaboratorService::notifyRemoval<\/a>"],[0,2,"<a href=\"CollaboratorService.php.html#581\">App\\Services\\CollaboratorService::assertRolesWithinLimit<\/a>"],[0,4,"<a href=\"CollaboratorService.php.html#599\">App\\Services\\CollaboratorService::trimRolesToMax<\/a>"],[0,1,"<a href=\"CustomRoleService.php.html#14\">App\\Services\\CustomRoleService::__construct<\/a>"],[0,3,"<a href=\"CustomRoleService.php.html#21\">App\\Services\\CustomRoleService::createRole<\/a>"],[0,3,"<a href=\"CustomRoleService.php.html#44\">App\\Services\\CustomRoleService::updateRole<\/a>"],[0,2,"<a href=\"CustomRoleService.php.html#64\">App\\Services\\CustomRoleService::deleteRole<\/a>"],[0,1,"<a href=\"CustomRoleService.php.html#79\">App\\Services\\CustomRoleService::getRolesForEvent<\/a>"],[0,2,"<a href=\"CustomRoleService.php.html#90\">App\\Services\\CustomRoleService::getSystemRoles<\/a>"],[0,1,"<a href=\"CustomRoleService.php.html#114\">App\\Services\\CustomRoleService::getSystemRolesForEvent<\/a>"],[0,1,"<a href=\"CustomRoleService.php.html#122\">App\\Services\\CustomRoleService::getCustomRolesForEvent<\/a>"],[0,3,"<a href=\"CustomRoleService.php.html#145\">App\\Services\\CustomRoleService::validateRoleCreationForUser<\/a>"],[0,5,"<a href=\"CustomRoleService.php.html#169\">App\\Services\\CustomRoleService::validateRoleUpdate<\/a>"],[0,3,"<a href=\"CustomRoleService.php.html#192\">App\\Services\\CustomRoleService::validatePermissions<\/a>"],[0,1,"<a href=\"DashboardService.php.html#21\">App\\Services\\DashboardService::getAdminStats<\/a>"],[0,11,"<a href=\"DashboardService.php.html#34\">App\\Services\\DashboardService::getAdminDashboardStatsWithFilters<\/a>"],[0,1,"<a href=\"DashboardService.php.html#182\">App\\Services\\DashboardService::getPlanDistribution<\/a>"],[0,2,"<a href=\"DashboardService.php.html#215\">App\\Services\\DashboardService::getUserStats<\/a>"],[0,3,"<a href=\"DashboardService.php.html#232\">App\\Services\\DashboardService::getUserPersonalStats<\/a>"],[0,1,"<a href=\"DashboardService.php.html#267\">App\\Services\\DashboardService::getEventStats<\/a>"],[0,1,"<a href=\"DashboardService.php.html#292\">App\\Services\\DashboardService::getRevenueStats<\/a>"],[0,1,"<a href=\"DashboardService.php.html#317\">App\\Services\\DashboardService::getSubscriptionStats<\/a>"],[0,2,"<a href=\"DashboardService.php.html#336\">App\\Services\\DashboardService::calculateConversionRate<\/a>"],[0,1,"<a href=\"DashboardService.php.html#351\">App\\Services\\DashboardService::getEventDashboard<\/a>"],[0,1,"<a href=\"DashboardService.php.html#369\">App\\Services\\DashboardService::getEventGuestStats<\/a>"],[0,2,"<a href=\"DashboardService.php.html#388\">App\\Services\\DashboardService::calculateResponseRate<\/a>"],[0,1,"<a href=\"DashboardService.php.html#403\">App\\Services\\DashboardService::getEventTaskStats<\/a>"],[0,2,"<a href=\"DashboardService.php.html#427\">App\\Services\\DashboardService::calculateCompletionRate<\/a>"],[0,3,"<a href=\"DashboardService.php.html#442\">App\\Services\\DashboardService::getEventBudgetStats<\/a>"],[0,3,"<a href=\"DashboardService.php.html#481\">App\\Services\\DashboardService::getEventTimeline<\/a>"],[0,1,"<a href=\"DashboardService.php.html#523\">App\\Services\\DashboardService::getUpcomingTasks<\/a>"],[0,4,"<a href=\"DashboardService.php.html#536\">App\\Services\\DashboardService::getRecentActivity<\/a>"],[0,5,"<a href=\"DashboardService.php.html#576\">App\\Services\\DashboardService::getChartData<\/a>"],[0,1,"<a href=\"DashboardService.php.html#595\">App\\Services\\DashboardService::getRevenueChartData<\/a>"],[0,1,"<a href=\"DashboardService.php.html#613\">App\\Services\\DashboardService::getEventsChartData<\/a>"],[0,1,"<a href=\"DashboardService.php.html#630\">App\\Services\\DashboardService::getUsersChartData<\/a>"],[0,1,"<a href=\"DashboardService.php.html#647\">App\\Services\\DashboardService::getUserEventsQuery<\/a>"],[0,10,"<a href=\"DashboardService.php.html#662\">App\\Services\\DashboardService::calculatePeriodDates<\/a>"],[0,2,"<a href=\"DashboardService.php.html#701\">App\\Services\\DashboardService::calculatePreviousPeriodDates<\/a>"],[0,3,"<a href=\"DashboardService.php.html#719\">App\\Services\\DashboardService::calculateTrend<\/a>"],[0,4,"<a href=\"DashboardService.php.html#741\">App\\Services\\DashboardService::getUserStatsWithFilters<\/a>"],[0,6,"<a href=\"DashboardService.php.html#808\">App\\Services\\DashboardService::calculateStatsForEvents<\/a>"],[0,8,"<a href=\"DashboardService.php.html#902\">App\\Services\\DashboardService::getConfirmationsData<\/a>"],[0,6,"<a href=\"DashboardService.php.html#994\">App\\Services\\DashboardService::getEventsByTypeData<\/a>"],[0,9,"<a href=\"DashboardService.php.html#1055\">App\\Services\\DashboardService::getUserRecentActivity<\/a>"],[0,2,"<a href=\"DashboardService.php.html#1146\">App\\Services\\DashboardService::formatRelativeTime<\/a>"],[0,5,"<a href=\"EntitlementService.php.html#52\">App\\Services\\EntitlementService::can<\/a>"],[100,3,"<a href=\"EntitlementService.php.html#75\">App\\Services\\EntitlementService::limit<\/a>"],[0,1,"<a href=\"EntitlementService.php.html#89\">App\\Services\\EntitlementService::isUnlimited<\/a>"],[100,4,"<a href=\"EntitlementService.php.html#97\">App\\Services\\EntitlementService::getEffectiveEntitlements<\/a>"],[0,5,"<a href=\"EntitlementService.php.html#153\">App\\Services\\EntitlementService::getEventEntitlements<\/a>"],[0,2,"<a href=\"EntitlementService.php.html#201\">App\\Services\\EntitlementService::assertCan<\/a>"],[0,3,"<a href=\"EntitlementService.php.html#212\">App\\Services\\EntitlementService::assertWithinLimit<\/a>"],[100,1,"<a href=\"EntitlementService.php.html#230\">App\\Services\\EntitlementService::getActiveSubscription<\/a>"],[100,1,"<a href=\"EntitlementService.php.html#250\">App\\Services\\EntitlementService::getLatestAccountSubscription<\/a>"],[100,1,"<a href=\"EntitlementService.php.html#262\">App\\Services\\EntitlementService::buildLifecyclePayload<\/a>"],[100,1,"<a href=\"EntitlementService.php.html#270\">App\\Services\\EntitlementService::buildRestrictions<\/a>"],[0,1,"<a href=\"EntitlementService.php.html#284\">App\\Services\\EntitlementService::hasActiveSubscription<\/a>"],[0,1,"<a href=\"EntitlementService.php.html#292\">App\\Services\\EntitlementService::getCurrentPlan<\/a>"],[0,7,"<a href=\"EntitlementService.php.html#308\">App\\Services\\EntitlementService::getEffectiveLimit<\/a>"],[0,1,"<a href=\"EventCreationInvitationService.php.html#16\">App\\Services\\EventCreationInvitationService::createPendingInvitation<\/a>"],[0,3,"<a href=\"EventCreationInvitationService.php.html#36\">App\\Services\\EventCreationInvitationService::claimByToken<\/a>"],[0,1,"<a href=\"EventCreationInvitationService.php.html#64\">App\\Services\\EventCreationInvitationService::getInvitationByToken<\/a>"],[0,1,"<a href=\"EventService.php.html#16\">App\\Services\\EventService::__construct<\/a>"],[0,13,"<a href=\"EventService.php.html#35\">App\\Services\\EventService::create<\/a>"],[0,5,"<a href=\"EventService.php.html#92\">App\\Services\\EventService::update<\/a>"],[0,17,"<a href=\"EventService.php.html#109\">App\\Services\\EventService::duplicate<\/a>"],[0,5,"<a href=\"EventService.php.html#234\">App\\Services\\EventService::applyTemplate<\/a>"],[0,6,"<a href=\"EventService.php.html#259\">App\\Services\\EventService::autoApplyTemplate<\/a>"],[0,1,"<a href=\"EventService.php.html#283\">App\\Services\\EventService::getEstimatedBudget<\/a>"],[0,1,"<a href=\"EventService.php.html#291\">App\\Services\\EventService::updateStatus<\/a>"],[0,1,"<a href=\"EventService.php.html#301\">App\\Services\\EventService::cancel<\/a>"],[0,1,"<a href=\"EventService.php.html#310\">App\\Services\\EventService::complete<\/a>"],[0,1,"<a href=\"EventService.php.html#318\">App\\Services\\EventService::recalculateActualBudget<\/a>"],[0,2,"<a href=\"EventService.php.html#329\">App\\Services\\EventService::getBudgetSummary<\/a>"],[0,2,"<a href=\"EventService.php.html#354\">App\\Services\\EventService::getStatistics<\/a>"],[0,3,"<a href=\"EventService.php.html#389\">App\\Services\\EventService::canCreateEvent<\/a>"],[0,2,"<a href=\"EventService.php.html#416\">App\\Services\\EventService::getAvailableTemplates<\/a>"],[100,5,"<a href=\"EventStatusService.php.html#21\">App\\Services\\EventStatusService::canTransitionTo<\/a>"],[100,5,"<a href=\"EventStatusService.php.html#37\">App\\Services\\EventStatusService::getTransitionErrorMessage<\/a>"],[100,3,"<a href=\"EventStatusService.php.html#53\">App\\Services\\EventStatusService::getEventStart<\/a>"],[0,1,"<a href=\"EventTemplateService.php.html#15\">App\\Services\\EventTemplateService::getActiveTemplates<\/a>"],[0,1,"<a href=\"EventTemplateService.php.html#27\">App\\Services\\EventTemplateService::getTemplatesByType<\/a>"],[0,1,"<a href=\"EventTemplateService.php.html#38\">App\\Services\\EventTemplateService::getTemplate<\/a>"],[0,6,"<a href=\"EventTemplateService.php.html#46\">App\\Services\\EventTemplateService::applyToEvent<\/a>"],[0,6,"<a href=\"EventTemplateService.php.html#79\">App\\Services\\EventTemplateService::applyTasks<\/a>"],[0,4,"<a href=\"EventTemplateService.php.html#113\">App\\Services\\EventTemplateService::applyBudgetItems<\/a>"],[0,3,"<a href=\"EventTemplateService.php.html#139\">App\\Services\\EventTemplateService::getSuggestedThemes<\/a>"],[0,1,"<a href=\"EventTemplateService.php.html#156\">App\\Services\\EventTemplateService::previewApplication<\/a>"],[0,2,"<a href=\"EventTemplateService.php.html#179\">App\\Services\\EventTemplateService::formatTasks<\/a>"],[0,2,"<a href=\"EventTemplateService.php.html#198\">App\\Services\\EventTemplateService::formatBudgetItems<\/a>"],[0,1,"<a href=\"EventTemplateService.php.html#216\">App\\Services\\EventTemplateService::getTemplatesGroupedByType<\/a>"],[0,4,"<a href=\"EventTemplateService.php.html#228\">App\\Services\\EventTemplateService::createFromEvent<\/a>"],[0,3,"<a href=\"ExportService.php.html#18\">App\\Services\\ExportService::exportGuestsToCsv<\/a>"],[0,1,"<a href=\"ExportService.php.html#70\">App\\Services\\ExportService::exportGuestsToPdf<\/a>"],[0,6,"<a href=\"ExportService.php.html#98\">App\\Services\\ExportService::applyFilters<\/a>"],[0,3,"<a href=\"ExportService.php.html#125\">App\\Services\\ExportService::exportBudgetToCsv<\/a>"],[0,1,"<a href=\"ExportService.php.html#187\">App\\Services\\ExportService::exportBudgetToPdf<\/a>"],[0,1,"<a href=\"ExportService.php.html#219\">App\\Services\\ExportService::exportEventReportPdf<\/a>"],[0,2,"<a href=\"ExportService.php.html#260\">App\\Services\\ExportService::exportTasksToCsv<\/a>"],[0,6,"<a href=\"ExportService.php.html#307\">App\\Services\\ExportService::getRsvpLabel<\/a>"],[0,9,"<a href=\"ExportService.php.html#321\">App\\Services\\ExportService::getCategoryLabel<\/a>"],[0,6,"<a href=\"ExportService.php.html#338\">App\\Services\\ExportService::getStatusLabel<\/a>"],[0,5,"<a href=\"ExportService.php.html#352\">App\\Services\\ExportService::getPriorityLabel<\/a>"],[0,2,"<a href=\"FirebaseService.php.html#20\">App\\Services\\FirebaseService::__construct<\/a>"],[0,1,"<a href=\"FirebaseService.php.html#30\">App\\Services\\FirebaseService::isConfigured<\/a>"],[0,5,"<a href=\"FirebaseService.php.html#38\">App\\Services\\FirebaseService::sendToDevice<\/a>"],[0,8,"<a href=\"FirebaseService.php.html#90\">App\\Services\\FirebaseService::sendToDevices<\/a>"],[0,3,"<a href=\"FirebaseService.php.html#156\">App\\Services\\FirebaseService::sendToUser<\/a>"],[0,4,"<a href=\"FirebaseService.php.html#189\">App\\Services\\FirebaseService::sendToUsers<\/a>"],[0,4,"<a href=\"FirebaseService.php.html#217\">App\\Services\\FirebaseService::sendToTopic<\/a>"],[0,4,"<a href=\"FirebaseService.php.html#257\">App\\Services\\FirebaseService::subscribeToTopic<\/a>"],[0,4,"<a href=\"FirebaseService.php.html#276\">App\\Services\\FirebaseService::unsubscribeFromTopic<\/a>"],[0,3,"<a href=\"FirebaseService.php.html#295\">App\\Services\\FirebaseService::validateToken<\/a>"],[0,1,"<a href=\"FirebaseService.php.html#316\">App\\Services\\FirebaseService::getAndroidConfig<\/a>"],[0,1,"<a href=\"FirebaseService.php.html#331\">App\\Services\\FirebaseService::getApnsConfig<\/a>"],[0,2,"<a href=\"FirebaseService.php.html#349\">App\\Services\\FirebaseService::getWebPushConfig<\/a>"],[0,1,"<a href=\"FirebaseService.php.html#373\">App\\Services\\FirebaseService::isInvalidToken<\/a>"],[0,3,"<a href=\"FirebaseService.php.html#381\">App\\Services\\FirebaseService::isInvalidTokenError<\/a>"],[0,1,"<a href=\"FirebaseService.php.html#402\">App\\Services\\FirebaseService::sendEventReminder<\/a>"],[0,1,"<a href=\"FirebaseService.php.html#419\">App\\Services\\FirebaseService::sendTaskDue<\/a>"],[0,2,"<a href=\"FirebaseService.php.html#437\">App\\Services\\FirebaseService::sendGuestRsvp<\/a>"],[0,1,"<a href=\"FirebaseService.php.html#456\">App\\Services\\FirebaseService::sendCollaborationInvite<\/a>"],[0,1,"<a href=\"GuestService.php.html#20\">App\\Services\\GuestService::__construct<\/a>"],[0,3,"<a href=\"GuestService.php.html#27\">App\\Services\\GuestService::create<\/a>"],[0,1,"<a href=\"GuestService.php.html#45\">App\\Services\\GuestService::update<\/a>"],[0,1,"<a href=\"GuestService.php.html#55\">App\\Services\\GuestService::delete<\/a>"],[0,10,"<a href=\"GuestService.php.html#66\">App\\Services\\GuestService::importFromCsv<\/a>"],[0,5,"<a href=\"GuestService.php.html#151\">App\\Services\\GuestService::parseRowData<\/a>"],[0,4,"<a href=\"GuestService.php.html#175\">App\\Services\\GuestService::getColumnMap<\/a>"],[0,1,"<a href=\"GuestService.php.html#202\">App\\Services\\GuestService::normalizeRsvpStatus<\/a>"],[0,1,"<a href=\"GuestService.php.html#229\">App\\Services\\GuestService::createInvitation<\/a>"],[0,2,"<a href=\"GuestService.php.html#242\">App\\Services\\GuestService::regenerateToken<\/a>"],[0,6,"<a href=\"GuestService.php.html#264\">App\\Services\\GuestService::sendInvitation<\/a>"],[0,7,"<a href=\"GuestService.php.html#311\">App\\Services\\GuestService::sendBulkInvitations<\/a>"],[0,4,"<a href=\"GuestService.php.html#366\">App\\Services\\GuestService::sendReminder<\/a>"],[0,2,"<a href=\"GuestService.php.html#391\">App\\Services\\GuestService::sendReminders<\/a>"],[0,9,"<a href=\"GuestService.php.html#414\">App\\Services\\GuestService::checkIn<\/a>"],[0,1,"<a href=\"GuestService.php.html#458\">App\\Services\\GuestService::undoCheckIn<\/a>"],[0,3,"<a href=\"GuestService.php.html#471\">App\\Services\\GuestService::updateRsvpStatus<\/a>"],[0,3,"<a href=\"GuestService.php.html#486\">App\\Services\\GuestService::getStatistics<\/a>"],[0,2,"<a href=\"GuestService.php.html#522\">App\\Services\\GuestService::canAddGuest<\/a>"],[0,2,"<a href=\"GuestService.php.html#546\">App\\Services\\GuestService::getRemainingSlots<\/a>"],[0,3,"<a href=\"GuestService.php.html#568\">App\\Services\\GuestService::exportToCsv<\/a>"],[0,7,"<a href=\"GuestService.php.html#593\">App\\Services\\GuestService::previewCsvImport<\/a>"],[0,10,"<a href=\"GuestService.php.html#653\">App\\Services\\GuestService::importFromExcel<\/a>"],[0,5,"<a href=\"GuestService.php.html#729\">App\\Services\\GuestService::previewExcelImport<\/a>"],[0,9,"<a href=\"NotificationService.php.html#19\">App\\Services\\NotificationService::send<\/a>"],[0,2,"<a href=\"NotificationService.php.html#70\">App\\Services\\NotificationService::sendTaskReminder<\/a>"],[0,1,"<a href=\"NotificationService.php.html#86\">App\\Services\\NotificationService::sendGuestReminder<\/a>"],[0,4,"<a href=\"NotificationService.php.html#100\">App\\Services\\NotificationService::sendBudgetAlert<\/a>"],[0,2,"<a href=\"NotificationService.php.html#120\">App\\Services\\NotificationService::sendEventReminder<\/a>"],[0,1,"<a href=\"NotificationService.php.html#136\">App\\Services\\NotificationService::sendCollaborationInvite<\/a>"],[0,1,"<a href=\"NotificationService.php.html#150\">App\\Services\\NotificationService::markAsRead<\/a>"],[0,1,"<a href=\"NotificationService.php.html#160\">App\\Services\\NotificationService::markAllAsRead<\/a>"],[0,2,"<a href=\"NotificationService.php.html#170\">App\\Services\\NotificationService::getUserNotifications<\/a>"],[0,1,"<a href=\"NotificationService.php.html#186\">App\\Services\\NotificationService::getUnreadCount<\/a>"],[0,2,"<a href=\"NotificationService.php.html#196\">App\\Services\\NotificationService::getUserPreferences<\/a>"],[0,3,"<a href=\"NotificationService.php.html#220\">App\\Services\\NotificationService::updatePreferences<\/a>"],[0,1,"<a href=\"NotificationService.php.html#250\">App\\Services\\NotificationService::shouldSendByType<\/a>"],[0,1,"<a href=\"NotificationService.php.html#258\">App\\Services\\NotificationService::cleanupOldNotifications<\/a>"],[0,1,"<a href=\"NotificationService.php.html#268\">App\\Services\\NotificationService::getGroupedByDate<\/a>"],[0,1,"<a href=\"NotificationService.php.html#284\">App\\Services\\NotificationService::getStatistics<\/a>"],[0,1,"<a href=\"NotificationService.php.html#299\">App\\Services\\NotificationService::delete<\/a>"],[0,1,"<a href=\"NotificationService.php.html#307\">App\\Services\\NotificationService::bulkDelete<\/a>"],[0,1,"<a href=\"NotificationService.php.html#317\">App\\Services\\NotificationService::registerDeviceToken<\/a>"],[0,1,"<a href=\"NotificationService.php.html#326\">App\\Services\\NotificationService::removeDeviceToken<\/a>"],[0,1,"<a href=\"OtpService.php.html#12\">App\\Services\\OtpService::__construct<\/a>"],[0,1,"<a href=\"OtpService.php.html#19\">App\\Services\\OtpService::generate<\/a>"],[0,5,"<a href=\"OtpService.php.html#55\">App\\Services\\OtpService::send<\/a>"],[0,1,"<a href=\"OtpService.php.html#68\">App\\Services\\OtpService::sendAsync<\/a>"],[0,2,"<a href=\"OtpService.php.html#76\">App\\Services\\OtpService::generateAndSend<\/a>"],[0,4,"<a href=\"OtpService.php.html#97\">App\\Services\\OtpService::verify<\/a>"],[0,4,"<a href=\"OtpService.php.html#171\">App\\Services\\OtpService::resend<\/a>"],[0,1,"<a href=\"OtpService.php.html#219\">App\\Services\\OtpService::cleanup<\/a>"],[0,3,"<a href=\"OtpService.php.html#231\">App\\Services\\OtpService::sendViaEmail<\/a>"],[0,2,"<a href=\"OtpService.php.html#263\">App\\Services\\OtpService::sendViaSms<\/a>"],[0,2,"<a href=\"OtpService.php.html#287\">App\\Services\\OtpService::sendViaWhatsApp<\/a>"],[0,1,"<a href=\"OtpService.php.html#311\">App\\Services\\OtpService::generateCode<\/a>"],[0,1,"<a href=\"OtpService.php.html#319\">App\\Services\\OtpService::invalidateExisting<\/a>"],[0,1,"<a href=\"OtpService.php.html#329\">App\\Services\\OtpService::getOtpMessage<\/a>"],[0,5,"<a href=\"OtpService.php.html#346\">App\\Services\\OtpService::getTypeLabel<\/a>"],[0,2,"<a href=\"OtpService.php.html#359\">App\\Services\\OtpService::maskIdentifier<\/a>"],[10.714285714285714,19,"<a href=\"PaymentService.php.html#21\">App\\Services\\PaymentService::initiateMtnPayment<\/a>"],[0,5,"<a href=\"PaymentService.php.html#253\">App\\Services\\PaymentService::initiateAirtelPayment<\/a>"],[100,1,"<a href=\"PaymentService.php.html#352\">App\\Services\\PaymentService::handleMtnCallback<\/a>"],[0,1,"<a href=\"PaymentService.php.html#362\">App\\Services\\PaymentService::handleAirtelCallback<\/a>"],[100,5,"<a href=\"PaymentService.php.html#372\">App\\Services\\PaymentService::processMtnCallback<\/a>"],[52.94117647058824,6,"<a href=\"PaymentService.php.html#408\">App\\Services\\PaymentService::processAirtelCallback<\/a>"],[50,3,"<a href=\"PaymentService.php.html#441\">App\\Services\\PaymentService::checkStatus<\/a>"],[0,5,"<a href=\"PaymentService.php.html#478\">App\\Services\\PaymentService::checkProviderStatus<\/a>"],[0,6,"<a href=\"PaymentService.php.html#503\">App\\Services\\PaymentService::checkMtnStatus<\/a>"],[0,2,"<a href=\"PaymentService.php.html#557\">App\\Services\\PaymentService::checkAirtelStatus<\/a>"],[0,6,"<a href=\"PaymentService.php.html#579\">App\\Services\\PaymentService::synchronizePaymentWithProviderStatus<\/a>"],[100,1,"<a href=\"PaymentService.php.html#621\">App\\Services\\PaymentService::createPayment<\/a>"],[0,2,"<a href=\"PaymentService.php.html#641\">App\\Services\\PaymentService::getAirtelAccessToken<\/a>"],[100,2,"<a href=\"PaymentService.php.html#665\">App\\Services\\PaymentService::isValidMtnNumber<\/a>"],[0,1,"<a href=\"PaymentService.php.html#681\">App\\Services\\PaymentService::isValidAirtelNumber<\/a>"],[50,9,"<a href=\"PaymentService.php.html#692\">App\\Services\\PaymentService::formatPhoneNumber<\/a>"],[100,3,"<a href=\"PaymentService.php.html#726\">App\\Services\\PaymentService::simulateMtnPayment<\/a>"],[0,6,"<a href=\"PaymentService.php.html#764\">App\\Services\\PaymentService::getStatusMessage<\/a>"],[73.33333333333333,7,"<a href=\"PaymentService.php.html#778\">App\\Services\\PaymentService::getFailureReasonMessage<\/a>"],[0,1,"<a href=\"PaymentService.php.html#801\">App\\Services\\PaymentService::getStatistics<\/a>"],[0,5,"<a href=\"PermissionService.php.html#17\">App\\Services\\PermissionService::getCollaboratorCustomRoles<\/a>"],[0,9,"<a href=\"PermissionService.php.html#34\">App\\Services\\PermissionService::userCan<\/a>"],[0,9,"<a href=\"PermissionService.php.html#72\">App\\Services\\PermissionService::userCanInModule<\/a>"],[0,7,"<a href=\"PermissionService.php.html#110\">App\\Services\\PermissionService::getUserPermissions<\/a>"],[0,1,"<a href=\"PermissionService.php.html#147\">App\\Services\\PermissionService::systemRoleCan<\/a>"],[0,1,"<a href=\"PermissionService.php.html#156\">App\\Services\\PermissionService::systemRoleCanInModule<\/a>"],[91.66666666666666,11,"<a href=\"PermissionService.php.html#167\">App\\Services\\PermissionService::getSystemRolePermissions<\/a>"],[0,1,"<a href=\"PermissionService.php.html#187\">App\\Services\\PermissionService::getAllPermissions<\/a>"],[100,1,"<a href=\"PermissionService.php.html#195\">App\\Services\\PermissionService::getCoordinatorPermissions<\/a>"],[100,1,"<a href=\"PermissionService.php.html#217\">App\\Services\\PermissionService::getGuestManagerPermissions<\/a>"],[100,1,"<a href=\"PermissionService.php.html#230\">App\\Services\\PermissionService::getPlannerPermissions<\/a>"],[100,1,"<a href=\"PermissionService.php.html#241\">App\\Services\\PermissionService::getAccountantPermissions<\/a>"],[100,1,"<a href=\"PermissionService.php.html#253\">App\\Services\\PermissionService::getSupervisorPermissions<\/a>"],[100,1,"<a href=\"PermissionService.php.html#263\">App\\Services\\PermissionService::getReporterPermissions<\/a>"],[0,1,"<a href=\"PermissionService.php.html#275\">App\\Services\\PermissionService::getCollaborator<\/a>"],[0,1,"<a href=\"PermissionService.php.html#286\">App\\Services\\PermissionService::getPermissionsGroupedByModule<\/a>"],[0,8,"<a href=\"PermissionService.php.html#314\">App\\Services\\PermissionService::getModuleLabel<\/a>"],[0,8,"<a href=\"PermissionService.php.html#330\">App\\Services\\PermissionService::getModuleIcon<\/a>"],[0,1,"<a href=\"PhotoService.php.html#21\">App\\Services\\PhotoService::upload<\/a>"],[0,4,"<a href=\"PhotoService.php.html#44\">App\\Services\\PhotoService::uploadMultiple<\/a>"],[0,5,"<a href=\"PhotoService.php.html#60\">App\\Services\\PhotoService::storeFile<\/a>"],[0,5,"<a href=\"PhotoService.php.html#94\">App\\Services\\PhotoService::generateThumbnail<\/a>"],[0,5,"<a href=\"PhotoService.php.html#145\">App\\Services\\PhotoService::compress<\/a>"],[0,7,"<a href=\"PhotoService.php.html#186\">App\\Services\\PhotoService::delete<\/a>"],[0,3,"<a href=\"PhotoService.php.html#222\">App\\Services\\PhotoService::toggleFeatured<\/a>"],[0,1,"<a href=\"PhotoService.php.html#252\">App\\Services\\PhotoService::setAsFeatured<\/a>"],[0,1,"<a href=\"PhotoService.php.html#272\">App\\Services\\PhotoService::getByType<\/a>"],[0,1,"<a href=\"PhotoService.php.html#284\">App\\Services\\PhotoService::getMoodboard<\/a>"],[0,1,"<a href=\"PhotoService.php.html#292\">App\\Services\\PhotoService::getEventPhotos<\/a>"],[0,1,"<a href=\"PhotoService.php.html#300\">App\\Services\\PhotoService::getFeatured<\/a>"],[0,1,"<a href=\"PhotoService.php.html#311\">App\\Services\\PhotoService::updateDescription<\/a>"],[0,1,"<a href=\"PhotoService.php.html#321\">App\\Services\\PhotoService::updateType<\/a>"],[0,1,"<a href=\"PhotoService.php.html#331\">App\\Services\\PhotoService::getStatistics<\/a>"],[0,1,"<a href=\"PhotoService.php.html#346\">App\\Services\\PhotoService::canAddPhotos<\/a>"],[0,2,"<a href=\"PhotoService.php.html#359\">App\\Services\\PhotoService::getMaxPhotos<\/a>"],[0,1,"<a href=\"PhotoService.php.html#377\">App\\Services\\PhotoService::getRemainingSlots<\/a>"],[0,3,"<a href=\"PhotoService.php.html#388\">App\\Services\\PhotoService::bulkDelete<\/a>"],[0,1,"<a href=\"PhotoService.php.html#405\">App\\Services\\PhotoService::bulkUpdateType<\/a>"],[0,1,"<a href=\"PhotoService.php.html#415\">App\\Services\\PhotoService::validatePhotoUploadToken<\/a>"],[0,6,"<a href=\"PhotoService.php.html#428\">App\\Services\\PhotoService::uploadPublic<\/a>"],[0,8,"<a href=\"PhotoService.php.html#468\">App\\Services\\PhotoService::downloadMultiple<\/a>"],[0,1,"<a href=\"PlanService.php.html#15\">App\\Services\\PlanService::getAll<\/a>"],[0,4,"<a href=\"PlanService.php.html#24\">App\\Services\\PlanService::getActive<\/a>"],[0,4,"<a href=\"PlanService.php.html#62\">App\\Services\\PlanService::hasUserUsedPlan<\/a>"],[0,6,"<a href=\"PlanService.php.html#113\">App\\Services\\PlanService::getAvailableTrialPlan<\/a>"],[0,1,"<a href=\"PlanService.php.html#161\">App\\Services\\PlanService::getById<\/a>"],[0,1,"<a href=\"PlanService.php.html#169\">App\\Services\\PlanService::getBySlug<\/a>"],[0,1,"<a href=\"PlanService.php.html#177\">App\\Services\\PlanService::getTrialPlan<\/a>"],[0,2,"<a href=\"PlanService.php.html#185\">App\\Services\\PlanService::getDefaultPlan<\/a>"],[0,2,"<a href=\"PlanService.php.html#200\">App\\Services\\PlanService::create<\/a>"],[0,4,"<a href=\"PlanService.php.html#216\">App\\Services\\PlanService::update<\/a>"],[0,2,"<a href=\"PlanService.php.html#234\">App\\Services\\PlanService::delete<\/a>"],[0,1,"<a href=\"PlanService.php.html#247\">App\\Services\\PlanService::toggleActive<\/a>"],[0,4,"<a href=\"PlanService.php.html#257\">App\\Services\\PlanService::ensureUniqueSlug<\/a>"],[0,1,"<a href=\"PlanService.php.html#280\">App\\Services\\PlanService::getPlanComparison<\/a>"],[0,1,"<a href=\"QuotaService.php.html#11\">App\\Services\\QuotaService::__construct<\/a>"],[0,8,"<a href=\"QuotaService.php.html#18\">App\\Services\\QuotaService::getCreationsQuota<\/a>"],[0,1,"<a href=\"QuotaService.php.html#75\">App\\Services\\QuotaService::canCreateEvent<\/a>"],[0,3,"<a href=\"QuotaService.php.html#84\">App\\Services\\QuotaService::consumeCreation<\/a>"],[0,1,"<a href=\"QuotaService.php.html#106\">App\\Services\\QuotaService::getQuotaPercentage<\/a>"],[0,4,"<a href=\"QuotaService.php.html#115\">App\\Services\\QuotaService::shouldWarnAboutQuota<\/a>"],[0,2,"<a href=\"QuotaService.php.html#135\">App\\Services\\QuotaService::getTopUpCredits<\/a>"],[0,4,"<a href=\"QuotaService.php.html#156\">App\\Services\\QuotaService::getActiveSubscription<\/a>"],[0,1,"<a href=\"QuotaService.php.html#185\">App\\Services\\QuotaService::addTopUp<\/a>"],[0,1,"<a href=\"QuoteRequestService.php.html#22\">App\\Services\\QuoteRequestService::__construct<\/a>"],[0,1,"<a href=\"QuoteRequestService.php.html#24\">App\\Services\\QuoteRequestService::generateTrackingCode<\/a>"],[0,1,"<a href=\"QuoteRequestService.php.html#29\">App\\Services\\QuoteRequestService::logActivity<\/a>"],[0,2,"<a href=\"QuoteRequestService.php.html#45\">App\\Services\\QuoteRequestService::ensureWorkflowStages<\/a>"],[0,2,"<a href=\"QuoteRequestService.php.html#79\">App\\Services\\QuoteRequestService::notifyAdminsNewRequest<\/a>"],[0,2,"<a href=\"QuoteRequestService.php.html#87\">App\\Services\\QuoteRequestService::notifyCustomerUpdate<\/a>"],[0,3,"<a href=\"QuoteRequestService.php.html#96\">App\\Services\\QuoteRequestService::notifyCustomerCallScheduled<\/a>"],[0,2,"<a href=\"QuoteRequestService.php.html#105\">App\\Services\\QuoteRequestService::notifyCustomerOfferCreated<\/a>"],[0,3,"<a href=\"QuoteRequestService.php.html#115\">App\\Services\\QuoteRequestService::notifyAdminsOfferResponded<\/a>"],[0,4,"<a href=\"QuoteRequestService.php.html#134\">App\\Services\\QuoteRequestService::createSubscriptionFromAcceptedOffer<\/a>"],[0,3,"<a href=\"QuoteRequestService.php.html#168\">App\\Services\\QuoteRequestService::notifyAdminsStaleRequest<\/a>"],[0,4,"<a href=\"S3Service.php.html#17\">App\\Services\\S3Service::__construct<\/a>"],[0,2,"<a href=\"S3Service.php.html#40\">App\\Services\\S3Service::isConfigured<\/a>"],[0,4,"<a href=\"S3Service.php.html#48\">App\\Services\\S3Service::upload<\/a>"],[0,3,"<a href=\"S3Service.php.html#101\">App\\Services\\S3Service::uploadContent<\/a>"],[0,3,"<a href=\"S3Service.php.html#139\">App\\Services\\S3Service::delete<\/a>"],[0,4,"<a href=\"S3Service.php.html#163\">App\\Services\\S3Service::deleteMultiple<\/a>"],[0,3,"<a href=\"S3Service.php.html#197\">App\\Services\\S3Service::exists<\/a>"],[0,2,"<a href=\"S3Service.php.html#217\">App\\Services\\S3Service::getUrl<\/a>"],[0,3,"<a href=\"S3Service.php.html#229\">App\\Services\\S3Service::getSignedUrl<\/a>"],[0,4,"<a href=\"S3Service.php.html#257\">App\\Services\\S3Service::getUploadSignedUrl<\/a>"],[0,3,"<a href=\"S3Service.php.html#303\">App\\Services\\S3Service::copy<\/a>"],[0,2,"<a href=\"S3Service.php.html#327\">App\\Services\\S3Service::move<\/a>"],[0,3,"<a href=\"S3Service.php.html#338\">App\\Services\\S3Service::getMetadata<\/a>"],[0,4,"<a href=\"S3Service.php.html#365\">App\\Services\\S3Service::listFiles<\/a>"],[0,3,"<a href=\"S3Service.php.html#398\">App\\Services\\S3Service::setVisibility<\/a>"],[0,1,"<a href=\"S3Service.php.html#422\">App\\Services\\S3Service::generateFilename<\/a>"],[0,2,"<a href=\"S3Service.php.html#431\">App\\Services\\S3Service::buildKey<\/a>"],[0,4,"<a href=\"S3Service.php.html#439\">App\\Services\\S3Service::getAcl<\/a>"],[0,1,"<a href=\"S3Service.php.html#453\">App\\Services\\S3Service::uploadEventPhoto<\/a>"],[0,1,"<a href=\"S3Service.php.html#467\">App\\Services\\S3Service::uploadAvatar<\/a>"],[0,1,"<a href=\"S3Service.php.html#481\">App\\Services\\S3Service::uploadEventDocument<\/a>"],[0,1,"<a href=\"S3Service.php.html#495\">App\\Services\\S3Service::getEventPhotoUrl<\/a>"],[0,2,"<a href=\"S3Service.php.html#503\">App\\Services\\S3Service::deleteEventFiles<\/a>"],[0,1,"<a href=\"StripeService.php.html#23\">App\\Services\\StripeService::__construct<\/a>"],[0,3,"<a href=\"StripeService.php.html#32\">App\\Services\\StripeService::getOrCreateCustomer<\/a>"],[0,1,"<a href=\"StripeService.php.html#61\">App\\Services\\StripeService::createCheckoutSession<\/a>"],[0,1,"<a href=\"StripeService.php.html#120\">App\\Services\\StripeService::createSubscriptionCheckout<\/a>"],[0,1,"<a href=\"StripeService.php.html#149\">App\\Services\\StripeService::createPrice<\/a>"],[0,2,"<a href=\"StripeService.php.html#168\">App\\Services\\StripeService::cancelSubscription<\/a>"],[0,1,"<a href=\"StripeService.php.html#182\">App\\Services\\StripeService::resumeSubscription<\/a>"],[0,12,"<a href=\"StripeService.php.html#192\">App\\Services\\StripeService::handleWebhook<\/a>"],[0,4,"<a href=\"StripeService.php.html#226\">App\\Services\\StripeService::handleCheckoutCompleted<\/a>"],[0,1,"<a href=\"StripeService.php.html#256\">App\\Services\\StripeService::handlePaymentSucceeded<\/a>"],[0,1,"<a href=\"StripeService.php.html#265\">App\\Services\\StripeService::handlePaymentFailed<\/a>"],[0,1,"<a href=\"StripeService.php.html#277\">App\\Services\\StripeService::handleSubscriptionCreated<\/a>"],[0,1,"<a href=\"StripeService.php.html#289\">App\\Services\\StripeService::handleSubscriptionUpdated<\/a>"],[0,1,"<a href=\"StripeService.php.html#301\">App\\Services\\StripeService::handleSubscriptionDeleted<\/a>"],[0,1,"<a href=\"StripeService.php.html#310\">App\\Services\\StripeService::handleInvoicePaymentSucceeded<\/a>"],[0,1,"<a href=\"StripeService.php.html#322\">App\\Services\\StripeService::handleInvoicePaymentFailed<\/a>"],[0,1,"<a href=\"StripeService.php.html#334\">App\\Services\\StripeService::retrieveCheckoutSession<\/a>"],[0,1,"<a href=\"StripeService.php.html#342\">App\\Services\\StripeService::listPaymentMethods<\/a>"],[0,2,"<a href=\"StripeService.php.html#355\">App\\Services\\StripeService::refund<\/a>"],[0,1,"<a href=\"StripeService.php.html#369\">App\\Services\\StripeService::getPublishableKey<\/a>"],[100,1,"<a href=\"SubscriptionService.php.html#14\">App\\Services\\SubscriptionService::__construct<\/a>"],[100,2,"<a href=\"SubscriptionService.php.html#21\">App\\Services\\SubscriptionService::calculatePrice<\/a>"],[100,2,"<a href=\"SubscriptionService.php.html#53\">App\\Services\\SubscriptionService::create<\/a>"],[100,1,"<a href=\"SubscriptionService.php.html#75\">App\\Services\\SubscriptionService::update<\/a>"],[0,2,"<a href=\"SubscriptionService.php.html#93\">App\\Services\\SubscriptionService::upgrade<\/a>"],[100,1,"<a href=\"SubscriptionService.php.html#129\">App\\Services\\SubscriptionService::cancel<\/a>"],[100,2,"<a href=\"SubscriptionService.php.html#139\">App\\Services\\SubscriptionService::renew<\/a>"],[0,3,"<a href=\"SubscriptionService.php.html#155\">App\\Services\\SubscriptionService::canUseFeature<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#172\">App\\Services\\SubscriptionService::getMaxGuests<\/a>"],[0,2,"<a href=\"SubscriptionService.php.html#182\">App\\Services\\SubscriptionService::canAddGuests<\/a>"],[0,2,"<a href=\"SubscriptionService.php.html#207\">App\\Services\\SubscriptionService::getRemainingGuestSlots<\/a>"],[100,2,"<a href=\"SubscriptionService.php.html#230\">App\\Services\\SubscriptionService::getPlanComparison<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#255\">App\\Services\\SubscriptionService::getUserSubscriptions<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#266\">App\\Services\\SubscriptionService::getActiveSubscription<\/a>"],[0,7,"<a href=\"SubscriptionService.php.html#280\">App\\Services\\SubscriptionService::checkPlanLimits<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#329\">App\\Services\\SubscriptionService::getStatistics<\/a>"],[100,3,"<a href=\"SubscriptionService.php.html#350\">App\\Services\\SubscriptionService::createTrialSubscription<\/a>"],[100,6,"<a href=\"SubscriptionService.php.html#388\">App\\Services\\SubscriptionService::createSubscriptionWithPlan<\/a>"],[100,2,"<a href=\"SubscriptionService.php.html#422\">App\\Services\\SubscriptionService::upgradeToPlan<\/a>"],[100,1,"<a href=\"SubscriptionService.php.html#445\">App\\Services\\SubscriptionService::getUserActiveSubscription<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#470\">App\\Services\\SubscriptionService::getUserLatestAccountSubscription<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#485\">App\\Services\\SubscriptionService::getLifecycleInfo<\/a>"],[100,1,"<a href=\"SubscriptionService.php.html#493\">App\\Services\\SubscriptionService::handleExpiration<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#503\">App\\Services\\SubscriptionService::resetCreationsUsed<\/a>"],[65.625,4,"<a href=\"SubscriptionService.php.html#512\">App\\Services\\SubscriptionService::syncAccountEventLimits<\/a>"],[0,9,"<a href=\"SubscriptionService.php.html#564\">App\\Services\\SubscriptionService::buildEventLimitUpdates<\/a>"],[62.5,5,"<a href=\"Support\/SubscriptionLifecycle.php.html#17\">App\\Services\\Support\\SubscriptionLifecycle::buildPayload<\/a>"],[63.63636363636363,11,"<a href=\"Support\/SubscriptionLifecycle.php.html#49\">App\\Services\\Support\\SubscriptionLifecycle::resolvePhase<\/a>"],[0,5,"<a href=\"TaskBudgetService.php.html#14\">App\\Services\\TaskBudgetService::syncBudgetItemFromTask<\/a>"],[0,2,"<a href=\"TaskBudgetService.php.html#52\">App\\Services\\TaskBudgetService::removeBudgetItemFromTask<\/a>"],[0,12,"<a href=\"TaskBudgetService.php.html#66\">App\\Services\\TaskBudgetService::updateBudgetItemFromTask<\/a>"],[0,1,"<a href=\"TaskBudgetService.php.html#115\">App\\Services\\TaskBudgetService::shouldCreateBudgetItem<\/a>"],[0,3,"<a href=\"TaskService.php.html#21\">App\\Services\\TaskService::create<\/a>"],[0,4,"<a href=\"TaskService.php.html#38\">App\\Services\\TaskService::update<\/a>"],[0,1,"<a href=\"TaskService.php.html#57\">App\\Services\\TaskService::delete<\/a>"],[0,4,"<a href=\"TaskService.php.html#65\">App\\Services\\TaskService::assign<\/a>"],[0,3,"<a href=\"TaskService.php.html#84\">App\\Services\\TaskService::complete<\/a>"],[0,1,"<a href=\"TaskService.php.html#99\">App\\Services\\TaskService::reopen<\/a>"],[0,2,"<a href=\"TaskService.php.html#109\">App\\Services\\TaskService::updateStatus<\/a>"],[0,1,"<a href=\"TaskService.php.html#123\">App\\Services\\TaskService::updatePriority<\/a>"],[0,3,"<a href=\"TaskService.php.html#133\">App\\Services\\TaskService::applyTemplateTask<\/a>"],[0,3,"<a href=\"TaskService.php.html#161\">App\\Services\\TaskService::calculateDueDate<\/a>"],[0,4,"<a href=\"TaskService.php.html#173\">App\\Services\\TaskService::getStatistics<\/a>"],[0,1,"<a href=\"TaskService.php.html#206\">App\\Services\\TaskService::getOverdueTasks<\/a>"],[0,1,"<a href=\"TaskService.php.html#219\">App\\Services\\TaskService::getTasksDueSoon<\/a>"],[0,2,"<a href=\"TaskService.php.html#232\">App\\Services\\TaskService::notifyAssignment<\/a>"],[0,1,"<a href=\"TaskService.php.html#251\">App\\Services\\TaskService::notifyCompletion<\/a>"],[0,3,"<a href=\"TaskService.php.html#266\">App\\Services\\TaskService::scheduleReminders<\/a>"],[0,2,"<a href=\"TaskService.php.html#291\">App\\Services\\TaskService::bulkUpdateStatus<\/a>"],[0,2,"<a href=\"TaskService.php.html#305\">App\\Services\\TaskService::reorder<\/a>"],[0,1,"<a href=\"TaskService.php.html#317\">App\\Services\\TaskService::duplicate<\/a>"],[0,1,"<a href=\"TaskService.php.html#332\">App\\Services\\TaskService::getAssignableUsers<\/a>"],[0,3,"<a href=\"TwilioService.php.html#20\">App\\Services\\TwilioService::__construct<\/a>"],[0,1,"<a href=\"TwilioService.php.html#33\">App\\Services\\TwilioService::isConfigured<\/a>"],[0,6,"<a href=\"TwilioService.php.html#41\">App\\Services\\TwilioService::sendSms<\/a>"],[0,1,"<a href=\"TwilioService.php.html#102\">App\\Services\\TwilioService::sendSmsAsync<\/a>"],[0,7,"<a href=\"TwilioService.php.html#110\">App\\Services\\TwilioService::sendWhatsApp<\/a>"],[0,1,"<a href=\"TwilioService.php.html#179\">App\\Services\\TwilioService::sendWhatsAppAsync<\/a>"],[0,4,"<a href=\"TwilioService.php.html#191\">App\\Services\\TwilioService::sendWhatsAppTemplate<\/a>"],[0,3,"<a href=\"TwilioService.php.html#247\">App\\Services\\TwilioService::sendBulkSms<\/a>"],[0,3,"<a href=\"TwilioService.php.html#274\">App\\Services\\TwilioService::getMessageStatus<\/a>"],[0,3,"<a href=\"TwilioService.php.html#303\">App\\Services\\TwilioService::validatePhoneNumber<\/a>"],[0,5,"<a href=\"TwilioService.php.html#330\">App\\Services\\TwilioService::formatPhoneNumber<\/a>"],[0,2,"<a href=\"TwilioService.php.html#351\">App\\Services\\TwilioService::formatWhatsAppNumber<\/a>"],[0,1,"<a href=\"TwilioService.php.html#366\">App\\Services\\TwilioService::isRetryableError<\/a>"],[0,1,"<a href=\"TwilioService.php.html#382\">App\\Services\\TwilioService::getInvitationTemplate<\/a>"],[0,1,"<a href=\"TwilioService.php.html#400\">App\\Services\\TwilioService::getReminderTemplate<\/a>"],[0,1,"<a href=\"TwilioService.php.html#416\">App\\Services\\TwilioService::getPaymentConfirmationTemplate<\/a>"],[0,2,"<a href=\"TwilioService.php.html#435\">App\\Services\\TwilioService::getRsvpConfirmationTemplate<\/a>"],[0,1,"<a href=\"TwilioService.php.html#452\">App\\Services\\TwilioService::sendInvitationSms<\/a>"],[0,1,"<a href=\"TwilioService.php.html#461\">App\\Services\\TwilioService::sendInvitationWhatsApp<\/a>"],[0,1,"<a href=\"TwilioService.php.html#470\">App\\Services\\TwilioService::sendReminderSms<\/a>"],[0,1,"<a href=\"TwilioService.php.html#479\">App\\Services\\TwilioService::sendPaymentSms<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

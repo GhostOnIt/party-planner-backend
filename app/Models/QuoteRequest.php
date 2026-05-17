@@ -69,4 +69,9 @@ class QuoteRequest extends Model
     {
         return $this->hasMany(QuoteRequestActivity::class);
     }
+
+    public function offers(): HasMany
+    {
+        return $this->hasMany(CustomOffer::class);
+    }
 }

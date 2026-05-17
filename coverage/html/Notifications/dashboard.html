@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Notifications</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Notifications</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="BudgetAlertNotification.php.html#11">App\Notifications\BudgetAlertNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInviteNotification.php.html#14">App\Notifications\CollaborationInviteNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferCreatedNotification.php.html#11">App\Notifications\CustomOfferCreatedNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#11">App\Notifications\CustomOfferRespondedNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForUserNotification.php.html#12">App\Notifications\EventCreatedForUserNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#11">App\Notifications\EventReminderNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportReadyNotification.php.html#11">App\Notifications\ExportReadyNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#11">App\Notifications\GuestReminderNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NewQuoteRequestNotification.php.html#11">App\Notifications\NewQuoteRequestNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpNotification.php.html#10">App\Notifications\OtpNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestCallScheduledNotification.php.html#11">App\Notifications\QuoteRequestCallScheduledNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStaleNotification.php.html#11">App\Notifications\QuoteRequestStaleNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestUpdatedNotification.php.html#11">App\Notifications\QuoteRequestUpdatedNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ResetPasswordNotification.php.html#10">App\Notifications\ResetPasswordNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#11">App\Notifications\TaskReminderNotification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="VerifyEmailNotification.php.html#13">App\Notifications\VerifyEmailNotification</a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="OtpNotification.php.html#10">App\Notifications\OtpNotification</a></td><td class="text-right">210</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#11">App\Notifications\EventReminderNotification</a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="BudgetAlertNotification.php.html#11">App\Notifications\BudgetAlertNotification</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#11">App\Notifications\CustomOfferRespondedNotification</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#11">App\Notifications\TaskReminderNotification</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#11">App\Notifications\GuestReminderNotification</a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="EventCreatedForUserNotification.php.html#12">App\Notifications\EventCreatedForUserNotification</a></td><td class="text-right">30</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="BudgetAlertNotification.php.html#15"><abbr title="App\Notifications\BudgetAlertNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetAlertNotification.php.html#21"><abbr title="App\Notifications\BudgetAlertNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetAlertNotification.php.html#26"><abbr title="App\Notifications\BudgetAlertNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetAlertNotification.php.html#48"><abbr title="App\Notifications\BudgetAlertNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetAlertNotification.php.html#59"><abbr title="App\Notifications\BudgetAlertNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInviteNotification.php.html#18"><abbr title="App\Notifications\CollaborationInviteNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInviteNotification.php.html#24"><abbr title="App\Notifications\CollaborationInviteNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInviteNotification.php.html#29"><abbr title="App\Notifications\CollaborationInviteNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInviteNotification.php.html#49"><abbr title="App\Notifications\CollaborationInviteNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInviteNotification.php.html#61"><abbr title="App\Notifications\CollaborationInviteNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferCreatedNotification.php.html#15"><abbr title="App\Notifications\CustomOfferCreatedNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferCreatedNotification.php.html#17"><abbr title="App\Notifications\CustomOfferCreatedNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferCreatedNotification.php.html#22"><abbr title="App\Notifications\CustomOfferCreatedNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferCreatedNotification.php.html#39"><abbr title="App\Notifications\CustomOfferCreatedNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#15"><abbr title="App\Notifications\CustomOfferRespondedNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#17"><abbr title="App\Notifications\CustomOfferRespondedNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#22"><abbr title="App\Notifications\CustomOfferRespondedNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#40"><abbr title="App\Notifications\CustomOfferRespondedNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForUserNotification.php.html#16"><abbr title="App\Notifications\EventCreatedForUserNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForUserNotification.php.html#21"><abbr title="App\Notifications\EventCreatedForUserNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForUserNotification.php.html#26"><abbr title="App\Notifications\EventCreatedForUserNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForUserNotification.php.html#45"><abbr title="App\Notifications\EventCreatedForUserNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#15"><abbr title="App\Notifications\EventReminderNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#20"><abbr title="App\Notifications\EventReminderNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#25"><abbr title="App\Notifications\EventReminderNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#55"><abbr title="App\Notifications\EventReminderNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#66"><abbr title="App\Notifications\EventReminderNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportReadyNotification.php.html#15"><abbr title="App\Notifications\ExportReadyNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportReadyNotification.php.html#22"><abbr title="App\Notifications\ExportReadyNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportReadyNotification.php.html#27"><abbr title="App\Notifications\ExportReadyNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportReadyNotification.php.html#47"><abbr title="App\Notifications\ExportReadyNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportReadyNotification.php.html#59"><abbr title="App\Notifications\ExportReadyNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#15"><abbr title="App\Notifications\GuestReminderNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#20"><abbr title="App\Notifications\GuestReminderNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#25"><abbr title="App\Notifications\GuestReminderNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#42"><abbr title="App\Notifications\GuestReminderNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#54"><abbr title="App\Notifications\GuestReminderNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NewQuoteRequestNotification.php.html#15"><abbr title="App\Notifications\NewQuoteRequestNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NewQuoteRequestNotification.php.html#17"><abbr title="App\Notifications\NewQuoteRequestNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NewQuoteRequestNotification.php.html#22"><abbr title="App\Notifications\NewQuoteRequestNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NewQuoteRequestNotification.php.html#33"><abbr title="App\Notifications\NewQuoteRequestNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpNotification.php.html#17"><abbr title="App\Notifications\OtpNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpNotification.php.html#26"><abbr title="App\Notifications\OtpNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpNotification.php.html#34"><abbr title="App\Notifications\OtpNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpNotification.php.html#55"><abbr title="App\Notifications\OtpNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpNotification.php.html#67"><abbr title="App\Notifications\OtpNotification::getTypeLabel">getTypeLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OtpNotification.php.html#80"><abbr title="App\Notifications\OtpNotification::getSubject">getSubject</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestCallScheduledNotification.php.html#15"><abbr title="App\Notifications\QuoteRequestCallScheduledNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestCallScheduledNotification.php.html#17"><abbr title="App\Notifications\QuoteRequestCallScheduledNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestCallScheduledNotification.php.html#22"><abbr title="App\Notifications\QuoteRequestCallScheduledNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestCallScheduledNotification.php.html#33"><abbr title="App\Notifications\QuoteRequestCallScheduledNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStaleNotification.php.html#15"><abbr title="App\Notifications\QuoteRequestStaleNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStaleNotification.php.html#17"><abbr title="App\Notifications\QuoteRequestStaleNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStaleNotification.php.html#22"><abbr title="App\Notifications\QuoteRequestStaleNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStaleNotification.php.html#32"><abbr title="App\Notifications\QuoteRequestStaleNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestUpdatedNotification.php.html#15"><abbr title="App\Notifications\QuoteRequestUpdatedNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestUpdatedNotification.php.html#21"><abbr title="App\Notifications\QuoteRequestUpdatedNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestUpdatedNotification.php.html#26"><abbr title="App\Notifications\QuoteRequestUpdatedNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestUpdatedNotification.php.html#35"><abbr title="App\Notifications\QuoteRequestUpdatedNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ResetPasswordNotification.php.html#22"><abbr title="App\Notifications\ResetPasswordNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ResetPasswordNotification.php.html#32"><abbr title="App\Notifications\ResetPasswordNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ResetPasswordNotification.php.html#40"><abbr title="App\Notifications\ResetPasswordNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ResetPasswordNotification.php.html#57"><abbr title="App\Notifications\ResetPasswordNotification::resetUrl">resetUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ResetPasswordNotification.php.html#72"><abbr title="App\Notifications\ResetPasswordNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#15"><abbr title="App\Notifications\TaskReminderNotification::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#20"><abbr title="App\Notifications\TaskReminderNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#25"><abbr title="App\Notifications\TaskReminderNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#39"><abbr title="App\Notifications\TaskReminderNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#51"><abbr title="App\Notifications\TaskReminderNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="VerifyEmailNotification.php.html#22"><abbr title="App\Notifications\VerifyEmailNotification::via">via</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="VerifyEmailNotification.php.html#30"><abbr title="App\Notifications\VerifyEmailNotification::toMail">toMail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="VerifyEmailNotification.php.html#48"><abbr title="App\Notifications\VerifyEmailNotification::verificationUrl">verificationUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="VerifyEmailNotification.php.html#76"><abbr title="App\Notifications\VerifyEmailNotification::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="OtpNotification.php.html#67"><abbr title="App\Notifications\OtpNotification::getTypeLabel">getTypeLabel</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="OtpNotification.php.html#80"><abbr title="App\Notifications\OtpNotification::getSubject">getSubject</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#25"><abbr title="App\Notifications\EventReminderNotification::toMail">toMail</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#22"><abbr title="App\Notifications\CustomOfferRespondedNotification::toMail">toMail</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="BudgetAlertNotification.php.html#26"><abbr title="App\Notifications\BudgetAlertNotification::toMail">toMail</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="BudgetAlertNotification.php.html#59"><abbr title="App\Notifications\BudgetAlertNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CustomOfferRespondedNotification.php.html#40"><abbr title="App\Notifications\CustomOfferRespondedNotification::toArray">toArray</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EventCreatedForUserNotification.php.html#26"><abbr title="App\Notifications\EventCreatedForUserNotification::toMail">toMail</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EventReminderNotification.php.html#66"><abbr title="App\Notifications\EventReminderNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GuestReminderNotification.php.html#25"><abbr title="App\Notifications\GuestReminderNotification::toMail">toMail</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#25"><abbr title="App\Notifications\TaskReminderNotification::toMail">toMail</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TaskReminderNotification.php.html#51"><abbr title="App\Notifications\TaskReminderNotification::toDatabase">toDatabase</abbr></a></td><td class="text-right">6</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.12</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.21</a> and <a href="https://phpunit.de/">PHPUnit 11.5.51</a> at Thu May 14 15:42:39 UTC 2026.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([16,0,0,0,0,0,0,0,0,0,0,0], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([73,0,0,0,0,0,0,0,0,0,0,0], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[0,7,"<a href=\"BudgetAlertNotification.php.html#11\">App\\Notifications\\BudgetAlertNotification<\/a>"],[0,5,"<a href=\"CollaborationInviteNotification.php.html#14\">App\\Notifications\\CollaborationInviteNotification<\/a>"],[0,4,"<a href=\"CustomOfferCreatedNotification.php.html#11\">App\\Notifications\\CustomOfferCreatedNotification<\/a>"],[0,7,"<a href=\"CustomOfferRespondedNotification.php.html#11\">App\\Notifications\\CustomOfferRespondedNotification<\/a>"],[0,5,"<a href=\"EventCreatedForUserNotification.php.html#12\">App\\Notifications\\EventCreatedForUserNotification<\/a>"],[0,9,"<a href=\"EventReminderNotification.php.html#11\">App\\Notifications\\EventReminderNotification<\/a>"],[0,5,"<a href=\"ExportReadyNotification.php.html#11\">App\\Notifications\\ExportReadyNotification<\/a>"],[0,6,"<a href=\"GuestReminderNotification.php.html#11\">App\\Notifications\\GuestReminderNotification<\/a>"],[0,4,"<a href=\"NewQuoteRequestNotification.php.html#11\">App\\Notifications\\NewQuoteRequestNotification<\/a>"],[0,14,"<a href=\"OtpNotification.php.html#10\">App\\Notifications\\OtpNotification<\/a>"],[0,4,"<a href=\"QuoteRequestCallScheduledNotification.php.html#11\">App\\Notifications\\QuoteRequestCallScheduledNotification<\/a>"],[0,4,"<a href=\"QuoteRequestStaleNotification.php.html#11\">App\\Notifications\\QuoteRequestStaleNotification<\/a>"],[0,4,"<a href=\"QuoteRequestUpdatedNotification.php.html#11\">App\\Notifications\\QuoteRequestUpdatedNotification<\/a>"],[0,5,"<a href=\"ResetPasswordNotification.php.html#10\">App\\Notifications\\ResetPasswordNotification<\/a>"],[0,7,"<a href=\"TaskReminderNotification.php.html#11\">App\\Notifications\\TaskReminderNotification<\/a>"],[0,4,"<a href=\"VerifyEmailNotification.php.html#13\">App\\Notifications\\VerifyEmailNotification<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[0,1,"<a href=\"BudgetAlertNotification.php.html#15\">App\\Notifications\\BudgetAlertNotification::__construct<\/a>"],[0,1,"<a href=\"BudgetAlertNotification.php.html#21\">App\\Notifications\\BudgetAlertNotification::via<\/a>"],[0,2,"<a href=\"BudgetAlertNotification.php.html#26\">App\\Notifications\\BudgetAlertNotification::toMail<\/a>"],[0,1,"<a href=\"BudgetAlertNotification.php.html#48\">App\\Notifications\\BudgetAlertNotification::toArray<\/a>"],[0,2,"<a href=\"BudgetAlertNotification.php.html#59\">App\\Notifications\\BudgetAlertNotification::toDatabase<\/a>"],[0,1,"<a href=\"CollaborationInviteNotification.php.html#18\">App\\Notifications\\CollaborationInviteNotification::__construct<\/a>"],[0,1,"<a href=\"CollaborationInviteNotification.php.html#24\">App\\Notifications\\CollaborationInviteNotification::via<\/a>"],[0,1,"<a href=\"CollaborationInviteNotification.php.html#29\">App\\Notifications\\CollaborationInviteNotification::toMail<\/a>"],[0,1,"<a href=\"CollaborationInviteNotification.php.html#49\">App\\Notifications\\CollaborationInviteNotification::toArray<\/a>"],[0,1,"<a href=\"CollaborationInviteNotification.php.html#61\">App\\Notifications\\CollaborationInviteNotification::toDatabase<\/a>"],[0,1,"<a href=\"CustomOfferCreatedNotification.php.html#15\">App\\Notifications\\CustomOfferCreatedNotification::__construct<\/a>"],[0,1,"<a href=\"CustomOfferCreatedNotification.php.html#17\">App\\Notifications\\CustomOfferCreatedNotification::via<\/a>"],[0,1,"<a href=\"CustomOfferCreatedNotification.php.html#22\">App\\Notifications\\CustomOfferCreatedNotification::toMail<\/a>"],[0,1,"<a href=\"CustomOfferCreatedNotification.php.html#39\">App\\Notifications\\CustomOfferCreatedNotification::toArray<\/a>"],[0,1,"<a href=\"CustomOfferRespondedNotification.php.html#15\">App\\Notifications\\CustomOfferRespondedNotification::__construct<\/a>"],[0,1,"<a href=\"CustomOfferRespondedNotification.php.html#17\">App\\Notifications\\CustomOfferRespondedNotification::via<\/a>"],[0,3,"<a href=\"CustomOfferRespondedNotification.php.html#22\">App\\Notifications\\CustomOfferRespondedNotification::toMail<\/a>"],[0,2,"<a href=\"CustomOfferRespondedNotification.php.html#40\">App\\Notifications\\CustomOfferRespondedNotification::toArray<\/a>"],[0,1,"<a href=\"EventCreatedForUserNotification.php.html#16\">App\\Notifications\\EventCreatedForUserNotification::__construct<\/a>"],[0,1,"<a href=\"EventCreatedForUserNotification.php.html#21\">App\\Notifications\\EventCreatedForUserNotification::via<\/a>"],[0,2,"<a href=\"EventCreatedForUserNotification.php.html#26\">App\\Notifications\\EventCreatedForUserNotification::toMail<\/a>"],[0,1,"<a href=\"EventCreatedForUserNotification.php.html#45\">App\\Notifications\\EventCreatedForUserNotification::toArray<\/a>"],[0,1,"<a href=\"EventReminderNotification.php.html#15\">App\\Notifications\\EventReminderNotification::__construct<\/a>"],[0,1,"<a href=\"EventReminderNotification.php.html#20\">App\\Notifications\\EventReminderNotification::via<\/a>"],[0,4,"<a href=\"EventReminderNotification.php.html#25\">App\\Notifications\\EventReminderNotification::toMail<\/a>"],[0,1,"<a href=\"EventReminderNotification.php.html#55\">App\\Notifications\\EventReminderNotification::toArray<\/a>"],[0,2,"<a href=\"EventReminderNotification.php.html#66\">App\\Notifications\\EventReminderNotification::toDatabase<\/a>"],[0,1,"<a href=\"ExportReadyNotification.php.html#15\">App\\Notifications\\ExportReadyNotification::__construct<\/a>"],[0,1,"<a href=\"ExportReadyNotification.php.html#22\">App\\Notifications\\ExportReadyNotification::via<\/a>"],[0,1,"<a href=\"ExportReadyNotification.php.html#27\">App\\Notifications\\ExportReadyNotification::toMail<\/a>"],[0,1,"<a href=\"ExportReadyNotification.php.html#47\">App\\Notifications\\ExportReadyNotification::toArray<\/a>"],[0,1,"<a href=\"ExportReadyNotification.php.html#59\">App\\Notifications\\ExportReadyNotification::toDatabase<\/a>"],[0,1,"<a href=\"GuestReminderNotification.php.html#15\">App\\Notifications\\GuestReminderNotification::__construct<\/a>"],[0,1,"<a href=\"GuestReminderNotification.php.html#20\">App\\Notifications\\GuestReminderNotification::via<\/a>"],[0,2,"<a href=\"GuestReminderNotification.php.html#25\">App\\Notifications\\GuestReminderNotification::toMail<\/a>"],[0,1,"<a href=\"GuestReminderNotification.php.html#42\">App\\Notifications\\GuestReminderNotification::toArray<\/a>"],[0,1,"<a href=\"GuestReminderNotification.php.html#54\">App\\Notifications\\GuestReminderNotification::toDatabase<\/a>"],[0,1,"<a href=\"NewQuoteRequestNotification.php.html#15\">App\\Notifications\\NewQuoteRequestNotification::__construct<\/a>"],[0,1,"<a href=\"NewQuoteRequestNotification.php.html#17\">App\\Notifications\\NewQuoteRequestNotification::via<\/a>"],[0,1,"<a href=\"NewQuoteRequestNotification.php.html#22\">App\\Notifications\\NewQuoteRequestNotification::toMail<\/a>"],[0,1,"<a href=\"NewQuoteRequestNotification.php.html#33\">App\\Notifications\\NewQuoteRequestNotification::toArray<\/a>"],[0,1,"<a href=\"OtpNotification.php.html#17\">App\\Notifications\\OtpNotification::__construct<\/a>"],[0,1,"<a href=\"OtpNotification.php.html#26\">App\\Notifications\\OtpNotification::via<\/a>"],[0,1,"<a href=\"OtpNotification.php.html#34\">App\\Notifications\\OtpNotification::toMail<\/a>"],[0,1,"<a href=\"OtpNotification.php.html#55\">App\\Notifications\\OtpNotification::toArray<\/a>"],[0,5,"<a href=\"OtpNotification.php.html#67\">App\\Notifications\\OtpNotification::getTypeLabel<\/a>"],[0,5,"<a href=\"OtpNotification.php.html#80\">App\\Notifications\\OtpNotification::getSubject<\/a>"],[0,1,"<a href=\"QuoteRequestCallScheduledNotification.php.html#15\">App\\Notifications\\QuoteRequestCallScheduledNotification::__construct<\/a>"],[0,1,"<a href=\"QuoteRequestCallScheduledNotification.php.html#17\">App\\Notifications\\QuoteRequestCallScheduledNotification::via<\/a>"],[0,1,"<a href=\"QuoteRequestCallScheduledNotification.php.html#22\">App\\Notifications\\QuoteRequestCallScheduledNotification::toMail<\/a>"],[0,1,"<a href=\"QuoteRequestCallScheduledNotification.php.html#33\">App\\Notifications\\QuoteRequestCallScheduledNotification::toArray<\/a>"],[0,1,"<a href=\"QuoteRequestStaleNotification.php.html#15\">App\\Notifications\\QuoteRequestStaleNotification::__construct<\/a>"],[0,1,"<a href=\"QuoteRequestStaleNotification.php.html#17\">App\\Notifications\\QuoteRequestStaleNotification::via<\/a>"],[0,1,"<a href=\"QuoteRequestStaleNotification.php.html#22\">App\\Notifications\\QuoteRequestStaleNotification::toMail<\/a>"],[0,1,"<a href=\"QuoteRequestStaleNotification.php.html#32\">App\\Notifications\\QuoteRequestStaleNotification::toArray<\/a>"],[0,1,"<a href=\"QuoteRequestUpdatedNotification.php.html#15\">App\\Notifications\\QuoteRequestUpdatedNotification::__construct<\/a>"],[0,1,"<a href=\"QuoteRequestUpdatedNotification.php.html#21\">App\\Notifications\\QuoteRequestUpdatedNotification::via<\/a>"],[0,1,"<a href=\"QuoteRequestUpdatedNotification.php.html#26\">App\\Notifications\\QuoteRequestUpdatedNotification::toMail<\/a>"],[0,1,"<a href=\"QuoteRequestUpdatedNotification.php.html#35\">App\\Notifications\\QuoteRequestUpdatedNotification::toArray<\/a>"],[0,1,"<a href=\"ResetPasswordNotification.php.html#22\">App\\Notifications\\ResetPasswordNotification::__construct<\/a>"],[0,1,"<a href=\"ResetPasswordNotification.php.html#32\">App\\Notifications\\ResetPasswordNotification::via<\/a>"],[0,1,"<a href=\"ResetPasswordNotification.php.html#40\">App\\Notifications\\ResetPasswordNotification::toMail<\/a>"],[0,1,"<a href=\"ResetPasswordNotification.php.html#57\">App\\Notifications\\ResetPasswordNotification::resetUrl<\/a>"],[0,1,"<a href=\"ResetPasswordNotification.php.html#72\">App\\Notifications\\ResetPasswordNotification::toArray<\/a>"],[0,1,"<a href=\"TaskReminderNotification.php.html#15\">App\\Notifications\\TaskReminderNotification::__construct<\/a>"],[0,1,"<a href=\"TaskReminderNotification.php.html#20\">App\\Notifications\\TaskReminderNotification::via<\/a>"],[0,2,"<a href=\"TaskReminderNotification.php.html#25\">App\\Notifications\\TaskReminderNotification::toMail<\/a>"],[0,1,"<a href=\"TaskReminderNotification.php.html#39\">App\\Notifications\\TaskReminderNotification::toArray<\/a>"],[0,2,"<a href=\"TaskReminderNotification.php.html#51\">App\\Notifications\\TaskReminderNotification::toDatabase<\/a>"],[0,1,"<a href=\"VerifyEmailNotification.php.html#22\">App\\Notifications\\VerifyEmailNotification::via<\/a>"],[0,1,"<a href=\"VerifyEmailNotification.php.html#30\">App\\Notifications\\VerifyEmailNotification::toMail<\/a>"],[0,1,"<a href=\"VerifyEmailNotification.php.html#48\">App\\Notifications\\VerifyEmailNotification::verificationUrl<\/a>"],[0,1,"<a href=\"VerifyEmailNotification.php.html#76\">App\\Notifications\\VerifyEmailNotification::toArray<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

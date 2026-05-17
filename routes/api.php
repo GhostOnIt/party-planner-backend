@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Api\AdminLegalPageController;
 use App\Http\Controllers\Api\AdminPlanController;
+use App\Http\Controllers\Api\Admin\AdminCustomOfferController;
 use App\Http\Controllers\Api\Admin\AdminQuoteRequestController;
 use App\Http\Controllers\Api\Admin\AdminQuoteStageController;
+use App\Http\Controllers\Api\CustomOfferPublicController;
 use App\Http\Controllers\Api\CommunicationSpotController;
 use App\Http\Controllers\Api\LegalPageController;
 use App\Http\Controllers\Api\BudgetController;
@@ -110,6 +112,15 @@ Route::get('/communication/active', [CommunicationSpotController::class, 'active
 |--------------------------------------------------------------------------
 */
 Route::get('/legal/{slug}', [LegalPageController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
+| Custom Offers - Public Routes (token-based access)
+|--------------------------------------------------------------------------
+*/
+Route::get('/public/offers/{clientToken}', [CustomOfferPublicController::class, 'show']);
+Route::post('/public/offers/{clientToken}/respond', [CustomOfferPublicController::class, 'respond'])
+    ->middleware('throttle:10,1');
 
 /*
 |--------------------------------------------------------------------------
@@ -382,6 +393,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     Route::prefix('quote-requests')->group(function () {
         Route::post('/', [QuoteRequestController::class, 'store'])->middleware('throttle:6,1');
         Route::get('/mine', [QuoteRequestController::class, 'myRequests']);
+        Route::get('/mine/offers', [QuoteRequestController::class, 'myOffers']);
     });
 
     /*
@@ -491,6 +503,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/plans/{plan}/toggle-active', [AdminPlanController::class, 'toggleActive']);
 
         // Quote requests management (Business plan)
+        Route::get('/quote-requests/export', [AdminQuoteRequestController::class, 'export']);
         Route::get('/quote-requests', [AdminQuoteRequestController::class, 'index']);
         Route::get('/quote-requests/{quoteRequest}', [AdminQuoteRequestController::class, 'show']);
         Route::patch('/quote-requests/{quoteRequest}/stage', [AdminQuoteRequestController::class, 'updateStage']);
@@ -498,6 +511,15 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
         Route::post('/quote-requests/{quoteRequest}/notes', [AdminQuoteRequestController::class, 'addNote']);
         Route::post('/quote-requests/{quoteRequest}/schedule-call', [AdminQuoteRequestController::class, 'scheduleCall']);
         Route::patch('/quote-requests/{quoteRequest}/outcome', [AdminQuoteRequestController::class, 'updateOutcome']);
+
+        // Custom offers management
+        Route::get('/quote-requests/{quoteRequest}/offers', [AdminCustomOfferController::class, 'index']);
+        Route::post('/quote-requests/{quoteRequest}/offers', [AdminCustomOfferController::class, 'store']);
+        Route::put('/custom-offers/{customOffer}', [AdminCustomOfferController::class, 'update']);
+        Route::post('/custom-offers/{customOffer}/send', [AdminCustomOfferController::class, 'send']);
+        Route::delete('/custom-offers/{customOffer}', [AdminCustomOfferController::class, 'destroy']);
+
+        // Quote request stages management
         Route::get('/quote-request-stages', [AdminQuoteStageController::class, 'index']);
         Route::post('/quote-request-stages', [AdminQuoteStageController::class, 'store']);
         Route::put('/quote-request-stages/{stage}', [AdminQuoteStageController::class, 'update']);

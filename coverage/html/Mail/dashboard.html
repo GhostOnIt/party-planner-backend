@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Mail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Mail</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="CampaignMail.php.html#12">App\Mail\CampaignMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationGuestMail.php.html#13">App\Mail\CollaborationInvitationGuestMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationMail.php.html#13">App\Mail\CollaborationInvitationMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForYouPendingMail.php.html#13">App\Mail\EventCreatedForYouPendingMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatusChangeMail.php.html#14">App\Mail\EventStatusChangeMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="InvitationMail.php.html#13">App\Mail\InvitationMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationMail.php.html#13">App\Mail\NotificationMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentConfirmationMail.php.html#13">App\Mail\PaymentConfirmationMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoUploadMail.php.html#12">App\Mail\PhotoUploadMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PilotFeedbackMail.php.html#12">App\Mail\PilotFeedbackMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ReminderMail.php.html#12">App\Mail\ReminderMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderMail.php.html#13">App\Mail\TaskReminderMail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Concerns/EmbedsMailLogo.php.html#9">App\Mail\Concerns\EmbedsMailLogo</a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="InvitationMail.php.html#13">App\Mail\InvitationMail</a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="CollaborationInvitationMail.php.html#13">App\Mail\CollaborationInvitationMail</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="EventStatusChangeMail.php.html#14">App\Mail\EventStatusChangeMail</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="NotificationMail.php.html#13">App\Mail\NotificationMail</a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="TaskReminderMail.php.html#13">App\Mail\TaskReminderMail</a></td><td class="text-right">42</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="CampaignMail.php.html#20"><abbr title="App\Mail\CampaignMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CampaignMail.php.html#28"><abbr title="App\Mail\CampaignMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CampaignMail.php.html#38"><abbr title="App\Mail\CampaignMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CampaignMail.php.html#54"><abbr title="App\Mail\CampaignMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationGuestMail.php.html#21"><abbr title="App\Mail\CollaborationInvitationGuestMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationGuestMail.php.html#28"><abbr title="App\Mail\CollaborationInvitationGuestMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationGuestMail.php.html#38"><abbr title="App\Mail\CollaborationInvitationGuestMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationGuestMail.php.html#61"><abbr title="App\Mail\CollaborationInvitationGuestMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationMail.php.html#21"><abbr title="App\Mail\CollaborationInvitationMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationMail.php.html#28"><abbr title="App\Mail\CollaborationInvitationMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationMail.php.html#38"><abbr title="App\Mail\CollaborationInvitationMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitationMail.php.html#74"><abbr title="App\Mail\CollaborationInvitationMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForYouPendingMail.php.html#18"><abbr title="App\Mail\EventCreatedForYouPendingMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForYouPendingMail.php.html#22"><abbr title="App\Mail\EventCreatedForYouPendingMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreatedForYouPendingMail.php.html#29"><abbr title="App\Mail\EventCreatedForYouPendingMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatusChangeMail.php.html#22"><abbr title="App\Mail\EventStatusChangeMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatusChangeMail.php.html#31"><abbr title="App\Mail\EventStatusChangeMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatusChangeMail.php.html#48"><abbr title="App\Mail\EventStatusChangeMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="InvitationMail.php.html#24"><abbr title="App\Mail\InvitationMail::generateCheckInQrForEmail">generateCheckInQrForEmail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="InvitationMail.php.html#77"><abbr title="App\Mail\InvitationMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="InvitationMail.php.html#85"><abbr title="App\Mail\InvitationMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="InvitationMail.php.html#97"><abbr title="App\Mail\InvitationMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="InvitationMail.php.html#122"><abbr title="App\Mail\InvitationMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationMail.php.html#18"><abbr title="App\Mail\NotificationMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationMail.php.html#22"><abbr title="App\Mail\NotificationMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationMail.php.html#29"><abbr title="App\Mail\NotificationMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationMail.php.html#42"><abbr title="App\Mail\NotificationMail::getActionUrl">getActionUrl</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationMail.php.html#51"><abbr title="App\Mail\NotificationMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentConfirmationMail.php.html#18"><abbr title="App\Mail\PaymentConfirmationMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentConfirmationMail.php.html#22"><abbr title="App\Mail\PaymentConfirmationMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentConfirmationMail.php.html#29"><abbr title="App\Mail\PaymentConfirmationMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentConfirmationMail.php.html#42"><abbr title="App\Mail\PaymentConfirmationMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoUploadMail.php.html#20"><abbr title="App\Mail\PhotoUploadMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoUploadMail.php.html#27"><abbr title="App\Mail\PhotoUploadMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoUploadMail.php.html#39"><abbr title="App\Mail\PhotoUploadMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoUploadMail.php.html#59"><abbr title="App\Mail\PhotoUploadMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PilotFeedbackMail.php.html#16"><abbr title="App\Mail\PilotFeedbackMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PilotFeedbackMail.php.html#21"><abbr title="App\Mail\PilotFeedbackMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PilotFeedbackMail.php.html#29"><abbr title="App\Mail\PilotFeedbackMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PilotFeedbackMail.php.html#44"><abbr title="App\Mail\PilotFeedbackMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ReminderMail.php.html#20"><abbr title="App\Mail\ReminderMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ReminderMail.php.html#27"><abbr title="App\Mail\ReminderMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ReminderMail.php.html#39"><abbr title="App\Mail\ReminderMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ReminderMail.php.html#57"><abbr title="App\Mail\ReminderMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderMail.php.html#21"><abbr title="App\Mail\TaskReminderMail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderMail.php.html#29"><abbr title="App\Mail\TaskReminderMail::envelope">envelope</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderMail.php.html#41"><abbr title="App\Mail\TaskReminderMail::content">content</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskReminderMail.php.html#59"><abbr title="App\Mail\TaskReminderMail::attachments">attachments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Concerns/EmbedsMailLogo.php.html#11"><abbr title="App\Mail\Concerns\EmbedsMailLogo::build">build</abbr></a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="InvitationMail.php.html#24"><abbr title="App\Mail\InvitationMail::generateCheckInQrForEmail">generateCheckInQrForEmail</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="EventStatusChangeMail.php.html#31"><abbr title="App\Mail\EventStatusChangeMail::envelope">envelope</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="CollaborationInvitationMail.php.html#38"><abbr title="App\Mail\CollaborationInvitationMail::content">content</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TaskReminderMail.php.html#29"><abbr title="App\Mail\TaskReminderMail::envelope">envelope</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="NotificationMail.php.html#42"><abbr title="App\Mail\NotificationMail::getActionUrl">getActionUrl</abbr></a></td><td class="text-right">6</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.12</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.21</a> and <a href="https://phpunit.de/">PHPUnit 11.5.51</a> at Thu May 14 15:42:39 UTC 2026.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([13,0,0,0,0,0,0,0,0,0,0,0], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([49,0,0,0,0,0,0,0,0,0,0,0], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[0,4,"<a href=\"CampaignMail.php.html#12\">App\\Mail\\CampaignMail<\/a>"],[0,4,"<a href=\"CollaborationInvitationGuestMail.php.html#13\">App\\Mail\\CollaborationInvitationGuestMail<\/a>"],[0,7,"<a href=\"CollaborationInvitationMail.php.html#13\">App\\Mail\\CollaborationInvitationMail<\/a>"],[0,3,"<a href=\"EventCreatedForYouPendingMail.php.html#13\">App\\Mail\\EventCreatedForYouPendingMail<\/a>"],[0,7,"<a href=\"EventStatusChangeMail.php.html#14\">App\\Mail\\EventStatusChangeMail<\/a>"],[0,10,"<a href=\"InvitationMail.php.html#13\">App\\Mail\\InvitationMail<\/a>"],[0,6,"<a href=\"NotificationMail.php.html#13\">App\\Mail\\NotificationMail<\/a>"],[0,4,"<a href=\"PaymentConfirmationMail.php.html#13\">App\\Mail\\PaymentConfirmationMail<\/a>"],[0,4,"<a href=\"PhotoUploadMail.php.html#12\">App\\Mail\\PhotoUploadMail<\/a>"],[0,4,"<a href=\"PilotFeedbackMail.php.html#12\">App\\Mail\\PilotFeedbackMail<\/a>"],[0,4,"<a href=\"ReminderMail.php.html#12\">App\\Mail\\ReminderMail<\/a>"],[0,6,"<a href=\"TaskReminderMail.php.html#13\">App\\Mail\\TaskReminderMail<\/a>"],[0,1,"<a href=\"Concerns\/EmbedsMailLogo.php.html#9\">App\\Mail\\Concerns\\EmbedsMailLogo<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[0,1,"<a href=\"CampaignMail.php.html#20\">App\\Mail\\CampaignMail::__construct<\/a>"],[0,1,"<a href=\"CampaignMail.php.html#28\">App\\Mail\\CampaignMail::envelope<\/a>"],[0,1,"<a href=\"CampaignMail.php.html#38\">App\\Mail\\CampaignMail::content<\/a>"],[0,1,"<a href=\"CampaignMail.php.html#54\">App\\Mail\\CampaignMail::attachments<\/a>"],[0,1,"<a href=\"CollaborationInvitationGuestMail.php.html#21\">App\\Mail\\CollaborationInvitationGuestMail::__construct<\/a>"],[0,1,"<a href=\"CollaborationInvitationGuestMail.php.html#28\">App\\Mail\\CollaborationInvitationGuestMail::envelope<\/a>"],[0,1,"<a href=\"CollaborationInvitationGuestMail.php.html#38\">App\\Mail\\CollaborationInvitationGuestMail::content<\/a>"],[0,1,"<a href=\"CollaborationInvitationGuestMail.php.html#61\">App\\Mail\\CollaborationInvitationGuestMail::attachments<\/a>"],[0,1,"<a href=\"CollaborationInvitationMail.php.html#21\">App\\Mail\\CollaborationInvitationMail::__construct<\/a>"],[0,1,"<a href=\"CollaborationInvitationMail.php.html#28\">App\\Mail\\CollaborationInvitationMail::envelope<\/a>"],[0,4,"<a href=\"CollaborationInvitationMail.php.html#38\">App\\Mail\\CollaborationInvitationMail::content<\/a>"],[0,1,"<a href=\"CollaborationInvitationMail.php.html#74\">App\\Mail\\CollaborationInvitationMail::attachments<\/a>"],[0,1,"<a href=\"EventCreatedForYouPendingMail.php.html#18\">App\\Mail\\EventCreatedForYouPendingMail::__construct<\/a>"],[0,1,"<a href=\"EventCreatedForYouPendingMail.php.html#22\">App\\Mail\\EventCreatedForYouPendingMail::envelope<\/a>"],[0,1,"<a href=\"EventCreatedForYouPendingMail.php.html#29\">App\\Mail\\EventCreatedForYouPendingMail::content<\/a>"],[0,1,"<a href=\"EventStatusChangeMail.php.html#22\">App\\Mail\\EventStatusChangeMail::__construct<\/a>"],[0,5,"<a href=\"EventStatusChangeMail.php.html#31\">App\\Mail\\EventStatusChangeMail::envelope<\/a>"],[0,1,"<a href=\"EventStatusChangeMail.php.html#48\">App\\Mail\\EventStatusChangeMail::content<\/a>"],[0,6,"<a href=\"InvitationMail.php.html#24\">App\\Mail\\InvitationMail::generateCheckInQrForEmail<\/a>"],[0,1,"<a href=\"InvitationMail.php.html#77\">App\\Mail\\InvitationMail::__construct<\/a>"],[0,1,"<a href=\"InvitationMail.php.html#85\">App\\Mail\\InvitationMail::envelope<\/a>"],[0,1,"<a href=\"InvitationMail.php.html#97\">App\\Mail\\InvitationMail::content<\/a>"],[0,1,"<a href=\"InvitationMail.php.html#122\">App\\Mail\\InvitationMail::attachments<\/a>"],[0,1,"<a href=\"NotificationMail.php.html#18\">App\\Mail\\NotificationMail::__construct<\/a>"],[0,1,"<a href=\"NotificationMail.php.html#22\">App\\Mail\\NotificationMail::envelope<\/a>"],[0,1,"<a href=\"NotificationMail.php.html#29\">App\\Mail\\NotificationMail::content<\/a>"],[0,2,"<a href=\"NotificationMail.php.html#42\">App\\Mail\\NotificationMail::getActionUrl<\/a>"],[0,1,"<a href=\"NotificationMail.php.html#51\">App\\Mail\\NotificationMail::attachments<\/a>"],[0,1,"<a href=\"PaymentConfirmationMail.php.html#18\">App\\Mail\\PaymentConfirmationMail::__construct<\/a>"],[0,1,"<a href=\"PaymentConfirmationMail.php.html#22\">App\\Mail\\PaymentConfirmationMail::envelope<\/a>"],[0,1,"<a href=\"PaymentConfirmationMail.php.html#29\">App\\Mail\\PaymentConfirmationMail::content<\/a>"],[0,1,"<a href=\"PaymentConfirmationMail.php.html#42\">App\\Mail\\PaymentConfirmationMail::attachments<\/a>"],[0,1,"<a href=\"PhotoUploadMail.php.html#20\">App\\Mail\\PhotoUploadMail::__construct<\/a>"],[0,1,"<a href=\"PhotoUploadMail.php.html#27\">App\\Mail\\PhotoUploadMail::envelope<\/a>"],[0,1,"<a href=\"PhotoUploadMail.php.html#39\">App\\Mail\\PhotoUploadMail::content<\/a>"],[0,1,"<a href=\"PhotoUploadMail.php.html#59\">App\\Mail\\PhotoUploadMail::attachments<\/a>"],[0,1,"<a href=\"PilotFeedbackMail.php.html#16\">App\\Mail\\PilotFeedbackMail::__construct<\/a>"],[0,1,"<a href=\"PilotFeedbackMail.php.html#21\">App\\Mail\\PilotFeedbackMail::envelope<\/a>"],[0,1,"<a href=\"PilotFeedbackMail.php.html#29\">App\\Mail\\PilotFeedbackMail::content<\/a>"],[0,1,"<a href=\"PilotFeedbackMail.php.html#44\">App\\Mail\\PilotFeedbackMail::attachments<\/a>"],[0,1,"<a href=\"ReminderMail.php.html#20\">App\\Mail\\ReminderMail::__construct<\/a>"],[0,1,"<a href=\"ReminderMail.php.html#27\">App\\Mail\\ReminderMail::envelope<\/a>"],[0,1,"<a href=\"ReminderMail.php.html#39\">App\\Mail\\ReminderMail::content<\/a>"],[0,1,"<a href=\"ReminderMail.php.html#57\">App\\Mail\\ReminderMail::attachments<\/a>"],[0,1,"<a href=\"TaskReminderMail.php.html#21\">App\\Mail\\TaskReminderMail::__construct<\/a>"],[0,3,"<a href=\"TaskReminderMail.php.html#29\">App\\Mail\\TaskReminderMail::envelope<\/a>"],[0,1,"<a href=\"TaskReminderMail.php.html#41\">App\\Mail\\TaskReminderMail::content<\/a>"],[0,1,"<a href=\"TaskReminderMail.php.html#59\">App\\Mail\\TaskReminderMail::attachments<\/a>"],[0,1,"<a href=\"Concerns\/EmbedsMailLogo.php.html#11\">App\\Mail\\Concerns\\EmbedsMailLogo::build<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

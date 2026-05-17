@@ -7,6 +7,8 @@ use App\Models\Event;
 
 class EventStatusService
 {
+    private const DATETIME_FORMAT = 'd/m/Y H:i';
+
     /**
      * Check if an event can transition to the given status (manual change rules).
      *
@@ -38,10 +40,10 @@ class EventStatusService
         $opensAt = $eventStart->copy()->subHours(24);
 
         return match ($newStatus) {
-            EventStatus::ONGOING => "Le statut \"En cours\" ne peut être défini qu'à partir de 24h avant l'événement ({$opensAt->format('d/m/Y H:i')}).",
-            EventStatus::COMPLETED => "Le statut \"Terminé\" ne peut être défini qu'après l'heure prévue de l'événement ({$eventStart->format('d/m/Y H:i')}).",
+            EventStatus::ONGOING => "Le statut \"En cours\" ne peut être défini qu'à partir de 24h avant l'événement ({$opensAt->format(self::DATETIME_FORMAT)}).",
+            EventStatus::COMPLETED => "Le statut \"Terminé\" ne peut être défini qu'après l'heure prévue de l'événement ({$eventStart->format(self::DATETIME_FORMAT)}).",
             EventStatus::CANCELLED => '',
-            EventStatus::UPCOMING => "Le statut \"À venir\" ne peut être défini qu'avant l'heure prévue de l'événement ({$eventStart->format('d/m/Y H:i')}).",
+            EventStatus::UPCOMING => "Le statut \"À venir\" ne peut être défini qu'avant l'heure prévue de l'événement ({$eventStart->format(self::DATETIME_FORMAT)}).",
         };
     }
 

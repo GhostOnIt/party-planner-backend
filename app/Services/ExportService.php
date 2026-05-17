@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportService
 {
+    private const CSV_CONTENT_TYPE = 'text/csv; charset=UTF-8';
+
     /**
      * Export guests to CSV.
      */
@@ -18,7 +20,7 @@ class ExportService
         $filename = Str::slug($event->title) . '-invites-' . now()->format('Y-m-d') . '.csv';
 
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => self::CSV_CONTENT_TYPE,
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
@@ -125,7 +127,7 @@ class ExportService
         $filename = Str::slug($event->title) . '-budget-' . now()->format('Y-m-d') . '.csv';
 
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => self::CSV_CONTENT_TYPE,
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
@@ -260,7 +262,7 @@ class ExportService
         $filename = Str::slug($event->title) . '-taches-' . now()->format('Y-m-d') . '.csv';
 
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => self::CSV_CONTENT_TYPE,
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 

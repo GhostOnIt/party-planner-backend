@@ -70,6 +70,10 @@ RUN apk add --no-cache \
     # Installer Redis
     && pecl install redis \
     && docker-php-ext-enable redis \
+    # Installer PCOV (coverage driver léger, désactivé par défaut)
+    && pecl install pcov \
+    && docker-php-ext-enable pcov \
+    && echo "pcov.enabled=0" > /usr/local/etc/php/conf.d/pcov.ini \
     # Nettoyer les dépendances de build
     && apk del .build-deps \
     # Nettoyer les caches PECL

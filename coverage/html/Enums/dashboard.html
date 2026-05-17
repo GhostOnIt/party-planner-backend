@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Enums</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Enums</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="EventStatus.php.html#5">App\Enums\EventStatus</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationType.php.html#5">App\Enums\NotificationType</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#5">App\Enums\PaymentMethod</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#5">App\Enums\PaymentStatus</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoType.php.html#5">App\Enums\PhotoType</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#5">App\Enums\RsvpStatus</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskPriority.php.html#5">App\Enums\TaskPriority</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskStatus.php.html#5">App\Enums\TaskStatus</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserRole.php.html#5">App\Enums\UserRole</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#5">App\Enums\CollaboratorRole</a></td><td class="text-right">39%</td></tr>
+       <tr><td><a href="EventType.php.html#5">App\Enums\EventType</a></td><td class="text-right">57%</td></tr>
+       <tr><td><a href="BudgetCategory.php.html#5">App\Enums\BudgetCategory</a></td><td class="text-right">58%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="CollaboratorRole.php.html#5">App\Enums\CollaboratorRole</a></td><td class="text-right">580</td></tr>
+       <tr><td><a href="NotificationType.php.html#5">App\Enums\NotificationType</a></td><td class="text-right">420</td></tr>
+       <tr><td><a href="TaskPriority.php.html#5">App\Enums\TaskPriority</a></td><td class="text-right">342</td></tr>
+       <tr><td><a href="EventStatus.php.html#5">App\Enums\EventStatus</a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#5">App\Enums\PaymentStatus</a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#5">App\Enums\RsvpStatus</a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="TaskStatus.php.html#5">App\Enums\TaskStatus</a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#5">App\Enums\PaymentMethod</a></td><td class="text-right">210</td></tr>
+       <tr><td><a href="UserRole.php.html#5">App\Enums\UserRole</a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="PhotoType.php.html#5">App\Enums\PhotoType</a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="BudgetCategory.php.html#5">App\Enums\BudgetCategory</a></td><td class="text-right">75</td></tr>
+       <tr><td><a href="EventType.php.html#5">App\Enums\EventType</a></td><td class="text-right">64</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="BudgetCategory.php.html#28"><abbr title="App\Enums\BudgetCategory::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetCategory.php.html#54"><abbr title="App\Enums\BudgetCategory::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetCategory.php.html#59"><abbr title="App\Enums\BudgetCategory::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#52"><abbr title="App\Enums\CollaboratorRole::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#68"><abbr title="App\Enums\CollaboratorRole::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#84"><abbr title="App\Enums\CollaboratorRole::canEdit">canEdit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#96"><abbr title="App\Enums\CollaboratorRole::canDelete">canDelete</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#122"><abbr title="App\Enums\CollaboratorRole::systemRoles">systemRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#138"><abbr title="App\Enums\CollaboratorRole::canManageCollaborators">canManageCollaborators</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#146"><abbr title="App\Enums\CollaboratorRole::canCreateCustomRoles">canCreateCustomRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#151"><abbr title="App\Enums\CollaboratorRole::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#156"><abbr title="App\Enums\CollaboratorRole::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#163"><abbr title="App\Enums\CollaboratorRole::assignableOptions">assignableOptions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatus.php.html#12"><abbr title="App\Enums\EventStatus::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatus.php.html#22"><abbr title="App\Enums\EventStatus::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatus.php.html#32"><abbr title="App\Enums\EventStatus::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatus.php.html#42"><abbr title="App\Enums\EventStatus::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventStatus.php.html#47"><abbr title="App\Enums\EventStatus::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventType.php.html#26"><abbr title="App\Enums\EventType::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventType.php.html#50"><abbr title="App\Enums\EventType::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventType.php.html#55"><abbr title="App\Enums\EventType::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationType.php.html#13"><abbr title="App\Enums\NotificationType::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationType.php.html#24"><abbr title="App\Enums\NotificationType::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationType.php.html#35"><abbr title="App\Enums\NotificationType::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationType.php.html#46"><abbr title="App\Enums\NotificationType::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationType.php.html#51"><abbr title="App\Enums\NotificationType::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#10"><abbr title="App\Enums\PaymentMethod::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#18"><abbr title="App\Enums\PaymentMethod::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#26"><abbr title="App\Enums\PaymentMethod::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#34"><abbr title="App\Enums\PaymentMethod::phonePrefix">phonePrefix</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#42"><abbr title="App\Enums\PaymentMethod::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#47"><abbr title="App\Enums\PaymentMethod::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#12"><abbr title="App\Enums\PaymentStatus::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#22"><abbr title="App\Enums\PaymentStatus::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#32"><abbr title="App\Enums\PaymentStatus::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#42"><abbr title="App\Enums\PaymentStatus::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#47"><abbr title="App\Enums\PaymentStatus::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoType.php.html#10"><abbr title="App\Enums\PhotoType::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoType.php.html#18"><abbr title="App\Enums\PhotoType::description">description</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoType.php.html#26"><abbr title="App\Enums\PhotoType::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoType.php.html#34"><abbr title="App\Enums\PhotoType::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PhotoType.php.html#39"><abbr title="App\Enums\PhotoType::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanType.php.html#109"><abbr title="App\Enums\PlanType::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PlanType.php.html#114"><abbr title="App\Enums\PlanType::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#12"><abbr title="App\Enums\RsvpStatus::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#22"><abbr title="App\Enums\RsvpStatus::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#32"><abbr title="App\Enums\RsvpStatus::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#42"><abbr title="App\Enums\RsvpStatus::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#47"><abbr title="App\Enums\RsvpStatus::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskPriority.php.html#11"><abbr title="App\Enums\TaskPriority::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskPriority.php.html#20"><abbr title="App\Enums\TaskPriority::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskPriority.php.html#29"><abbr title="App\Enums\TaskPriority::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskPriority.php.html#38"><abbr title="App\Enums\TaskPriority::order">order</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskPriority.php.html#47"><abbr title="App\Enums\TaskPriority::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskPriority.php.html#52"><abbr title="App\Enums\TaskPriority::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskStatus.php.html#12"><abbr title="App\Enums\TaskStatus::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskStatus.php.html#22"><abbr title="App\Enums\TaskStatus::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskStatus.php.html#32"><abbr title="App\Enums\TaskStatus::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskStatus.php.html#42"><abbr title="App\Enums\TaskStatus::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TaskStatus.php.html#47"><abbr title="App\Enums\TaskStatus::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserRole.php.html#13"><abbr title="App\Enums\UserRole::label">label</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserRole.php.html#24"><abbr title="App\Enums\UserRole::color">color</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserRole.php.html#35"><abbr title="App\Enums\UserRole::icon">icon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserRole.php.html#46"><abbr title="App\Enums\UserRole::isAdmin">isAdmin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserRole.php.html#54"><abbr title="App\Enums\UserRole::values">values</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserRole.php.html#62"><abbr title="App\Enums\UserRole::options">options</abbr></a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="CollaboratorRole.php.html#52"><abbr title="App\Enums\CollaboratorRole::color">color</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#68"><abbr title="App\Enums\CollaboratorRole::icon">icon</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="BudgetCategory.php.html#28"><abbr title="App\Enums\BudgetCategory::icon">icon</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="EventType.php.html#26"><abbr title="App\Enums\EventType::icon">icon</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="NotificationType.php.html#13"><abbr title="App\Enums\NotificationType::label">label</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="NotificationType.php.html#24"><abbr title="App\Enums\NotificationType::icon">icon</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="NotificationType.php.html#35"><abbr title="App\Enums\NotificationType::color">color</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="EventStatus.php.html#12"><abbr title="App\Enums\EventStatus::label">label</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EventStatus.php.html#22"><abbr title="App\Enums\EventStatus::color">color</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EventStatus.php.html#32"><abbr title="App\Enums\EventStatus::icon">icon</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#12"><abbr title="App\Enums\PaymentStatus::label">label</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#22"><abbr title="App\Enums\PaymentStatus::color">color</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PaymentStatus.php.html#32"><abbr title="App\Enums\PaymentStatus::icon">icon</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#12"><abbr title="App\Enums\RsvpStatus::label">label</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#22"><abbr title="App\Enums\RsvpStatus::color">color</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="RsvpStatus.php.html#32"><abbr title="App\Enums\RsvpStatus::icon">icon</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="TaskStatus.php.html#12"><abbr title="App\Enums\TaskStatus::label">label</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="TaskStatus.php.html#22"><abbr title="App\Enums\TaskStatus::color">color</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="TaskStatus.php.html#32"><abbr title="App\Enums\TaskStatus::icon">icon</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="TaskPriority.php.html#11"><abbr title="App\Enums\TaskPriority::label">label</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TaskPriority.php.html#20"><abbr title="App\Enums\TaskPriority::color">color</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TaskPriority.php.html#29"><abbr title="App\Enums\TaskPriority::icon">icon</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="TaskPriority.php.html#38"><abbr title="App\Enums\TaskPriority::order">order</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#10"><abbr title="App\Enums\PaymentMethod::label">label</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#18"><abbr title="App\Enums\PaymentMethod::icon">icon</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#26"><abbr title="App\Enums\PaymentMethod::color">color</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PaymentMethod.php.html#34"><abbr title="App\Enums\PaymentMethod::phonePrefix">phonePrefix</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PhotoType.php.html#10"><abbr title="App\Enums\PhotoType::label">label</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PhotoType.php.html#18"><abbr title="App\Enums\PhotoType::description">description</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PhotoType.php.html#26"><abbr title="App\Enums\PhotoType::icon">icon</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="UserRole.php.html#13"><abbr title="App\Enums\UserRole::label">label</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="UserRole.php.html#24"><abbr title="App\Enums\UserRole::color">color</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="UserRole.php.html#35"><abbr title="App\Enums\UserRole::icon">icon</abbr></a></td><td class="text-right">12</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.12</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.21</a> and <a href="https://phpunit.de/">PHPUnit 11.5.51</a> at Thu May 14 15:42:39 UTC 2026.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([9,0,0,0,1,0,2,0,0,0,1,0], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([66,0,0,0,0,0,0,0,0,0,0,17], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[58.06451612903226,26,"<a href=\"BudgetCategory.php.html#5\">App\\Enums\\BudgetCategory<\/a>"],[39.50617283950617,49,"<a href=\"CollaboratorRole.php.html#5\">App\\Enums\\CollaboratorRole<\/a>"],[0,17,"<a href=\"EventStatus.php.html#5\">App\\Enums\\EventStatus<\/a>"],[57.14285714285714,23,"<a href=\"EventType.php.html#5\">App\\Enums\\EventType<\/a>"],[0,20,"<a href=\"NotificationType.php.html#5\">App\\Enums\\NotificationType<\/a>"],[0,14,"<a href=\"PaymentMethod.php.html#5\">App\\Enums\\PaymentMethod<\/a>"],[0,17,"<a href=\"PaymentStatus.php.html#5\">App\\Enums\\PaymentStatus<\/a>"],[0,11,"<a href=\"PhotoType.php.html#5\">App\\Enums\\PhotoType<\/a>"],[92.98245614035088,32,"<a href=\"PlanType.php.html#5\">App\\Enums\\PlanType<\/a>"],[0,17,"<a href=\"RsvpStatus.php.html#5\">App\\Enums\\RsvpStatus<\/a>"],[0,18,"<a href=\"TaskPriority.php.html#5\">App\\Enums\\TaskPriority<\/a>"],[0,17,"<a href=\"TaskStatus.php.html#5\">App\\Enums\\TaskStatus<\/a>"],[0,12,"<a href=\"UserRole.php.html#5\">App\\Enums\\UserRole<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[100,8,"<a href=\"BudgetCategory.php.html#15\">App\\Enums\\BudgetCategory::label<\/a>"],[0,8,"<a href=\"BudgetCategory.php.html#28\">App\\Enums\\BudgetCategory::icon<\/a>"],[100,8,"<a href=\"BudgetCategory.php.html#41\">App\\Enums\\BudgetCategory::color<\/a>"],[0,1,"<a href=\"BudgetCategory.php.html#54\">App\\Enums\\BudgetCategory::values<\/a>"],[0,1,"<a href=\"BudgetCategory.php.html#59\">App\\Enums\\BudgetCategory::options<\/a>"],[100,10,"<a href=\"CollaboratorRole.php.html#20\">App\\Enums\\CollaboratorRole::label<\/a>"],[100,10,"<a href=\"CollaboratorRole.php.html#36\">App\\Enums\\CollaboratorRole::description<\/a>"],[0,10,"<a href=\"CollaboratorRole.php.html#52\">App\\Enums\\CollaboratorRole::color<\/a>"],[0,10,"<a href=\"CollaboratorRole.php.html#68\">App\\Enums\\CollaboratorRole::icon<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#84\">App\\Enums\\CollaboratorRole::canEdit<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#96\">App\\Enums\\CollaboratorRole::canDelete<\/a>"],[100,1,"<a href=\"CollaboratorRole.php.html#104\">App\\Enums\\CollaboratorRole::assignableRoles<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#122\">App\\Enums\\CollaboratorRole::systemRoles<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#138\">App\\Enums\\CollaboratorRole::canManageCollaborators<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#146\">App\\Enums\\CollaboratorRole::canCreateCustomRoles<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#151\">App\\Enums\\CollaboratorRole::values<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#156\">App\\Enums\\CollaboratorRole::options<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#163\">App\\Enums\\CollaboratorRole::assignableOptions<\/a>"],[0,5,"<a href=\"EventStatus.php.html#12\">App\\Enums\\EventStatus::label<\/a>"],[0,5,"<a href=\"EventStatus.php.html#22\">App\\Enums\\EventStatus::color<\/a>"],[0,5,"<a href=\"EventStatus.php.html#32\">App\\Enums\\EventStatus::icon<\/a>"],[0,1,"<a href=\"EventStatus.php.html#42\">App\\Enums\\EventStatus::values<\/a>"],[0,1,"<a href=\"EventStatus.php.html#47\">App\\Enums\\EventStatus::options<\/a>"],[100,7,"<a href=\"EventType.php.html#14\">App\\Enums\\EventType::label<\/a>"],[0,7,"<a href=\"EventType.php.html#26\">App\\Enums\\EventType::icon<\/a>"],[100,7,"<a href=\"EventType.php.html#38\">App\\Enums\\EventType::color<\/a>"],[0,1,"<a href=\"EventType.php.html#50\">App\\Enums\\EventType::values<\/a>"],[0,1,"<a href=\"EventType.php.html#55\">App\\Enums\\EventType::options<\/a>"],[0,6,"<a href=\"NotificationType.php.html#13\">App\\Enums\\NotificationType::label<\/a>"],[0,6,"<a href=\"NotificationType.php.html#24\">App\\Enums\\NotificationType::icon<\/a>"],[0,6,"<a href=\"NotificationType.php.html#35\">App\\Enums\\NotificationType::color<\/a>"],[0,1,"<a href=\"NotificationType.php.html#46\">App\\Enums\\NotificationType::values<\/a>"],[0,1,"<a href=\"NotificationType.php.html#51\">App\\Enums\\NotificationType::options<\/a>"],[0,3,"<a href=\"PaymentMethod.php.html#10\">App\\Enums\\PaymentMethod::label<\/a>"],[0,3,"<a href=\"PaymentMethod.php.html#18\">App\\Enums\\PaymentMethod::icon<\/a>"],[0,3,"<a href=\"PaymentMethod.php.html#26\">App\\Enums\\PaymentMethod::color<\/a>"],[0,3,"<a href=\"PaymentMethod.php.html#34\">App\\Enums\\PaymentMethod::phonePrefix<\/a>"],[0,1,"<a href=\"PaymentMethod.php.html#42\">App\\Enums\\PaymentMethod::values<\/a>"],[0,1,"<a href=\"PaymentMethod.php.html#47\">App\\Enums\\PaymentMethod::options<\/a>"],[0,5,"<a href=\"PaymentStatus.php.html#12\">App\\Enums\\PaymentStatus::label<\/a>"],[0,5,"<a href=\"PaymentStatus.php.html#22\">App\\Enums\\PaymentStatus::color<\/a>"],[0,5,"<a href=\"PaymentStatus.php.html#32\">App\\Enums\\PaymentStatus::icon<\/a>"],[0,1,"<a href=\"PaymentStatus.php.html#42\">App\\Enums\\PaymentStatus::values<\/a>"],[0,1,"<a href=\"PaymentStatus.php.html#47\">App\\Enums\\PaymentStatus::options<\/a>"],[0,3,"<a href=\"PhotoType.php.html#10\">App\\Enums\\PhotoType::label<\/a>"],[0,3,"<a href=\"PhotoType.php.html#18\">App\\Enums\\PhotoType::description<\/a>"],[0,3,"<a href=\"PhotoType.php.html#26\">App\\Enums\\PhotoType::icon<\/a>"],[0,1,"<a href=\"PhotoType.php.html#34\">App\\Enums\\PhotoType::values<\/a>"],[0,1,"<a href=\"PhotoType.php.html#39\">App\\Enums\\PhotoType::options<\/a>"],[100,3,"<a href=\"PlanType.php.html#10\">App\\Enums\\PlanType::label<\/a>"],[100,3,"<a href=\"PlanType.php.html#18\">App\\Enums\\PlanType::description<\/a>"],[100,3,"<a href=\"PlanType.php.html#26\">App\\Enums\\PlanType::color<\/a>"],[100,3,"<a href=\"PlanType.php.html#34\">App\\Enums\\PlanType::basePrice<\/a>"],[100,3,"<a href=\"PlanType.php.html#42\">App\\Enums\\PlanType::includedGuests<\/a>"],[100,3,"<a href=\"PlanType.php.html#50\">App\\Enums\\PlanType::pricePerExtraGuest<\/a>"],[100,3,"<a href=\"PlanType.php.html#58\">App\\Enums\\PlanType::maxCollaborators<\/a>"],[100,3,"<a href=\"PlanType.php.html#69\">App\\Enums\\PlanType::durationInMonths<\/a>"],[100,3,"<a href=\"PlanType.php.html#80\">App\\Enums\\PlanType::durationLabel<\/a>"],[100,3,"<a href=\"PlanType.php.html#88\">App\\Enums\\PlanType::features<\/a>"],[0,1,"<a href=\"PlanType.php.html#109\">App\\Enums\\PlanType::values<\/a>"],[0,1,"<a href=\"PlanType.php.html#114\">App\\Enums\\PlanType::options<\/a>"],[0,5,"<a href=\"RsvpStatus.php.html#12\">App\\Enums\\RsvpStatus::label<\/a>"],[0,5,"<a href=\"RsvpStatus.php.html#22\">App\\Enums\\RsvpStatus::color<\/a>"],[0,5,"<a href=\"RsvpStatus.php.html#32\">App\\Enums\\RsvpStatus::icon<\/a>"],[0,1,"<a href=\"RsvpStatus.php.html#42\">App\\Enums\\RsvpStatus::values<\/a>"],[0,1,"<a href=\"RsvpStatus.php.html#47\">App\\Enums\\RsvpStatus::options<\/a>"],[0,4,"<a href=\"TaskPriority.php.html#11\">App\\Enums\\TaskPriority::label<\/a>"],[0,4,"<a href=\"TaskPriority.php.html#20\">App\\Enums\\TaskPriority::color<\/a>"],[0,4,"<a href=\"TaskPriority.php.html#29\">App\\Enums\\TaskPriority::icon<\/a>"],[0,4,"<a href=\"TaskPriority.php.html#38\">App\\Enums\\TaskPriority::order<\/a>"],[0,1,"<a href=\"TaskPriority.php.html#47\">App\\Enums\\TaskPriority::values<\/a>"],[0,1,"<a href=\"TaskPriority.php.html#52\">App\\Enums\\TaskPriority::options<\/a>"],[0,5,"<a href=\"TaskStatus.php.html#12\">App\\Enums\\TaskStatus::label<\/a>"],[0,5,"<a href=\"TaskStatus.php.html#22\">App\\Enums\\TaskStatus::color<\/a>"],[0,5,"<a href=\"TaskStatus.php.html#32\">App\\Enums\\TaskStatus::icon<\/a>"],[0,1,"<a href=\"TaskStatus.php.html#42\">App\\Enums\\TaskStatus::values<\/a>"],[0,1,"<a href=\"TaskStatus.php.html#47\">App\\Enums\\TaskStatus::options<\/a>"],[0,3,"<a href=\"UserRole.php.html#13\">App\\Enums\\UserRole::label<\/a>"],[0,3,"<a href=\"UserRole.php.html#24\">App\\Enums\\UserRole::color<\/a>"],[0,3,"<a href=\"UserRole.php.html#35\">App\\Enums\\UserRole::icon<\/a>"],[0,1,"<a href=\"UserRole.php.html#46\">App\\Enums\\UserRole::isAdmin<\/a>"],[0,1,"<a href=\"UserRole.php.html#54\">App\\Enums\\UserRole::values<\/a>"],[0,1,"<a href=\"UserRole.php.html#62\">App\\Enums\\UserRole::options<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

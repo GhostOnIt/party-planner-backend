@@ -9,6 +9,7 @@ use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Models\PersonalAccessToken;
+use App\Models\QuoteRequest;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Observers\SubscriptionObserver;
@@ -18,6 +19,7 @@ use App\Policies\BudgetPolicy;
 use App\Policies\CollaboratorPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\PaymentPolicy;
+use App\Policies\QuoteRequestPolicy;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Collaborator::class, CollaboratorPolicy::class);
         Gate::policy(BudgetItem::class, BudgetPolicy::class);
+        Gate::policy(QuoteRequest::class, QuoteRequestPolicy::class);
 
         // Register admin gates
         Gate::define('admin.access', [AdminPolicy::class, 'access']);

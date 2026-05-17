@@ -16,9 +16,11 @@ services:
       APP_NAME: "Party Planner"
       APP_ENV: local
       APP_DEBUG: "true"
-      APP_URL: http://56.228.69.61:8000
+      # APP_URL: http://56.228.69.61:8000
+      APP_URL: http://localhost:8000
       APP_KEY: ""
-      FRONTEND_URL: http://56.228.69.61:5173
+      # FRONTEND_URL: http://56.228.69.61:5173
+      FRONTEND_URL: http://localhost:5173
       TZ: Africa/Douala
       APP_LOCALE: en
       APP_FALLBACK_LOCALE: en
@@ -47,11 +49,11 @@ services:
       REDIS_HOST: redis
       REDIS_PASSWORD: "null"
       REDIS_PORT: 6379
-      SMTP_MAILER: smtp
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
-      SMTP_FROM_ADDRESS: "no-reply@partyplanner.cg"
-      SMTP_FROM_NAME: "Party Planner"
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_FROM_ADDRESS: "no-reply@partyplanner.cg"
+      MAIL_FROM_NAME: "Party Planner"
       # Party Planner Configuration
       CURRENCY_CODE: XAF
       CURRENCY_SYMBOL: FCFA
@@ -138,6 +140,46 @@ services:
     networks:
       - party-planner-network
 
+  sonar-db:
+    image: postgres:16-alpine
+    container_name: party-planner-sonar-db
+    restart: unless-stopped
+    profiles: ["sonar"]
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonar-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - party-planner-network
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: party-planner-sonarqube
+    restart: unless-stopped
+    profiles: ["sonar"]
+    depends_on:
+      sonar-db:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-extensions:/opt/sonarqube/extensions
+    networks:
+      - party-planner-network
+
 networks:
   party-planner-network:
     driver: bridge
@@ -146,3 +188,7 @@ volumes:
   postgres-data:
   redis-data:
   vendor:
+  sonar-db-data:
+  sonarqube-data:
+  sonarqube-logs:
+  sonarqube-extensions:

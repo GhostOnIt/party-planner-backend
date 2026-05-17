@@ -2,55 +2,29 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exports\QuoteRequestsExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AddQuoteNoteRequest;
+use App\Http\Requests\Admin\AssignQuoteRequestRequest;
+use App\Http\Requests\Admin\ListQuoteRequestsRequest;
+use App\Http\Requests\Admin\ScheduleQuoteCallRequest;
+use App\Http\Requests\Admin\UpdateQuoteOutcomeRequest;
+use App\Http\Requests\Admin\UpdateQuoteStageRequest;
 use App\Models\QuoteRequest;
 use App\Models\QuoteRequestStage;
 use App\Models\User;
 use App\Services\QuoteRequestService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminQuoteRequestController extends Controller
 {
     public function __construct(protected QuoteRequestService $quoteRequestService) {}
 
-    private function ensureWorkflowStages(): \Illuminate\Support\Collection
+    public function index(ListQuoteRequestsRequest $request): JsonResponse
     {
-        $workflow = collect([
-            ['name' => 'En attente de traitement', 'slug' => 'pending_processing', 'sort_order' => 0],
-            ['name' => 'Assignée à un admin', 'slug' => 'assigned_admin', 'sort_order' => 1],
-            ['name' => 'Call programmé', 'slug' => 'call_scheduled', 'sort_order' => 2],
-            ['name' => 'Offre personnalisée créée', 'slug' => 'custom_offer_created', 'sort_order' => 3],
-            ['name' => 'Clôturée', 'slug' => 'closed', 'sort_order' => 4],
-        ]);
-
-        QuoteRequestStage::query()
-            ->where('is_system', true)
-            ->whereNotIn('slug', $workflow->pluck('slug'))
-            ->update(['is_active' => false]);
-
-        foreach ($workflow as $stage) {
-            QuoteRequestStage::updateOrCreate(
-                ['slug' => $stage['slug']],
-                [
-                    'name' => $stage['name'],
-                    'sort_order' => $stage['sort_order'],
-                    'is_active' => true,
-                    'is_system' => true,
-                ]
-            );
-        }
-
-        return QuoteRequestStage::query()
-            ->where('is_active', true)
-            ->whereIn('slug', $workflow->pluck('slug'))
-            ->orderBy('sort_order')
-            ->get();
-    }
-
-    public function index(Request $request): JsonResponse
-    {
-        $stages = $this->ensureWorkflowStages();
+        $stages = $this->quoteRequestService->ensureWorkflowStages();
         $firstStage = $stages->firstWhere('slug', 'pending_processing') ?? $stages->first();
         if ($firstStage) {
             QuoteRequest::query()
@@ -71,10 +45,38 @@ class AdminQuoteRequestController extends Controller
                     $q->latest()->limit(20);
                 },
             ])
-            ->latest();
+            ->withCount('offers');
 
         if ($request->filled('stage_id')) {
             $query->where('current_stage_id', $request->string('stage_id'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
+        if ($request->filled('outcome')) {
+            $query->where('outcome', $request->string('outcome'));
+        }
+
+        if ($request->filled('assigned_admin_id')) {
+            $query->where('assigned_admin_id', $request->string('assigned_admin_id'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('created_at', '>=', $request->input('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('created_at', '<=', $request->input('date_to'));
+        }
+
+        if ($request->filled('budget_min')) {
+            $query->where('budget_estimate', '>=', (int) $request->input('budget_min'));
+        }
+
+        if ($request->filled('budget_max')) {
+            $query->where('budget_estimate', '<=', (int) $request->input('budget_max'));
         }
 
         if ($request->filled('search')) {
@@ -86,6 +88,10 @@ class AdminQuoteRequestController extends Controller
                     ->orWhere('contact_email', 'like', "%{$search}%");
             });
         }
+
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $query->orderBy($sortBy, $sortDir);
 
         return response()->json([
             'data' => $query->paginate(min((int) $request->input('per_page', 20), 100)),
@@ -101,17 +107,14 @@ class AdminQuoteRequestController extends Controller
                 'user:id,name,email,phone',
                 'plan:id,name,slug',
                 'activities.user:id,name,email',
+                'offers.creator:id,name',
             ]),
         ]);
     }
 
-    public function updateStage(Request $request, QuoteRequest $quoteRequest): JsonResponse
+    public function updateStage(UpdateQuoteStageRequest $request, QuoteRequest $quoteRequest): JsonResponse
     {
-        $validated = $request->validate([
-            'stage_id' => ['required', 'exists:quote_request_stages,id'],
-        ]);
-
-        $stage = QuoteRequestStage::findOrFail($validated['stage_id']);
+        $stage = QuoteRequestStage::findOrFail($request->validated('stage_id'));
         $quoteRequest->update([
             'current_stage_id' => $stage->id,
             'last_stage_changed_at' => now(),
@@ -136,11 +139,9 @@ class AdminQuoteRequestController extends Controller
         ]);
     }
 
-    public function assign(Request $request, QuoteRequest $quoteRequest): JsonResponse
+    public function assign(AssignQuoteRequestRequest $request, QuoteRequest $quoteRequest): JsonResponse
     {
-        $validated = $request->validate([
-            'assigned_admin_id' => ['nullable', 'exists:users,id'],
-        ]);
+        $validated = $request->validated();
 
         if (!empty($validated['assigned_admin_id'])) {
             $admin = User::query()->findOrFail($validated['assigned_admin_id']);
@@ -167,16 +168,12 @@ class AdminQuoteRequestController extends Controller
         ]);
     }
 
-    public function addNote(Request $request, QuoteRequest $quoteRequest): JsonResponse
+    public function addNote(AddQuoteNoteRequest $request, QuoteRequest $quoteRequest): JsonResponse
     {
-        $validated = $request->validate([
-            'note' => ['required', 'string', 'min:3', 'max:2000'],
-        ]);
-
         $activity = $this->quoteRequestService->logActivity(
             $quoteRequest,
             'note_added',
-            $validated['note'],
+            $request->validated('note'),
             null,
             $request->user()->id
         );
@@ -187,21 +184,17 @@ class AdminQuoteRequestController extends Controller
         ], 201);
     }
 
-    public function scheduleCall(Request $request, QuoteRequest $quoteRequest): JsonResponse
+    public function scheduleCall(ScheduleQuoteCallRequest $request, QuoteRequest $quoteRequest): JsonResponse
     {
-        $validated = $request->validate([
-            'call_scheduled_at' => ['required', 'date'],
-        ]);
-
         $quoteRequest->update([
-            'call_scheduled_at' => $validated['call_scheduled_at'],
+            'call_scheduled_at' => $request->validated('call_scheduled_at'),
         ]);
 
         $this->quoteRequestService->logActivity(
             $quoteRequest,
             'call_scheduled',
             'Call de qualification planifié.',
-            ['call_scheduled_at' => $validated['call_scheduled_at']],
+            ['call_scheduled_at' => $request->validated('call_scheduled_at')],
             $request->user()->id
         );
         $this->quoteRequestService->notifyCustomerCallScheduled($quoteRequest->fresh());
@@ -212,13 +205,9 @@ class AdminQuoteRequestController extends Controller
         ]);
     }
 
-    public function updateOutcome(Request $request, QuoteRequest $quoteRequest): JsonResponse
+    public function updateOutcome(UpdateQuoteOutcomeRequest $request, QuoteRequest $quoteRequest): JsonResponse
     {
-        $validated = $request->validate([
-            'outcome' => ['required', 'in:won,lost'],
-            'outcome_note' => ['nullable', 'string', 'max:2000'],
-        ]);
-
+        $validated = $request->validated();
         $closedStage = QuoteRequestStage::query()->where('slug', 'closed')->first();
 
         $quoteRequest->update([
@@ -241,5 +230,18 @@ class AdminQuoteRequestController extends Controller
             'message' => 'Issue mise à jour.',
             'data' => $quoteRequest->fresh()->load(['currentStage', 'assignedAdmin']),
         ]);
+    }
+
+    public function export(ListQuoteRequestsRequest $request): BinaryFileResponse
+    {
+        $filters = $request->only([
+            'search', 'stage_id', 'status', 'outcome', 'assigned_admin_id',
+            'date_from', 'date_to', 'budget_min', 'budget_max',
+        ]);
+
+        return Excel::download(
+            new QuoteRequestsExport($filters),
+            'demandes-business-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

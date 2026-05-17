@@ -19,6 +19,8 @@ use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
+    private const SLUG_REGEX = 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+
     public function __construct(
         private CustomRoleService $customRoleService
     ) {}
@@ -48,7 +50,7 @@ class SettingsController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9_-]+$/',
+                self::SLUG_REGEX,
                 Rule::unique('user_event_types')->where('user_id', $user->id),
             ],
             'color' => 'nullable|string|max:50',
@@ -98,7 +100,7 @@ class SettingsController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9_-]+$/',
+                self::SLUG_REGEX,
                 Rule::unique('user_event_types')->where('user_id', $user->id)->ignore($eventType->id),
             ],
             'color' => 'nullable|string|max:50',
@@ -199,7 +201,7 @@ class SettingsController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9_-]+$/',
+                self::SLUG_REGEX,
                 Rule::unique('user_collaborator_roles')->where('user_id', $user->id),
             ],
             'description' => 'nullable|string|max:1000',
@@ -258,7 +260,7 @@ class SettingsController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9_-]+$/',
+                self::SLUG_REGEX,
                 Rule::unique('user_collaborator_roles')->where('user_id', $user->id)->ignore($role->id),
             ],
             'description' => 'nullable|string|max:1000',
@@ -358,7 +360,7 @@ class SettingsController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9_-]+$/',
+                self::SLUG_REGEX,
                 Rule::unique('user_budget_categories')->where('user_id', $user->id),
             ],
             'color' => 'nullable|string|max:50',
@@ -408,7 +410,7 @@ class SettingsController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9_-]+$/',
+                self::SLUG_REGEX,
                 Rule::unique('user_budget_categories')->where('user_id', $user->id)->ignore($category->id),
             ],
             'color' => 'nullable|string|max:50',

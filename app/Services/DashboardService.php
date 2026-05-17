@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Constants\ChartColors;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Models\Subscription;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
+    private const LABEL_ONGOING = 'En cours';
+
     /**
      * Get admin dashboard statistics.
      */
@@ -56,9 +59,9 @@ class DashboardService
 
         $usersTrend = $this->calculateTrend($currentUsers->count(), $previousUsers->count());
         $usersBreakdown = [
-            ['label' => 'Actifs', 'value' => $usersActive, 'color' => '#10B981'],
-            ['label' => 'Inactifs', 'value' => $usersInactive, 'color' => '#6b7280'],
-            ['label' => 'Nouveaux (48h)', 'value' => $usersNew, 'color' => '#4F46E5'],
+            ['label' => 'Actifs', 'value' => $usersActive, 'color' => ChartColors::SUCCESS],
+            ['label' => 'Inactifs', 'value' => $usersInactive, 'color' => ChartColors::NEUTRAL],
+            ['label' => 'Nouveaux (48h)', 'value' => $usersNew, 'color' => ChartColors::PRIMARY],
         ];
 
         // Events stats
@@ -81,9 +84,9 @@ class DashboardService
 
         $eventsTrend = $this->calculateTrend($currentEvents->count(), $previousEvents->count());
         $eventsBreakdown = [
-            ['label' => 'Actifs', 'value' => $eventsActive, 'color' => '#10B981'],
-            ['label' => 'Terminés', 'value' => $eventsCompleted, 'color' => '#6b7280'],
-            ['label' => 'En cours', 'value' => $eventsOngoing, 'color' => '#F59E0B'],
+            ['label' => 'Actifs', 'value' => $eventsActive, 'color' => ChartColors::SUCCESS],
+            ['label' => 'Terminés', 'value' => $eventsCompleted, 'color' => ChartColors::NEUTRAL],
+            ['label' => self::LABEL_ONGOING, 'value' => $eventsOngoing, 'color' => ChartColors::WARNING],
         ];
 
         // Subscriptions stats
@@ -107,9 +110,9 @@ class DashboardService
 
         $subscriptionsTrend = $this->calculateTrend($currentSubscriptions->count(), $previousSubscriptions->count());
         $subscriptionsBreakdown = [
-            ['label' => 'Essai', 'value' => $subscriptionsTrial, 'color' => '#4F46E5'],
-            ['label' => 'Pro', 'value' => $subscriptionsPro, 'color' => '#10B981'],
-            ['label' => 'Agence', 'value' => $subscriptionsAgence, 'color' => '#7C3AED'],
+            ['label' => 'Essai', 'value' => $subscriptionsTrial, 'color' => ChartColors::PRIMARY],
+            ['label' => 'Pro', 'value' => $subscriptionsPro, 'color' => ChartColors::SUCCESS],
+            ['label' => 'Agence', 'value' => $subscriptionsAgence, 'color' => ChartColors::VIOLET],
         ];
 
         // Revenue stats
@@ -144,9 +147,9 @@ class DashboardService
         $previousRevenue = $previousPayments->sum('amount');
         $revenueTrend = $this->calculateTrend($revenueTotal, $previousRevenue);
         $revenueBreakdown = [
-            ['label' => 'Payé', 'value' => $revenuePaid, 'color' => '#10B981'],
-            ['label' => 'En attente', 'value' => $revenuePending, 'color' => '#F59E0B'],
-            ['label' => 'Remboursé', 'value' => $revenueRefunded, 'color' => '#EF4444'],
+            ['label' => 'Payé', 'value' => $revenuePaid, 'color' => ChartColors::SUCCESS],
+            ['label' => 'En attente', 'value' => $revenuePending, 'color' => ChartColors::WARNING],
+            ['label' => 'Remboursé', 'value' => $revenueRefunded, 'color' => ChartColors::DANGER],
         ];
 
         return [
@@ -189,11 +192,7 @@ class DashboardService
 
         $grouped = $subscriptions->groupBy('plan_type');
 
-        $planColors = [
-            'essai-gratuit' => '#4F46E5',
-            'pro' => '#10B981',
-            'agence' => '#7C3AED',
-        ];
+        $planColors = ChartColors::planColors();
 
         $planLabels = [
             'essai-gratuit' => 'Essai Gratuit',
@@ -205,7 +204,7 @@ class DashboardService
             return [
                 'name' => $planLabels[$planType] ?? ucfirst($planType),
                 'value' => $group->count(),
-                'color' => $planColors[$planType] ?? '#6B7280',
+                'color' => $planColors[$planType] ?? ChartColors::NEUTRAL,
             ];
         })->values()->toArray();
     }
@@ -864,34 +863,34 @@ class DashboardService
             'events' => [
                 'total' => $events->count(),
                 'breakdown' => [
-                    ['label' => 'À venir', 'value' => $eventsUpcoming, 'color' => '#4F46E5'],
-                    ['label' => 'En cours', 'value' => $eventsOngoing, 'color' => '#F97316'],
-                    ['label' => 'Terminés', 'value' => $eventsCompleted, 'color' => '#10B981'],
-                    ['label' => 'Annulés', 'value' => $eventsCancelled, 'color' => '#EF4444'],
+                    ['label' => 'À venir', 'value' => $eventsUpcoming, 'color' => ChartColors::PRIMARY],
+                    ['label' => self::LABEL_ONGOING, 'value' => $eventsOngoing, 'color' => ChartColors::WARNING_ALT],
+                    ['label' => 'Terminés', 'value' => $eventsCompleted, 'color' => ChartColors::SUCCESS],
+                    ['label' => 'Annulés', 'value' => $eventsCancelled, 'color' => ChartColors::DANGER],
                 ],
             ],
             'guests' => [
                 'total' => $totalGuests,
                 'breakdown' => [
-                    ['label' => 'Acceptés', 'value' => $guestsAccepted, 'color' => '#10B981'],
-                    ['label' => 'Déclinés', 'value' => $guestsDeclined, 'color' => '#EF4444'],
-                    ['label' => 'En attente', 'value' => $guestsPending, 'color' => '#F97316'],
-                    ['label' => 'Peut-être', 'value' => $guestsMaybe, 'color' => '#8B5CF6'],
+                    ['label' => 'Acceptés', 'value' => $guestsAccepted, 'color' => ChartColors::SUCCESS],
+                    ['label' => 'Déclinés', 'value' => $guestsDeclined, 'color' => ChartColors::DANGER],
+                    ['label' => 'En attente', 'value' => $guestsPending, 'color' => ChartColors::WARNING_ALT],
+                    ['label' => 'Peut-être', 'value' => $guestsMaybe, 'color' => ChartColors::VIOLET_LIGHT],
                 ],
             ],
             'tasks' => [
                 'total' => $totalTasks,
                 'breakdown' => [
-                    ['label' => 'À faire', 'value' => $tasksTodo, 'color' => '#EF4444'],
-                    ['label' => 'En cours', 'value' => $tasksInProgress, 'color' => '#F97316'],
-                    ['label' => 'Terminées', 'value' => $tasksCompleted, 'color' => '#10B981'],
+                    ['label' => 'À faire', 'value' => $tasksTodo, 'color' => ChartColors::DANGER],
+                    ['label' => self::LABEL_ONGOING, 'value' => $tasksInProgress, 'color' => ChartColors::WARNING_ALT],
+                    ['label' => 'Terminées', 'value' => $tasksCompleted, 'color' => ChartColors::SUCCESS],
                 ],
             ],
             'budget' => [
                 'total' => $totalBudget,
                 'breakdown' => [
-                    ['label' => 'Dépensé', 'value' => $spentBudget, 'color' => '#EF4444'],
-                    ['label' => 'Restant', 'value' => max(0, $remainingBudget), 'color' => '#10B981'],
+                    ['label' => 'Dépensé', 'value' => $spentBudget, 'color' => ChartColors::DANGER],
+                    ['label' => 'Restant', 'value' => max(0, $remainingBudget), 'color' => ChartColors::SUCCESS],
                 ],
             ],
         ];
@@ -1014,20 +1013,7 @@ class DashboardService
         $events = $eventsQuery->get();
         $groupedByType = $events->groupBy('type');
 
-        // Type colors mapping
-        $typeColors = [
-            'mariage' => '#E91E8C',
-            'anniversaire' => '#4F46E5',
-            'conférence' => '#F59E0B',
-            'fête privée' => '#10B981',
-            'séminaire' => '#8B5CF6',
-            'baptême' => '#06B6D4',
-            'gala' => '#EC4899',
-            'baby_shower' => '#10B981',
-            'soiree' => '#F59E0B',
-            'brunch' => '#8B5CF6',
-            'autre' => '#6B7280',
-        ];
+        $typeColors = ChartColors::eventTypeColors();
 
         // Type labels mapping
         $typeLabels = [
@@ -1048,7 +1034,7 @@ class DashboardService
             return [
                 'name' => $typeLabels[$type] ?? ucfirst($type),
                 'value' => $typeEvents->count(),
-                'color' => $typeColors[$type] ?? '#6B7280',
+                'color' => $typeColors[$type] ?? ChartColors::NEUTRAL,
             ];
         })->values()->toArray();
 

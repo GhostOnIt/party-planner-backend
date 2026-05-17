@@ -51,3 +51,17 @@ Schedule::command('subscriptions:restore-access-after-renewal')
     ->timezone('UTC')
     ->withoutOverlapping()
     ->onOneServer();
+
+// Expirer automatiquement les offres personnalisées (devis Business).
+Schedule::command('offers:expire')
+    ->hourly()
+    ->timezone('UTC')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// Escalader les demandes de devis Business sans activité depuis 7 jours.
+Schedule::command('quote-requests:escalate-aged --days=7')
+    ->dailyAt('09:00')
+    ->timezone('UTC')
+    ->withoutOverlapping()
+    ->onOneServer();

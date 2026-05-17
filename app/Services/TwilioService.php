@@ -11,6 +11,8 @@ use Twilio\Rest\Client;
 
 class TwilioService
 {
+    private const MSG_NOT_CONFIGURED = 'Twilio not configured';
+
     protected ?Client $client = null;
     protected int $maxRetries = 3;
     protected int $retryDelay = 5; // seconds
@@ -44,7 +46,7 @@ class TwilioService
     ): array {
         if (!$this->isConfigured()) {
             Log::warning('Twilio not configured, skipping SMS');
-            return ['success' => false, 'message' => 'Twilio not configured'];
+            return ['success' => false, 'message' => self::MSG_NOT_CONFIGURED];
         }
 
         $from = $from ?? config('services.twilio.from');
@@ -114,7 +116,7 @@ class TwilioService
     ): array {
         if (!$this->isConfigured()) {
             Log::warning('Twilio not configured, skipping WhatsApp');
-            return ['success' => false, 'message' => 'Twilio not configured'];
+            return ['success' => false, 'message' => self::MSG_NOT_CONFIGURED];
         }
 
         $from = $from ?? config('services.twilio.whatsapp_from');
@@ -193,7 +195,7 @@ class TwilioService
         ?string $from = null
     ): array {
         if (!$this->isConfigured()) {
-            return ['success' => false, 'message' => 'Twilio not configured'];
+            return ['success' => false, 'message' => self::MSG_NOT_CONFIGURED];
         }
 
         $from = $from ?? config('services.twilio.whatsapp_from');
@@ -272,7 +274,7 @@ class TwilioService
     public function getMessageStatus(string $messageSid): array
     {
         if (!$this->isConfigured()) {
-            return ['success' => false, 'message' => 'Twilio not configured'];
+            return ['success' => false, 'message' => self::MSG_NOT_CONFIGURED];
         }
 
         try {
@@ -301,7 +303,7 @@ class TwilioService
     public function validatePhoneNumber(string $phoneNumber): array
     {
         if (!$this->isConfigured()) {
-            return ['valid' => false, 'message' => 'Twilio not configured'];
+            return ['valid' => false, 'message' => self::MSG_NOT_CONFIGURED];
         }
 
         try {

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Models</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Models</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="AdminActivityLog.php.html#13">App\Models\AdminActivityLog</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#10">App\Models\CollaborationInvitation</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#10">App\Models\CollaboratorRole</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#10">App\Models\CommunicationSpot</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpotVote.php.html#10">App\Models\CommunicationSpotVote</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOffer.php.html#10">App\Models\CustomOffer</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#11">App\Models\CustomRole</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitation.php.html#10">App\Models\EventCreationInvitation</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#11">App\Models\Invitation</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LegalPage.php.html#10">App\Models\LegalPage</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#10">App\Models\Notification</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#10">App\Models\Otp</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#10">App\Models\Permission</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PersonalAccessToken.php.html#9">App\Models\PersonalAccessToken</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#11">App\Models\QuoteRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestActivity.php.html#10">App\Models\QuoteRequestActivity</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStage.php.html#10">App\Models\QuoteRequestStage</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RefreshToken.php.html#9">App\Models\RefreshToken</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#10">App\Models\TopUp</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#11">App\Models\Collaborator</a></td><td class="text-right">7%</td></tr>
+       <tr><td><a href="EventTemplate.php.html#9">App\Models\EventTemplate</a></td><td class="text-right">17%</td></tr>
+       <tr><td><a href="User.php.html#18">App\Models\User</a></td><td class="text-right">25%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#13">App\Models\ActivityLog</a></td><td class="text-right">26%</td></tr>
+       <tr><td><a href="Photo.php.html#10">App\Models\Photo</a></td><td class="text-right">37%</td></tr>
+       <tr><td><a href="Payment.php.html#10">App\Models\Payment</a></td><td class="text-right">38%</td></tr>
+       <tr><td><a href="BudgetItem.php.html#10">App\Models\BudgetItem</a></td><td class="text-right">43%</td></tr>
+       <tr><td><a href="Plan.php.html#10">App\Models\Plan</a></td><td class="text-right">45%</td></tr>
+       <tr><td><a href="Event.php.html#12">App\Models\Event</a></td><td class="text-right">46%</td></tr>
+       <tr><td><a href="Subscription.php.html#11">App\Models\Subscription</a></td><td class="text-right">51%</td></tr>
+       <tr><td><a href="UserBudgetCategory.php.html#9">App\Models\UserBudgetCategory</a></td><td class="text-right">57%</td></tr>
+       <tr><td><a href="UserEventType.php.html#9">App\Models\UserEventType</a></td><td class="text-right">57%</td></tr>
+       <tr><td><a href="Guest.php.html#12">App\Models\Guest</a></td><td class="text-right">61%</td></tr>
+       <tr><td><a href="UserCollaboratorRole.php.html#9">App\Models\UserCollaboratorRole</a></td><td class="text-right">62%</td></tr>
+       <tr><td><a href="Task.php.html#12">App\Models\Task</a></td><td class="text-right">64%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Collaborator.php.html#11">App\Models\Collaborator</a></td><td class="text-right">3209</td></tr>
+       <tr><td><a href="CustomRole.php.html#11">App\Models\CustomRole</a></td><td class="text-right">1056</td></tr>
+       <tr><td><a href="ActivityLog.php.html#13">App\Models\ActivityLog</a></td><td class="text-right">576</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#13">App\Models\AdminActivityLog</a></td><td class="text-right">506</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#10">App\Models\CollaborationInvitation</a></td><td class="text-right">420</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#10">App\Models\CommunicationSpot</a></td><td class="text-right">380</td></tr>
+       <tr><td><a href="User.php.html#18">App\Models\User</a></td><td class="text-right">334</td></tr>
+       <tr><td><a href="Notification.php.html#10">App\Models\Notification</a></td><td class="text-right">240</td></tr>
+       <tr><td><a href="Otp.php.html#10">App\Models\Otp</a></td><td class="text-right">240</td></tr>
+       <tr><td><a href="Payment.php.html#10">App\Models\Payment</a></td><td class="text-right">239</td></tr>
+       <tr><td><a href="Event.php.html#12">App\Models\Event</a></td><td class="text-right">201</td></tr>
+       <tr><td><a href="EventTemplate.php.html#9">App\Models\EventTemplate</a></td><td class="text-right">178</td></tr>
+       <tr><td><a href="Invitation.php.html#11">App\Models\Invitation</a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="Plan.php.html#10">App\Models\Plan</a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="Subscription.php.html#11">App\Models\Subscription</a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="TopUp.php.html#10">App\Models\TopUp</a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="BudgetItem.php.html#10">App\Models\BudgetItem</a></td><td class="text-right">69</td></tr>
+       <tr><td><a href="Guest.php.html#12">App\Models\Guest</a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="CustomOffer.php.html#10">App\Models\CustomOffer</a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Task.php.html#12">App\Models\Task</a></td><td class="text-right">32</td></tr>
+       <tr><td><a href="PersonalAccessToken.php.html#9">App\Models\PersonalAccessToken</a></td><td class="text-right">30</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="ActivityLog.php.html#69"><abbr title="App\Models\ActivityLog::getResourceNameAttribute">getResourceNameAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#122"><abbr title="App\Models\ActivityLog::subject">subject</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#130"><abbr title="App\Models\ActivityLog::log">log</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#205"><abbr title="App\Models\ActivityLog::prepareLogData">prepareLogData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#244"><abbr title="App\Models\ActivityLog::scopeByUser">scopeByUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#252"><abbr title="App\Models\ActivityLog::scopeByAdmin">scopeByAdmin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#260"><abbr title="App\Models\ActivityLog::scopeByActorType">scopeByActorType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#268"><abbr title="App\Models\ActivityLog::scopeBySource">scopeBySource</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#276"><abbr title="App\Models\ActivityLog::scopeFrontend">scopeFrontend</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#284"><abbr title="App\Models\ActivityLog::scopeBackend">scopeBackend</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#292"><abbr title="App\Models\ActivityLog::scopeNotArchived">scopeNotArchived</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#300"><abbr title="App\Models\ActivityLog::scopeArchived">scopeArchived</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#308"><abbr title="App\Models\ActivityLog::scopeForModel">scopeForModel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#330"><abbr title="App\Models\ActivityLog::scopeByAction">scopeByAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#338"><abbr title="App\Models\ActivityLog::scopeDateBetween">scopeDateBetween</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#346"><abbr title="App\Models\ActivityLog::scopeSearch">scopeSearch</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#360"><abbr title="App\Models\ActivityLog::scopeEligibleForArchival">scopeEligibleForArchival</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ActivityLog.php.html#369"><abbr title="App\Models\ActivityLog::scopeEligibleForPurge">scopeEligibleForPurge</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#31"><abbr title="App\Models\AdminActivityLog::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#42"><abbr title="App\Models\AdminActivityLog::getResourceNameAttribute">getResourceNameAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#82"><abbr title="App\Models\AdminActivityLog::admin">admin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#90"><abbr title="App\Models\AdminActivityLog::subject">subject</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#98"><abbr title="App\Models\AdminActivityLog::log">log</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#123"><abbr title="App\Models\AdminActivityLog::scopeByAdmin">scopeByAdmin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#131"><abbr title="App\Models\AdminActivityLog::scopeForModel">scopeForModel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#145"><abbr title="App\Models\AdminActivityLog::scopeRecent">scopeRecent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#153"><abbr title="App\Models\AdminActivityLog::scopeByAction">scopeByAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#161"><abbr title="App\Models\AdminActivityLog::scopeDateBetween">scopeDateBetween</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#169"><abbr title="App\Models\AdminActivityLog::scopeSearch">scopeSearch</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetItem.php.html#58"><abbr title="App\Models\BudgetItem::task">task</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetItem.php.html#66"><abbr title="App\Models\BudgetItem::isLinkedToTask">isLinkedToTask</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetItem.php.html#94"><abbr title="App\Models\BudgetItem::getCategoryLabelAttribute">getCategoryLabelAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#33"><abbr title="App\Models\CollaborationInvitation::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#45"><abbr title="App\Models\CollaborationInvitation::event">event</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#53"><abbr title="App\Models\CollaborationInvitation::getRoleNames">getRoleNames</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#73"><abbr title="App\Models\CollaborationInvitation::getRoleLabel">getRoleLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#83"><abbr title="App\Models\CollaborationInvitation::getSystemRoleLabel">getSystemRoleLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#102"><abbr title="App\Models\CollaborationInvitation::generateToken">generateToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#46"><abbr title="App\Models\Collaborator::event">event</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#54"><abbr title="App\Models\Collaborator::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#62"><abbr title="App\Models\Collaborator::customRole">customRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#70"><abbr title="App\Models\Collaborator::customRoles">customRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#79"><abbr title="App\Models\Collaborator::collaboratorRoles">collaboratorRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#87"><abbr title="App\Models\Collaborator::getRoleValues">getRoleValues</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#100"><abbr title="App\Models\Collaborator::isOwner">isOwner</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#108"><abbr title="App\Models\Collaborator::canEdit">canEdit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#116"><abbr title="App\Models\Collaborator::hasRole">hasRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#129"><abbr title="App\Models\Collaborator::hasAnyRole">hasAnyRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#141"><abbr title="App\Models\Collaborator::hasCustomRole">hasCustomRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#153"><abbr title="App\Models\Collaborator::getEffectiveRoleNames">getEffectiveRoleNames</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#184"><abbr title="App\Models\Collaborator::getEffectiveRoleName">getEffectiveRoleName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#192"><abbr title="App\Models\Collaborator::getSystemRoleDisplayName">getSystemRoleDisplayName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#213"><abbr title="App\Models\Collaborator::getRoleColors">getRoleColors</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#242"><abbr title="App\Models\Collaborator::getRoleColor">getRoleColor</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#250"><abbr title="App\Models\Collaborator::getSystemRoleColor">getSystemRoleColor</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#271"><abbr title="App\Models\Collaborator::isAccepted">isAccepted</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator.php.html#279"><abbr title="App\Models\Collaborator::toArray">toArray</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CollaboratorRole.php.html#27"><abbr title="App\Models\CollaboratorRole::collaborator">collaborator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#54"><abbr title="App\Models\CommunicationSpot::userVotes">userVotes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#62"><abbr title="App\Models\CommunicationSpot::hasUserVoted">hasUserVoted</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#70"><abbr title="App\Models\CommunicationSpot::getUserVote">getUserVote</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#78"><abbr title="App\Models\CommunicationSpot::getStatusAttribute">getStatusAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#100"><abbr title="App\Models\CommunicationSpot::getStatsAttribute">getStatsAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#112"><abbr title="App\Models\CommunicationSpot::scopeActiveForLocation">scopeActiveForLocation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#146"><abbr title="App\Models\CommunicationSpot::incrementViews">incrementViews</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#154"><abbr title="App\Models\CommunicationSpot::incrementClicks">incrementClicks</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#162"><abbr title="App\Models\CommunicationSpot::recordVote">recordVote</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#172"><abbr title="App\Models\CommunicationSpot::removeVote">removeVote</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#187"><abbr title="App\Models\CommunicationSpot::toApiResponse">toApiResponse</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpotVote.php.html#23"><abbr title="App\Models\CommunicationSpotVote::spot">spot</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CommunicationSpotVote.php.html#31"><abbr title="App\Models\CommunicationSpotVote::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOffer.php.html#31"><abbr title="App\Models\CustomOffer::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOffer.php.html#42"><abbr title="App\Models\CustomOffer::quoteRequest">quoteRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOffer.php.html#47"><abbr title="App\Models\CustomOffer::creator">creator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomOffer.php.html#52"><abbr title="App\Models\CustomOffer::isExpired">isExpired</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#30"><abbr title="App\Models\CustomRole::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#42"><abbr title="App\Models\CustomRole::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#50"><abbr title="App\Models\CustomRole::creator">creator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#58"><abbr title="App\Models\CustomRole::permissions">permissions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#66"><abbr title="App\Models\CustomRole::collaborators">collaborators</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#75"><abbr title="App\Models\CustomRole::isSystem">isSystem</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#83"><abbr title="App\Models\CustomRole::hasPermission">hasPermission</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#91"><abbr title="App\Models\CustomRole::hasAnyPermissionInModule">hasAnyPermissionInModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#99"><abbr title="App\Models\CustomRole::getPermissionNames">getPermissionNames</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#107"><abbr title="App\Models\CustomRole::assignPermissions">assignPermissions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#115"><abbr title="App\Models\CustomRole::getColorClass">getColorClass</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#131"><abbr title="App\Models\CustomRole::getIcon">getIcon</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#153"><abbr title="App\Models\CustomRole::scopeSystem">scopeSystem</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#161"><abbr title="App\Models\CustomRole::scopeCustom">scopeCustom</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole.php.html#169"><abbr title="App\Models\CustomRole::scopeForUser">scopeForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#71"><abbr title="App\Models\Event::getBudgetAttribute">getBudgetAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#79"><abbr title="App\Models\Event::getExpectedGuestsAttribute">getExpectedGuestsAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#87"><abbr title="App\Models\Event::getCanCheckInAttribute">getCanCheckInAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#112"><abbr title="App\Models\Event::owner">owner</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#152"><abbr title="App\Models\Event::coverPhoto">coverPhoto</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#162"><abbr title="App\Models\Event::featuredPhoto">featuredPhoto</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#174"><abbr title="App\Models\Event::getFeaturedPhotoAttribute">getFeaturedPhotoAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#205"><abbr title="App\Models\Event::invitations">invitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#213"><abbr title="App\Models\Event::collaborationInvitations">collaborationInvitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#221"><abbr title="App\Models\Event::eventCreationInvitations">eventCreationInvitations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#229"><abbr title="App\Models\Event::notifications">notifications</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#237"><abbr title="App\Models\Event::subscription">subscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#271"><abbr title="App\Models\Event::hasFeature">hasFeature</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event.php.html#282"><abbr title="App\Models\Event::resolveRouteBinding">resolveRouteBinding</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitation.php.html#34"><abbr title="App\Models\EventCreationInvitation::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitation.php.html#44"><abbr title="App\Models\EventCreationInvitation::event">event</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitation.php.html#52"><abbr title="App\Models\EventCreationInvitation::admin">admin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventCreationInvitation.php.html#60"><abbr title="App\Models\EventCreationInvitation::generateToken">generateToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplate.php.html#47"><abbr title="App\Models\EventTemplate::scopeActive">scopeActive</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplate.php.html#55"><abbr title="App\Models\EventTemplate::scopeOfType">scopeOfType</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplate.php.html#63"><abbr title="App\Models\EventTemplate::getEventTypeLabelAttribute">getEventTypeLabelAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplate.php.html#79"><abbr title="App\Models\EventTemplate::createTasksForEvent">createTasksForEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EventTemplate.php.html#98"><abbr title="App\Models\EventTemplate::createBudgetItemsForEvent">createBudgetItemsForEvent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest.php.html#98"><abbr title="App\Models\Guest::invitation">invitation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest.php.html#138"><abbr title="App\Models\Guest::getInvitationUrlAttribute">getInvitationUrlAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest.php.html#146"><abbr title="App\Models\Guest::regenerateToken">regenerateToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest.php.html#157"><abbr title="App\Models\Guest::getPhotoUploadUrlAttribute">getPhotoUploadUrlAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest.php.html#169"><abbr title="App\Models\Guest::regeneratePhotoUploadToken">regeneratePhotoUploadToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#36"><abbr title="App\Models\Invitation::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#48"><abbr title="App\Models\Invitation::boot">boot</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#62"><abbr title="App\Models\Invitation::event">event</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#70"><abbr title="App\Models\Invitation::guest">guest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#78"><abbr title="App\Models\Invitation::isSent">isSent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#86"><abbr title="App\Models\Invitation::isOpened">isOpened</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#94"><abbr title="App\Models\Invitation::isResponded">isResponded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#102"><abbr title="App\Models\Invitation::getPublicUrlAttribute">getPublicUrlAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#110"><abbr title="App\Models\Invitation::markAsSent">markAsSent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation.php.html#118"><abbr title="App\Models\Invitation::markAsOpened">markAsOpened</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LegalPage.php.html#29"><abbr title="App\Models\LegalPage::updatedBy">updatedBy</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LegalPage.php.html#37"><abbr title="App\Models\LegalPage::scopePublished">scopePublished</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="LegalPage.php.html#45"><abbr title="App\Models\LegalPage::findBySlug">findBySlug</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#34"><abbr title="App\Models\Notification::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#44"><abbr title="App\Models\Notification::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#52"><abbr title="App\Models\Notification::event">event</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#60"><abbr title="App\Models\Notification::isRead">isRead</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#68"><abbr title="App\Models\Notification::isUnread">isUnread</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#76"><abbr title="App\Models\Notification::markAsRead">markAsRead</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#86"><abbr title="App\Models\Notification::markAsUnread">markAsUnread</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Notification.php.html#94"><abbr title="App\Models\Notification::getTypeLabelAttribute">getTypeLabelAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#58"><abbr title="App\Models\Otp::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#66"><abbr title="App\Models\Otp::isExpired">isExpired</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#74"><abbr title="App\Models\Otp::isVerified">isVerified</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#82"><abbr title="App\Models\Otp::hasExceededAttempts">hasExceededAttempts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#90"><abbr title="App\Models\Otp::isValid">isValid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#98"><abbr title="App\Models\Otp::incrementAttempts">incrementAttempts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#106"><abbr title="App\Models\Otp::markAsVerified">markAsVerified</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#114"><abbr title="App\Models\Otp::scopeValid">scopeValid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#124"><abbr title="App\Models\Otp::scopeForIdentifier">scopeForIdentifier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#132"><abbr title="App\Models\Otp::getRemainingTimeAttribute">getRemainingTimeAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#144"><abbr title="App\Models\Otp::getTypes">getTypes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Otp.php.html#156"><abbr title="App\Models\Otp::getChannels">getChannels</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#54"><abbr title="App\Models\Payment::canBeAccessedBy">canBeAccessedBy</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#91"><abbr title="App\Models\Payment::isPending">isPending</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#107"><abbr title="App\Models\Payment::isRefunded">isRefunded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#115"><abbr title="App\Models\Payment::getPaymentMethodLabelAttribute">getPaymentMethodLabelAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#127"><abbr title="App\Models\Payment::getStatusLabelAttribute">getStatusLabelAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#141"><abbr title="App\Models\Payment::getFormattedAmountAttribute">getFormattedAmountAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#186"><abbr title="App\Models\Payment::markAsFailedByTimeout">markAsFailedByTimeout</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#215"><abbr title="App\Models\Payment::markAsRefunded">markAsRefunded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment.php.html#233"><abbr title="App\Models\Payment::canBeRefunded">canBeRefunded</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#28"><abbr title="App\Models\Permission::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#39"><abbr title="App\Models\Permission::customRoles">customRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#47"><abbr title="App\Models\Permission::isInModule">isInModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#55"><abbr title="App\Models\Permission::allowsAction">allowsAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#63"><abbr title="App\Models\Permission::getGroupedByModule">getGroupedByModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#75"><abbr title="App\Models\Permission::getByModule">getByModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#86"><abbr title="App\Models\Permission::scopeInModule">scopeInModule</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Permission.php.html#94"><abbr title="App\Models\Permission::scopeWithAction">scopeWithAction</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PersonalAccessToken.php.html#32"><abbr title="App\Models\PersonalAccessToken::findToken">findToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo.php.html#44"><abbr title="App\Models\Photo::event">event</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo.php.html#52"><abbr title="App\Models\Photo::uploadedBy">uploadedBy</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo.php.html#60"><abbr title="App\Models\Photo::isMoodboard">isMoodboard</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo.php.html#68"><abbr title="App\Models\Photo::isEventPhoto">isEventPhoto</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo.php.html#76"><abbr title="App\Models\Photo::toggleFeatured">toggleFeatured</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#56"><abbr title="App\Models\Plan::subscriptions">subscriptions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#73"><abbr title="App\Models\Plan::isUnlimited">isUnlimited</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#81"><abbr title="App\Models\Plan::hasFeature">hasFeature</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#106"><abbr title="App\Models\Plan::getEventsCreationLimit">getEventsCreationLimit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#122"><abbr title="App\Models\Plan::getCollaboratorsLimit">getCollaboratorsLimit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#130"><abbr title="App\Models\Plan::getPhotosLimit">getPhotosLimit</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#154"><abbr title="App\Models\Plan::scopePaid">scopePaid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#162"><abbr title="App\Models\Plan::scopeOrdered">scopeOrdered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#170"><abbr title="App\Models\Plan::getFormattedPriceAttribute">getFormattedPriceAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Plan.php.html#181"><abbr title="App\Models\Plan::getDurationLabelAttribute">getDurationLabelAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#37"><abbr title="App\Models\QuoteRequest::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#48"><abbr title="App\Models\QuoteRequest::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#53"><abbr title="App\Models\QuoteRequest::plan">plan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#58"><abbr title="App\Models\QuoteRequest::currentStage">currentStage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#63"><abbr title="App\Models\QuoteRequest::assignedAdmin">assignedAdmin</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#68"><abbr title="App\Models\QuoteRequest::activities">activities</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequest.php.html#73"><abbr title="App\Models\QuoteRequest::offers">offers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestActivity.php.html#22"><abbr title="App\Models\QuoteRequestActivity::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestActivity.php.html#29"><abbr title="App\Models\QuoteRequestActivity::quoteRequest">quoteRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestActivity.php.html#34"><abbr title="App\Models\QuoteRequestActivity::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStage.php.html#22"><abbr title="App\Models\QuoteRequestStage::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="QuoteRequestStage.php.html#31"><abbr title="App\Models\QuoteRequestStage::quoteRequests">quoteRequests</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RefreshToken.php.html#29"><abbr title="App\Models\RefreshToken::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#76"><abbr title="App\Models\Subscription::event">event</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#92"><abbr title="App\Models\Subscription::payments">payments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#100"><abbr title="App\Models\Subscription::topUps">topUps</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#108"><abbr title="App\Models\Subscription::isActive">isActive</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#117"><abbr title="App\Models\Subscription::isExpired">isExpired</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#125"><abbr title="App\Models\Subscription::isPaid">isPaid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#133"><abbr title="App\Models\Subscription::isPending">isPending</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#141"><abbr title="App\Models\Subscription::isPro">isPro</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#149"><abbr title="App\Models\Subscription::isStarter">isStarter</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#157"><abbr title="App\Models\Subscription::getPlanLabelAttribute">getPlanLabelAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#181"><abbr title="App\Models\Subscription::isCancelled">isCancelled</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#186"><abbr title="App\Models\Subscription::isInGracePeriod">isInGracePeriod</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#191"><abbr title="App\Models\Subscription::isArchivedRestricted">isArchivedRestricted</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription.php.html#199"><abbr title="App\Models\Subscription::canBeCancelled">canBeCancelled</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task.php.html#67"><abbr title="App\Models\Task::budgetItem">budgetItem</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task.php.html#75"><abbr title="App\Models\Task::hasCost">hasCost</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task.php.html#131"><abbr title="App\Models\Task::scopeUrgent">scopeUrgent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task.php.html#143"><abbr title="App\Models\Task::isUrgent">isUrgent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#33"><abbr title="App\Models\TopUp::casts">casts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#46"><abbr title="App\Models\TopUp::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#54"><abbr title="App\Models\TopUp::subscription">subscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#62"><abbr title="App\Models\TopUp::scopeValid">scopeValid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#73"><abbr title="App\Models\TopUp::scopeForCurrentPeriod">scopeForCurrentPeriod</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#85"><abbr title="App\Models\TopUp::isValid">isValid</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TopUp.php.html#96"><abbr title="App\Models\TopUp::getFormattedPriceAttribute">getFormattedPriceAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#26"><abbr title="App\Models\User::sendEmailVerificationNotification">sendEmailVerificationNotification</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#34"><abbr title="App\Models\User::sendPasswordResetNotification">sendPasswordResetNotification</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#94"><abbr title="App\Models\User::getAvatarUrlAttribute">getAvatarUrlAttribute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#113"><abbr title="App\Models\User::isUser">isUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#121"><abbr title="App\Models\User::isActiveAccount">isActiveAccount</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#129"><abbr title="App\Models\User::toggleActive">toggleActive</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#148"><abbr title="App\Models\User::customRoles">customRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#156"><abbr title="App\Models\User::collaborations">collaborations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#164"><abbr title="App\Models\User::pendingCollaborations">pendingCollaborations</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#172"><abbr title="App\Models\User::collaboratedEvents">collaboratedEvents</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#187"><abbr title="App\Models\User::assignedTasks">assignedTasks</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#195"><abbr title="App\Models\User::uploadedPhotos">uploadedPhotos</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#203"><abbr title="App\Models\User::notifications">notifications</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#211"><abbr title="App\Models\User::unreadNotifications">unreadNotifications</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#219"><abbr title="App\Models\User::collaboratingEvents">collaboratingEvents</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#235"><abbr title="App\Models\User::otps">otps</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#243"><abbr title="App\Models\User::hasOtpEnabled">hasOtpEnabled</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#251"><abbr title="App\Models\User::getPreferredOtpChannel">getPreferredOtpChannel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#259"><abbr title="App\Models\User::eventTypes">eventTypes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#267"><abbr title="App\Models\User::collaboratorRoles">collaboratorRoles</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#275"><abbr title="App\Models\User::budgetCategories">budgetCategories</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="User.php.html#283"><abbr title="App\Models\User::refreshTokens">refreshTokens</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserBudgetCategory.php.html#43"><abbr title="App\Models\UserBudgetCategory::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserBudgetCategory.php.html#51"><abbr title="App\Models\UserBudgetCategory::scopeDefault">scopeDefault</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserBudgetCategory.php.html#59"><abbr title="App\Models\UserBudgetCategory::scopeOrdered">scopeOrdered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserCollaboratorRole.php.html#45"><abbr title="App\Models\UserCollaboratorRole::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserCollaboratorRole.php.html#53"><abbr title="App\Models\UserCollaboratorRole::scopeDefault">scopeDefault</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserCollaboratorRole.php.html#61"><abbr title="App\Models\UserCollaboratorRole::scopeOrdered">scopeOrdered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserEventType.php.html#44"><abbr title="App\Models\UserEventType::user">user</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserEventType.php.html#52"><abbr title="App\Models\UserEventType::scopeDefault">scopeDefault</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="UserEventType.php.html#60"><abbr title="App\Models\UserEventType::scopeOrdered">scopeOrdered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="BudgetItem.php.html#82"><abbr title="App\Models\BudgetItem::isOverBudget">isOverBudget</abbr></a></td><td class="text-right">66%</td></tr>
+       <tr><td><a href="Guest.php.html#49"><abbr title="App\Models\Guest::boot">boot</abbr></a></td><td class="text-right">81%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="CollaborationInvitation.php.html#83"><abbr title="App\Models\CollaborationInvitation::getSystemRoleLabel">getSystemRoleLabel</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="Collaborator.php.html#192"><abbr title="App\Models\Collaborator::getSystemRoleDisplayName">getSystemRoleDisplayName</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="Collaborator.php.html#250"><abbr title="App\Models\Collaborator::getSystemRoleColor">getSystemRoleColor</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="CustomRole.php.html#131"><abbr title="App\Models\CustomRole::getIcon">getIcon</abbr></a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="ActivityLog.php.html#69"><abbr title="App\Models\ActivityLog::getResourceNameAttribute">getResourceNameAttribute</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#42"><abbr title="App\Models\AdminActivityLog::getResourceNameAttribute">getResourceNameAttribute</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="BudgetItem.php.html#94"><abbr title="App\Models\BudgetItem::getCategoryLabelAttribute">getCategoryLabelAttribute</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="Collaborator.php.html#153"><abbr title="App\Models\Collaborator::getEffectiveRoleNames">getEffectiveRoleNames</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="Collaborator.php.html#213"><abbr title="App\Models\Collaborator::getRoleColors">getRoleColors</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="CustomRole.php.html#115"><abbr title="App\Models\CustomRole::getColorClass">getColorClass</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="EventTemplate.php.html#63"><abbr title="App\Models\EventTemplate::getEventTypeLabelAttribute">getEventTypeLabelAttribute</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="Notification.php.html#94"><abbr title="App\Models\Notification::getTypeLabelAttribute">getTypeLabelAttribute</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#78"><abbr title="App\Models\CommunicationSpot::getStatusAttribute">getStatusAttribute</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Payment.php.html#127"><abbr title="App\Models\Payment::getStatusLabelAttribute">getStatusLabelAttribute</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Event.php.html#174"><abbr title="App\Models\Event::getFeaturedPhotoAttribute">getFeaturedPhotoAttribute</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="Payment.php.html#54"><abbr title="App\Models\Payment::canBeAccessedBy">canBeAccessedBy</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="PersonalAccessToken.php.html#32"><abbr title="App\Models\PersonalAccessToken::findToken">findToken</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#53"><abbr title="App\Models\CollaborationInvitation::getRoleNames">getRoleNames</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Collaborator.php.html#87"><abbr title="App\Models\Collaborator::getRoleValues">getRoleValues</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Payment.php.html#115"><abbr title="App\Models\Payment::getPaymentMethodLabelAttribute">getPaymentMethodLabelAttribute</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Plan.php.html#181"><abbr title="App\Models\Plan::getDurationLabelAttribute">getDurationLabelAttribute</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Subscription.php.html#157"><abbr title="App\Models\Subscription::getPlanLabelAttribute">getPlanLabelAttribute</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Task.php.html#143"><abbr title="App\Models\Task::isUrgent">isUrgent</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="ActivityLog.php.html#130"><abbr title="App\Models\ActivityLog::log">log</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Collaborator.php.html#279"><abbr title="App\Models\Collaborator::toArray">toArray</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#112"><abbr title="App\Models\CommunicationSpot::scopeActiveForLocation">scopeActiveForLocation</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="CustomOffer.php.html#52"><abbr title="App\Models\CustomOffer::isExpired">isExpired</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Event.php.html#87"><abbr title="App\Models\Event::getCanCheckInAttribute">getCanCheckInAttribute</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EventTemplate.php.html#79"><abbr title="App\Models\EventTemplate::createTasksForEvent">createTasksForEvent</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EventTemplate.php.html#98"><abbr title="App\Models\EventTemplate::createBudgetItemsForEvent">createBudgetItemsForEvent</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Guest.php.html#157"><abbr title="App\Models\Guest::getPhotoUploadUrlAttribute">getPhotoUploadUrlAttribute</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Otp.php.html#90"><abbr title="App\Models\Otp::isValid">isValid</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Subscription.php.html#108"><abbr title="App\Models\Subscription::isActive">isActive</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Guest.php.html#49"><abbr title="App\Models\Guest::boot">boot</abbr></a></td><td class="text-right">7</td></tr>
+       <tr><td><a href="ActivityLog.php.html#308"><abbr title="App\Models\ActivityLog::scopeForModel">scopeForModel</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#98"><abbr title="App\Models\AdminActivityLog::log">log</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="AdminActivityLog.php.html#131"><abbr title="App\Models\AdminActivityLog::scopeForModel">scopeForModel</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CollaborationInvitation.php.html#73"><abbr title="App\Models\CollaborationInvitation::getRoleLabel">getRoleLabel</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Collaborator.php.html#116"><abbr title="App\Models\Collaborator::hasRole">hasRole</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Collaborator.php.html#129"><abbr title="App\Models\Collaborator::hasAnyRole">hasAnyRole</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Collaborator.php.html#141"><abbr title="App\Models\Collaborator::hasCustomRole">hasCustomRole</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CommunicationSpot.php.html#172"><abbr title="App\Models\CommunicationSpot::removeVote">removeVote</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Event.php.html#71"><abbr title="App\Models\Event::getBudgetAttribute">getBudgetAttribute</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Event.php.html#282"><abbr title="App\Models\Event::resolveRouteBinding">resolveRouteBinding</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Invitation.php.html#48"><abbr title="App\Models\Invitation::boot">boot</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Invitation.php.html#118"><abbr title="App\Models\Invitation::markAsOpened">markAsOpened</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Notification.php.html#76"><abbr title="App\Models\Notification::markAsRead">markAsRead</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Otp.php.html#132"><abbr title="App\Models\Otp::getRemainingTimeAttribute">getRemainingTimeAttribute</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Plan.php.html#170"><abbr title="App\Models\Plan::getFormattedPriceAttribute">getFormattedPriceAttribute</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Subscription.php.html#117"><abbr title="App\Models\Subscription::isExpired">isExpired</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Task.php.html#75"><abbr title="App\Models\Task::hasCost">hasCost</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TopUp.php.html#85"><abbr title="App\Models\TopUp::isValid">isValid</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="TopUp.php.html#96"><abbr title="App\Models\TopUp::getFormattedPriceAttribute">getFormattedPriceAttribute</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="User.php.html#94"><abbr title="App\Models\User::getAvatarUrlAttribute">getAvatarUrlAttribute</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="BudgetItem.php.html#82"><abbr title="App\Models\BudgetItem::isOverBudget">isOverBudget</abbr></a></td><td class="text-right">3</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.12</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.21</a> and <a href="https://phpunit.de/">PHPUnit 11.5.51</a> at Thu May 14 15:42:39 UTC 2026.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([19,1,1,2,2,3,3,3,0,0,0,1], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([253,0,0,0,0,0,0,1,0,1,0,60], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[26.666666666666668,37,"<a href=\"ActivityLog.php.html#13\">App\\Models\\ActivityLog<\/a>"],[0,22,"<a href=\"AdminActivityLog.php.html#13\">App\\Models\\AdminActivityLog<\/a>"],[43.47826086956522,17,"<a href=\"BudgetItem.php.html#10\">App\\Models\\BudgetItem<\/a>"],[0,20,"<a href=\"CollaborationInvitation.php.html#10\">App\\Models\\CollaborationInvitation<\/a>"],[7.446808510638298,63,"<a href=\"Collaborator.php.html#11\">App\\Models\\Collaborator<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#10\">App\\Models\\CollaboratorRole<\/a>"],[0,19,"<a href=\"CommunicationSpot.php.html#10\">App\\Models\\CommunicationSpot<\/a>"],[0,2,"<a href=\"CommunicationSpotVote.php.html#10\">App\\Models\\CommunicationSpotVote<\/a>"],[0,6,"<a href=\"CustomOffer.php.html#10\">App\\Models\\CustomOffer<\/a>"],[0,32,"<a href=\"CustomRole.php.html#11\">App\\Models\\CustomRole<\/a>"],[46.2962962962963,33,"<a href=\"Event.php.html#12\">App\\Models\\Event<\/a>"],[0,4,"<a href=\"EventCreationInvitation.php.html#10\">App\\Models\\EventCreationInvitation<\/a>"],[17.647058823529413,17,"<a href=\"EventTemplate.php.html#9\">App\\Models\\EventTemplate<\/a>"],[100,0,"<a href=\"Faq.php.html#8\">App\\Models\\Faq<\/a>"],[61.76470588235294,20,"<a href=\"Guest.php.html#12\">App\\Models\\Guest<\/a>"],[0,12,"<a href=\"Invitation.php.html#11\">App\\Models\\Invitation<\/a>"],[0,3,"<a href=\"LegalPage.php.html#10\">App\\Models\\LegalPage<\/a>"],[0,15,"<a href=\"Notification.php.html#10\">App\\Models\\Notification<\/a>"],[0,15,"<a href=\"Otp.php.html#10\">App\\Models\\Otp<\/a>"],[38.46153846153847,30,"<a href=\"Payment.php.html#10\">App\\Models\\Payment<\/a>"],[0,8,"<a href=\"Permission.php.html#10\">App\\Models\\Permission<\/a>"],[0,5,"<a href=\"PersonalAccessToken.php.html#9\">App\\Models\\PersonalAccessToken<\/a>"],[37.5,6,"<a href=\"Photo.php.html#10\">App\\Models\\Photo<\/a>"],[45.94594594594595,21,"<a href=\"Plan.php.html#10\">App\\Models\\Plan<\/a>"],[0,7,"<a href=\"QuoteRequest.php.html#11\">App\\Models\\QuoteRequest<\/a>"],[0,3,"<a href=\"QuoteRequestActivity.php.html#10\">App\\Models\\QuoteRequestActivity<\/a>"],[0,2,"<a href=\"QuoteRequestStage.php.html#10\">App\\Models\\QuoteRequestStage<\/a>"],[0,1,"<a href=\"RefreshToken.php.html#9\">App\\Models\\RefreshToken<\/a>"],[51.28205128205128,24,"<a href=\"Subscription.php.html#11\">App\\Models\\Subscription<\/a>"],[64.51612903225806,18,"<a href=\"Task.php.html#12\">App\\Models\\Task<\/a>"],[0,9,"<a href=\"TopUp.php.html#10\">App\\Models\\TopUp<\/a>"],[25,27,"<a href=\"User.php.html#18\">App\\Models\\User<\/a>"],[57.14285714285714,4,"<a href=\"UserBudgetCategory.php.html#9\">App\\Models\\UserBudgetCategory<\/a>"],[62.5,4,"<a href=\"UserCollaboratorRole.php.html#9\">App\\Models\\UserCollaboratorRole<\/a>"],[57.14285714285714,4,"<a href=\"UserEventType.php.html#9\">App\\Models\\UserEventType<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[100,1,"<a href=\"ActivityLog.php.html#40\">App\\Models\\ActivityLog::casts<\/a>"],[0,10,"<a href=\"ActivityLog.php.html#69\">App\\Models\\ActivityLog::getResourceNameAttribute<\/a>"],[100,1,"<a href=\"ActivityLog.php.html#106\">App\\Models\\ActivityLog::user<\/a>"],[100,1,"<a href=\"ActivityLog.php.html#114\">App\\Models\\ActivityLog::admin<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#122\">App\\Models\\ActivityLog::subject<\/a>"],[0,3,"<a href=\"ActivityLog.php.html#130\">App\\Models\\ActivityLog::log<\/a>"],[100,3,"<a href=\"ActivityLog.php.html#167\">App\\Models\\ActivityLog::logAsync<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#205\">App\\Models\\ActivityLog::prepareLogData<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#244\">App\\Models\\ActivityLog::scopeByUser<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#252\">App\\Models\\ActivityLog::scopeByAdmin<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#260\">App\\Models\\ActivityLog::scopeByActorType<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#268\">App\\Models\\ActivityLog::scopeBySource<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#276\">App\\Models\\ActivityLog::scopeFrontend<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#284\">App\\Models\\ActivityLog::scopeBackend<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#292\">App\\Models\\ActivityLog::scopeNotArchived<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#300\">App\\Models\\ActivityLog::scopeArchived<\/a>"],[0,2,"<a href=\"ActivityLog.php.html#308\">App\\Models\\ActivityLog::scopeForModel<\/a>"],[100,1,"<a href=\"ActivityLog.php.html#322\">App\\Models\\ActivityLog::scopeRecent<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#330\">App\\Models\\ActivityLog::scopeByAction<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#338\">App\\Models\\ActivityLog::scopeDateBetween<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#346\">App\\Models\\ActivityLog::scopeSearch<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#360\">App\\Models\\ActivityLog::scopeEligibleForArchival<\/a>"],[0,1,"<a href=\"ActivityLog.php.html#369\">App\\Models\\ActivityLog::scopeEligibleForPurge<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#31\">App\\Models\\AdminActivityLog::casts<\/a>"],[0,10,"<a href=\"AdminActivityLog.php.html#42\">App\\Models\\AdminActivityLog::getResourceNameAttribute<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#82\">App\\Models\\AdminActivityLog::admin<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#90\">App\\Models\\AdminActivityLog::subject<\/a>"],[0,2,"<a href=\"AdminActivityLog.php.html#98\">App\\Models\\AdminActivityLog::log<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#123\">App\\Models\\AdminActivityLog::scopeByAdmin<\/a>"],[0,2,"<a href=\"AdminActivityLog.php.html#131\">App\\Models\\AdminActivityLog::scopeForModel<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#145\">App\\Models\\AdminActivityLog::scopeRecent<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#153\">App\\Models\\AdminActivityLog::scopeByAction<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#161\">App\\Models\\AdminActivityLog::scopeDateBetween<\/a>"],[0,1,"<a href=\"AdminActivityLog.php.html#169\">App\\Models\\AdminActivityLog::scopeSearch<\/a>"],[100,1,"<a href=\"BudgetItem.php.html#37\">App\\Models\\BudgetItem::casts<\/a>"],[100,1,"<a href=\"BudgetItem.php.html#50\">App\\Models\\BudgetItem::event<\/a>"],[0,1,"<a href=\"BudgetItem.php.html#58\">App\\Models\\BudgetItem::task<\/a>"],[0,1,"<a href=\"BudgetItem.php.html#66\">App\\Models\\BudgetItem::isLinkedToTask<\/a>"],[100,1,"<a href=\"BudgetItem.php.html#74\">App\\Models\\BudgetItem::getDifferenceAttribute<\/a>"],[66.66666666666666,3,"<a href=\"BudgetItem.php.html#82\">App\\Models\\BudgetItem::isOverBudget<\/a>"],[0,9,"<a href=\"BudgetItem.php.html#94\">App\\Models\\BudgetItem::getCategoryLabelAttribute<\/a>"],[0,1,"<a href=\"CollaborationInvitation.php.html#33\">App\\Models\\CollaborationInvitation::casts<\/a>"],[0,1,"<a href=\"CollaborationInvitation.php.html#45\">App\\Models\\CollaborationInvitation::event<\/a>"],[0,4,"<a href=\"CollaborationInvitation.php.html#53\">App\\Models\\CollaborationInvitation::getRoleNames<\/a>"],[0,2,"<a href=\"CollaborationInvitation.php.html#73\">App\\Models\\CollaborationInvitation::getRoleLabel<\/a>"],[0,11,"<a href=\"CollaborationInvitation.php.html#83\">App\\Models\\CollaborationInvitation::getSystemRoleLabel<\/a>"],[0,1,"<a href=\"CollaborationInvitation.php.html#102\">App\\Models\\CollaborationInvitation::generateToken<\/a>"],[100,1,"<a href=\"Collaborator.php.html#35\">App\\Models\\Collaborator::casts<\/a>"],[0,1,"<a href=\"Collaborator.php.html#46\">App\\Models\\Collaborator::event<\/a>"],[0,1,"<a href=\"Collaborator.php.html#54\">App\\Models\\Collaborator::user<\/a>"],[0,1,"<a href=\"Collaborator.php.html#62\">App\\Models\\Collaborator::customRole<\/a>"],[0,1,"<a href=\"Collaborator.php.html#70\">App\\Models\\Collaborator::customRoles<\/a>"],[0,1,"<a href=\"Collaborator.php.html#79\">App\\Models\\Collaborator::collaboratorRoles<\/a>"],[0,4,"<a href=\"Collaborator.php.html#87\">App\\Models\\Collaborator::getRoleValues<\/a>"],[0,1,"<a href=\"Collaborator.php.html#100\">App\\Models\\Collaborator::isOwner<\/a>"],[0,1,"<a href=\"Collaborator.php.html#108\">App\\Models\\Collaborator::canEdit<\/a>"],[0,2,"<a href=\"Collaborator.php.html#116\">App\\Models\\Collaborator::hasRole<\/a>"],[0,2,"<a href=\"Collaborator.php.html#129\">App\\Models\\Collaborator::hasAnyRole<\/a>"],[0,2,"<a href=\"Collaborator.php.html#141\">App\\Models\\Collaborator::hasCustomRole<\/a>"],[0,8,"<a href=\"Collaborator.php.html#153\">App\\Models\\Collaborator::getEffectiveRoleNames<\/a>"],[0,1,"<a href=\"Collaborator.php.html#184\">App\\Models\\Collaborator::getEffectiveRoleName<\/a>"],[0,11,"<a href=\"Collaborator.php.html#192\">App\\Models\\Collaborator::getSystemRoleDisplayName<\/a>"],[0,8,"<a href=\"Collaborator.php.html#213\">App\\Models\\Collaborator::getRoleColors<\/a>"],[0,1,"<a href=\"Collaborator.php.html#242\">App\\Models\\Collaborator::getRoleColor<\/a>"],[0,11,"<a href=\"Collaborator.php.html#250\">App\\Models\\Collaborator::getSystemRoleColor<\/a>"],[0,1,"<a href=\"Collaborator.php.html#271\">App\\Models\\Collaborator::isAccepted<\/a>"],[0,3,"<a href=\"Collaborator.php.html#279\">App\\Models\\Collaborator::toArray<\/a>"],[100,1,"<a href=\"Collaborator.php.html#301\">App\\Models\\Collaborator::booted<\/a>"],[0,1,"<a href=\"CollaboratorRole.php.html#27\">App\\Models\\CollaboratorRole::collaborator<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#54\">App\\Models\\CommunicationSpot::userVotes<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#62\">App\\Models\\CommunicationSpot::hasUserVoted<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#70\">App\\Models\\CommunicationSpot::getUserVote<\/a>"],[0,6,"<a href=\"CommunicationSpot.php.html#78\">App\\Models\\CommunicationSpot::getStatusAttribute<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#100\">App\\Models\\CommunicationSpot::getStatsAttribute<\/a>"],[0,3,"<a href=\"CommunicationSpot.php.html#112\">App\\Models\\CommunicationSpot::scopeActiveForLocation<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#146\">App\\Models\\CommunicationSpot::incrementViews<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#154\">App\\Models\\CommunicationSpot::incrementClicks<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#162\">App\\Models\\CommunicationSpot::recordVote<\/a>"],[0,2,"<a href=\"CommunicationSpot.php.html#172\">App\\Models\\CommunicationSpot::removeVote<\/a>"],[0,1,"<a href=\"CommunicationSpot.php.html#187\">App\\Models\\CommunicationSpot::toApiResponse<\/a>"],[0,1,"<a href=\"CommunicationSpotVote.php.html#23\">App\\Models\\CommunicationSpotVote::spot<\/a>"],[0,1,"<a href=\"CommunicationSpotVote.php.html#31\">App\\Models\\CommunicationSpotVote::user<\/a>"],[0,1,"<a href=\"CustomOffer.php.html#31\">App\\Models\\CustomOffer::casts<\/a>"],[0,1,"<a href=\"CustomOffer.php.html#42\">App\\Models\\CustomOffer::quoteRequest<\/a>"],[0,1,"<a href=\"CustomOffer.php.html#47\">App\\Models\\CustomOffer::creator<\/a>"],[0,3,"<a href=\"CustomOffer.php.html#52\">App\\Models\\CustomOffer::isExpired<\/a>"],[0,1,"<a href=\"CustomRole.php.html#30\">App\\Models\\CustomRole::casts<\/a>"],[0,1,"<a href=\"CustomRole.php.html#42\">App\\Models\\CustomRole::user<\/a>"],[0,1,"<a href=\"CustomRole.php.html#50\">App\\Models\\CustomRole::creator<\/a>"],[0,1,"<a href=\"CustomRole.php.html#58\">App\\Models\\CustomRole::permissions<\/a>"],[0,1,"<a href=\"CustomRole.php.html#66\">App\\Models\\CustomRole::collaborators<\/a>"],[0,1,"<a href=\"CustomRole.php.html#75\">App\\Models\\CustomRole::isSystem<\/a>"],[0,1,"<a href=\"CustomRole.php.html#83\">App\\Models\\CustomRole::hasPermission<\/a>"],[0,1,"<a href=\"CustomRole.php.html#91\">App\\Models\\CustomRole::hasAnyPermissionInModule<\/a>"],[0,1,"<a href=\"CustomRole.php.html#99\">App\\Models\\CustomRole::getPermissionNames<\/a>"],[0,1,"<a href=\"CustomRole.php.html#107\">App\\Models\\CustomRole::assignPermissions<\/a>"],[0,8,"<a href=\"CustomRole.php.html#115\">App\\Models\\CustomRole::getColorClass<\/a>"],[0,11,"<a href=\"CustomRole.php.html#131\">App\\Models\\CustomRole::getIcon<\/a>"],[0,1,"<a href=\"CustomRole.php.html#153\">App\\Models\\CustomRole::scopeSystem<\/a>"],[0,1,"<a href=\"CustomRole.php.html#161\">App\\Models\\CustomRole::scopeCustom<\/a>"],[0,1,"<a href=\"CustomRole.php.html#169\">App\\Models\\CustomRole::scopeForUser<\/a>"],[100,1,"<a href=\"Event.php.html#46\">App\\Models\\Event::casts<\/a>"],[0,2,"<a href=\"Event.php.html#71\">App\\Models\\Event::getBudgetAttribute<\/a>"],[0,1,"<a href=\"Event.php.html#79\">App\\Models\\Event::getExpectedGuestsAttribute<\/a>"],[0,3,"<a href=\"Event.php.html#87\">App\\Models\\Event::getCanCheckInAttribute<\/a>"],[100,1,"<a href=\"Event.php.html#104\">App\\Models\\Event::user<\/a>"],[0,1,"<a href=\"Event.php.html#112\">App\\Models\\Event::owner<\/a>"],[100,1,"<a href=\"Event.php.html#120\">App\\Models\\Event::guests<\/a>"],[100,1,"<a href=\"Event.php.html#128\">App\\Models\\Event::tasks<\/a>"],[100,1,"<a href=\"Event.php.html#136\">App\\Models\\Event::budgetItems<\/a>"],[100,1,"<a href=\"Event.php.html#144\">App\\Models\\Event::photos<\/a>"],[0,1,"<a href=\"Event.php.html#152\">App\\Models\\Event::coverPhoto<\/a>"],[0,1,"<a href=\"Event.php.html#162\">App\\Models\\Event::featuredPhoto<\/a>"],[0,5,"<a href=\"Event.php.html#174\">App\\Models\\Event::getFeaturedPhotoAttribute<\/a>"],[100,1,"<a href=\"Event.php.html#197\">App\\Models\\Event::collaborators<\/a>"],[0,1,"<a href=\"Event.php.html#205\">App\\Models\\Event::invitations<\/a>"],[0,1,"<a href=\"Event.php.html#213\">App\\Models\\Event::collaborationInvitations<\/a>"],[0,1,"<a href=\"Event.php.html#221\">App\\Models\\Event::eventCreationInvitations<\/a>"],[0,1,"<a href=\"Event.php.html#229\">App\\Models\\Event::notifications<\/a>"],[0,1,"<a href=\"Event.php.html#237\">App\\Models\\Event::subscription<\/a>"],[100,2,"<a href=\"Event.php.html#245\">App\\Models\\Event::canBeViewedBy<\/a>"],[100,2,"<a href=\"Event.php.html#254\">App\\Models\\Event::canBeEditedBy<\/a>"],[0,1,"<a href=\"Event.php.html#271\">App\\Models\\Event::hasFeature<\/a>"],[0,2,"<a href=\"Event.php.html#282\">App\\Models\\Event::resolveRouteBinding<\/a>"],[0,1,"<a href=\"EventCreationInvitation.php.html#34\">App\\Models\\EventCreationInvitation::casts<\/a>"],[0,1,"<a href=\"EventCreationInvitation.php.html#44\">App\\Models\\EventCreationInvitation::event<\/a>"],[0,1,"<a href=\"EventCreationInvitation.php.html#52\">App\\Models\\EventCreationInvitation::admin<\/a>"],[0,1,"<a href=\"EventCreationInvitation.php.html#60\">App\\Models\\EventCreationInvitation::generateToken<\/a>"],[100,1,"<a href=\"EventTemplate.php.html#34\">App\\Models\\EventTemplate::casts<\/a>"],[0,1,"<a href=\"EventTemplate.php.html#47\">App\\Models\\EventTemplate::scopeActive<\/a>"],[0,1,"<a href=\"EventTemplate.php.html#55\">App\\Models\\EventTemplate::scopeOfType<\/a>"],[0,8,"<a href=\"EventTemplate.php.html#63\">App\\Models\\EventTemplate::getEventTypeLabelAttribute<\/a>"],[0,3,"<a href=\"EventTemplate.php.html#79\">App\\Models\\EventTemplate::createTasksForEvent<\/a>"],[0,3,"<a href=\"EventTemplate.php.html#98\">App\\Models\\EventTemplate::createBudgetItemsForEvent<\/a>"],[81.81818181818183,7,"<a href=\"Guest.php.html#49\">App\\Models\\Guest::boot<\/a>"],[100,1,"<a href=\"Guest.php.html#76\">App\\Models\\Guest::casts<\/a>"],[100,1,"<a href=\"Guest.php.html#90\">App\\Models\\Guest::event<\/a>"],[0,1,"<a href=\"Guest.php.html#98\">App\\Models\\Guest::invitation<\/a>"],[100,1,"<a href=\"Guest.php.html#106\">App\\Models\\Guest::hasConfirmed<\/a>"],[100,1,"<a href=\"Guest.php.html#114\">App\\Models\\Guest::hasDeclined<\/a>"],[100,1,"<a href=\"Guest.php.html#122\">App\\Models\\Guest::isPending<\/a>"],[100,1,"<a href=\"Guest.php.html#130\">App\\Models\\Guest::invitationSent<\/a>"],[0,1,"<a href=\"Guest.php.html#138\">App\\Models\\Guest::getInvitationUrlAttribute<\/a>"],[0,1,"<a href=\"Guest.php.html#146\">App\\Models\\Guest::regenerateToken<\/a>"],[0,3,"<a href=\"Guest.php.html#157\">App\\Models\\Guest::getPhotoUploadUrlAttribute<\/a>"],[0,1,"<a href=\"Guest.php.html#169\">App\\Models\\Guest::regeneratePhotoUploadToken<\/a>"],[0,1,"<a href=\"Invitation.php.html#36\">App\\Models\\Invitation::casts<\/a>"],[0,2,"<a href=\"Invitation.php.html#48\">App\\Models\\Invitation::boot<\/a>"],[0,1,"<a href=\"Invitation.php.html#62\">App\\Models\\Invitation::event<\/a>"],[0,1,"<a href=\"Invitation.php.html#70\">App\\Models\\Invitation::guest<\/a>"],[0,1,"<a href=\"Invitation.php.html#78\">App\\Models\\Invitation::isSent<\/a>"],[0,1,"<a href=\"Invitation.php.html#86\">App\\Models\\Invitation::isOpened<\/a>"],[0,1,"<a href=\"Invitation.php.html#94\">App\\Models\\Invitation::isResponded<\/a>"],[0,1,"<a href=\"Invitation.php.html#102\">App\\Models\\Invitation::getPublicUrlAttribute<\/a>"],[0,1,"<a href=\"Invitation.php.html#110\">App\\Models\\Invitation::markAsSent<\/a>"],[0,2,"<a href=\"Invitation.php.html#118\">App\\Models\\Invitation::markAsOpened<\/a>"],[0,1,"<a href=\"LegalPage.php.html#29\">App\\Models\\LegalPage::updatedBy<\/a>"],[0,1,"<a href=\"LegalPage.php.html#37\">App\\Models\\LegalPage::scopePublished<\/a>"],[0,1,"<a href=\"LegalPage.php.html#45\">App\\Models\\LegalPage::findBySlug<\/a>"],[0,1,"<a href=\"Notification.php.html#34\">App\\Models\\Notification::casts<\/a>"],[0,1,"<a href=\"Notification.php.html#44\">App\\Models\\Notification::user<\/a>"],[0,1,"<a href=\"Notification.php.html#52\">App\\Models\\Notification::event<\/a>"],[0,1,"<a href=\"Notification.php.html#60\">App\\Models\\Notification::isRead<\/a>"],[0,1,"<a href=\"Notification.php.html#68\">App\\Models\\Notification::isUnread<\/a>"],[0,2,"<a href=\"Notification.php.html#76\">App\\Models\\Notification::markAsRead<\/a>"],[0,1,"<a href=\"Notification.php.html#86\">App\\Models\\Notification::markAsUnread<\/a>"],[0,7,"<a href=\"Notification.php.html#94\">App\\Models\\Notification::getTypeLabelAttribute<\/a>"],[0,1,"<a href=\"Otp.php.html#58\">App\\Models\\Otp::user<\/a>"],[0,1,"<a href=\"Otp.php.html#66\">App\\Models\\Otp::isExpired<\/a>"],[0,1,"<a href=\"Otp.php.html#74\">App\\Models\\Otp::isVerified<\/a>"],[0,1,"<a href=\"Otp.php.html#82\">App\\Models\\Otp::hasExceededAttempts<\/a>"],[0,3,"<a href=\"Otp.php.html#90\">App\\Models\\Otp::isValid<\/a>"],[0,1,"<a href=\"Otp.php.html#98\">App\\Models\\Otp::incrementAttempts<\/a>"],[0,1,"<a href=\"Otp.php.html#106\">App\\Models\\Otp::markAsVerified<\/a>"],[0,1,"<a href=\"Otp.php.html#114\">App\\Models\\Otp::scopeValid<\/a>"],[0,1,"<a href=\"Otp.php.html#124\">App\\Models\\Otp::scopeForIdentifier<\/a>"],[0,2,"<a href=\"Otp.php.html#132\">App\\Models\\Otp::getRemainingTimeAttribute<\/a>"],[0,1,"<a href=\"Otp.php.html#144\">App\\Models\\Otp::getTypes<\/a>"],[0,1,"<a href=\"Otp.php.html#156\">App\\Models\\Otp::getChannels<\/a>"],[100,1,"<a href=\"Payment.php.html#35\">App\\Models\\Payment::casts<\/a>"],[100,1,"<a href=\"Payment.php.html#46\">App\\Models\\Payment::subscription<\/a>"],[0,5,"<a href=\"Payment.php.html#54\">App\\Models\\Payment::canBeAccessedBy<\/a>"],[100,1,"<a href=\"Payment.php.html#83\">App\\Models\\Payment::isCompleted<\/a>"],[0,1,"<a href=\"Payment.php.html#91\">App\\Models\\Payment::isPending<\/a>"],[100,1,"<a href=\"Payment.php.html#99\">App\\Models\\Payment::isFailed<\/a>"],[0,1,"<a href=\"Payment.php.html#107\">App\\Models\\Payment::isRefunded<\/a>"],[0,4,"<a href=\"Payment.php.html#115\">App\\Models\\Payment::getPaymentMethodLabelAttribute<\/a>"],[0,6,"<a href=\"Payment.php.html#127\">App\\Models\\Payment::getStatusLabelAttribute<\/a>"],[0,1,"<a href=\"Payment.php.html#141\">App\\Models\\Payment::getFormattedAmountAttribute<\/a>"],[100,1,"<a href=\"Payment.php.html#149\">App\\Models\\Payment::markAsCompleted<\/a>"],[100,3,"<a href=\"Payment.php.html#165\">App\\Models\\Payment::markAsFailed<\/a>"],[0,1,"<a href=\"Payment.php.html#186\">App\\Models\\Payment::markAsFailedByTimeout<\/a>"],[100,1,"<a href=\"Payment.php.html#207\">App\\Models\\Payment::markInitiationFailed<\/a>"],[0,1,"<a href=\"Payment.php.html#215\">App\\Models\\Payment::markAsRefunded<\/a>"],[0,1,"<a href=\"Payment.php.html#233\">App\\Models\\Payment::canBeRefunded<\/a>"],[0,1,"<a href=\"Permission.php.html#28\">App\\Models\\Permission::casts<\/a>"],[0,1,"<a href=\"Permission.php.html#39\">App\\Models\\Permission::customRoles<\/a>"],[0,1,"<a href=\"Permission.php.html#47\">App\\Models\\Permission::isInModule<\/a>"],[0,1,"<a href=\"Permission.php.html#55\">App\\Models\\Permission::allowsAction<\/a>"],[0,1,"<a href=\"Permission.php.html#63\">App\\Models\\Permission::getGroupedByModule<\/a>"],[0,1,"<a href=\"Permission.php.html#75\">App\\Models\\Permission::getByModule<\/a>"],[0,1,"<a href=\"Permission.php.html#86\">App\\Models\\Permission::scopeInModule<\/a>"],[0,1,"<a href=\"Permission.php.html#94\">App\\Models\\Permission::scopeWithAction<\/a>"],[0,5,"<a href=\"PersonalAccessToken.php.html#32\">App\\Models\\PersonalAccessToken::findToken<\/a>"],[100,1,"<a href=\"Photo.php.html#34\">App\\Models\\Photo::casts<\/a>"],[0,1,"<a href=\"Photo.php.html#44\">App\\Models\\Photo::event<\/a>"],[0,1,"<a href=\"Photo.php.html#52\">App\\Models\\Photo::uploadedBy<\/a>"],[0,1,"<a href=\"Photo.php.html#60\">App\\Models\\Photo::isMoodboard<\/a>"],[0,1,"<a href=\"Photo.php.html#68\">App\\Models\\Photo::isEventPhoto<\/a>"],[0,1,"<a href=\"Photo.php.html#76\">App\\Models\\Photo::toggleFeatured<\/a>"],[100,1,"<a href=\"Plan.php.html#39\">App\\Models\\Plan::casts<\/a>"],[0,1,"<a href=\"Plan.php.html#56\">App\\Models\\Plan::subscriptions<\/a>"],[100,1,"<a href=\"Plan.php.html#64\">App\\Models\\Plan::getLimit<\/a>"],[0,1,"<a href=\"Plan.php.html#73\">App\\Models\\Plan::isUnlimited<\/a>"],[0,1,"<a href=\"Plan.php.html#81\">App\\Models\\Plan::hasFeature<\/a>"],[100,1,"<a href=\"Plan.php.html#90\">App\\Models\\Plan::getFeaturesArray<\/a>"],[100,1,"<a href=\"Plan.php.html#98\">App\\Models\\Plan::getLimitsArray<\/a>"],[0,1,"<a href=\"Plan.php.html#106\">App\\Models\\Plan::getEventsCreationLimit<\/a>"],[100,1,"<a href=\"Plan.php.html#114\">App\\Models\\Plan::getGuestsLimit<\/a>"],[0,1,"<a href=\"Plan.php.html#122\">App\\Models\\Plan::getCollaboratorsLimit<\/a>"],[0,1,"<a href=\"Plan.php.html#130\">App\\Models\\Plan::getPhotosLimit<\/a>"],[100,1,"<a href=\"Plan.php.html#138\">App\\Models\\Plan::scopeActive<\/a>"],[100,1,"<a href=\"Plan.php.html#146\">App\\Models\\Plan::scopeTrial<\/a>"],[0,1,"<a href=\"Plan.php.html#154\">App\\Models\\Plan::scopePaid<\/a>"],[0,1,"<a href=\"Plan.php.html#162\">App\\Models\\Plan::scopeOrdered<\/a>"],[0,2,"<a href=\"Plan.php.html#170\">App\\Models\\Plan::getFormattedPriceAttribute<\/a>"],[0,4,"<a href=\"Plan.php.html#181\">App\\Models\\Plan::getDurationLabelAttribute<\/a>"],[0,1,"<a href=\"QuoteRequest.php.html#37\">App\\Models\\QuoteRequest::casts<\/a>"],[0,1,"<a href=\"QuoteRequest.php.html#48\">App\\Models\\QuoteRequest::user<\/a>"],[0,1,"<a href=\"QuoteRequest.php.html#53\">App\\Models\\QuoteRequest::plan<\/a>"],[0,1,"<a href=\"QuoteRequest.php.html#58\">App\\Models\\QuoteRequest::currentStage<\/a>"],[0,1,"<a href=\"QuoteRequest.php.html#63\">App\\Models\\QuoteRequest::assignedAdmin<\/a>"],[0,1,"<a href=\"QuoteRequest.php.html#68\">App\\Models\\QuoteRequest::activities<\/a>"],[0,1,"<a href=\"QuoteRequest.php.html#73\">App\\Models\\QuoteRequest::offers<\/a>"],[0,1,"<a href=\"QuoteRequestActivity.php.html#22\">App\\Models\\QuoteRequestActivity::casts<\/a>"],[0,1,"<a href=\"QuoteRequestActivity.php.html#29\">App\\Models\\QuoteRequestActivity::quoteRequest<\/a>"],[0,1,"<a href=\"QuoteRequestActivity.php.html#34\">App\\Models\\QuoteRequestActivity::user<\/a>"],[0,1,"<a href=\"QuoteRequestStage.php.html#22\">App\\Models\\QuoteRequestStage::casts<\/a>"],[0,1,"<a href=\"QuoteRequestStage.php.html#31\">App\\Models\\QuoteRequestStage::quoteRequests<\/a>"],[0,1,"<a href=\"RefreshToken.php.html#29\">App\\Models\\RefreshToken::user<\/a>"],[100,1,"<a href=\"Subscription.php.html#48\">App\\Models\\Subscription::casts<\/a>"],[100,1,"<a href=\"Subscription.php.html#68\">App\\Models\\Subscription::user<\/a>"],[0,1,"<a href=\"Subscription.php.html#76\">App\\Models\\Subscription::event<\/a>"],[100,1,"<a href=\"Subscription.php.html#84\">App\\Models\\Subscription::plan<\/a>"],[0,1,"<a href=\"Subscription.php.html#92\">App\\Models\\Subscription::payments<\/a>"],[0,1,"<a href=\"Subscription.php.html#100\">App\\Models\\Subscription::topUps<\/a>"],[0,3,"<a href=\"Subscription.php.html#108\">App\\Models\\Subscription::isActive<\/a>"],[0,2,"<a href=\"Subscription.php.html#117\">App\\Models\\Subscription::isExpired<\/a>"],[0,1,"<a href=\"Subscription.php.html#125\">App\\Models\\Subscription::isPaid<\/a>"],[0,1,"<a href=\"Subscription.php.html#133\">App\\Models\\Subscription::isPending<\/a>"],[0,1,"<a href=\"Subscription.php.html#141\">App\\Models\\Subscription::isPro<\/a>"],[0,1,"<a href=\"Subscription.php.html#149\">App\\Models\\Subscription::isStarter<\/a>"],[0,4,"<a href=\"Subscription.php.html#157\">App\\Models\\Subscription::getPlanLabelAttribute<\/a>"],[100,1,"<a href=\"Subscription.php.html#169\">App\\Models\\Subscription::cancel<\/a>"],[0,1,"<a href=\"Subscription.php.html#181\">App\\Models\\Subscription::isCancelled<\/a>"],[0,1,"<a href=\"Subscription.php.html#186\">App\\Models\\Subscription::isInGracePeriod<\/a>"],[0,1,"<a href=\"Subscription.php.html#191\">App\\Models\\Subscription::isArchivedRestricted<\/a>"],[0,1,"<a href=\"Subscription.php.html#199\">App\\Models\\Subscription::canBeCancelled<\/a>"],[100,1,"<a href=\"Task.php.html#39\">App\\Models\\Task::casts<\/a>"],[100,1,"<a href=\"Task.php.html#51\">App\\Models\\Task::event<\/a>"],[100,1,"<a href=\"Task.php.html#59\">App\\Models\\Task::assignedUser<\/a>"],[0,1,"<a href=\"Task.php.html#67\">App\\Models\\Task::budgetItem<\/a>"],[0,2,"<a href=\"Task.php.html#75\">App\\Models\\Task::hasCost<\/a>"],[100,1,"<a href=\"Task.php.html#83\">App\\Models\\Task::isCompleted<\/a>"],[100,3,"<a href=\"Task.php.html#91\">App\\Models\\Task::isOverdue<\/a>"],[100,1,"<a href=\"Task.php.html#101\">App\\Models\\Task::isHighPriority<\/a>"],[100,1,"<a href=\"Task.php.html#109\">App\\Models\\Task::markAsCompleted<\/a>"],[100,1,"<a href=\"Task.php.html#120\">App\\Models\\Task::reopen<\/a>"],[0,1,"<a href=\"Task.php.html#131\">App\\Models\\Task::scopeUrgent<\/a>"],[0,4,"<a href=\"Task.php.html#143\">App\\Models\\Task::isUrgent<\/a>"],[0,1,"<a href=\"TopUp.php.html#33\">App\\Models\\TopUp::casts<\/a>"],[0,1,"<a href=\"TopUp.php.html#46\">App\\Models\\TopUp::user<\/a>"],[0,1,"<a href=\"TopUp.php.html#54\">App\\Models\\TopUp::subscription<\/a>"],[0,1,"<a href=\"TopUp.php.html#62\">App\\Models\\TopUp::scopeValid<\/a>"],[0,1,"<a href=\"TopUp.php.html#73\">App\\Models\\TopUp::scopeForCurrentPeriod<\/a>"],[0,2,"<a href=\"TopUp.php.html#85\">App\\Models\\TopUp::isValid<\/a>"],[0,2,"<a href=\"TopUp.php.html#96\">App\\Models\\TopUp::getFormattedPriceAttribute<\/a>"],[0,1,"<a href=\"User.php.html#26\">App\\Models\\User::sendEmailVerificationNotification<\/a>"],[0,1,"<a href=\"User.php.html#34\">App\\Models\\User::sendPasswordResetNotification<\/a>"],[100,1,"<a href=\"User.php.html#79\">App\\Models\\User::casts<\/a>"],[0,2,"<a href=\"User.php.html#94\">App\\Models\\User::getAvatarUrlAttribute<\/a>"],[100,1,"<a href=\"User.php.html#105\">App\\Models\\User::isAdmin<\/a>"],[0,1,"<a href=\"User.php.html#113\">App\\Models\\User::isUser<\/a>"],[0,1,"<a href=\"User.php.html#121\">App\\Models\\User::isActiveAccount<\/a>"],[0,1,"<a href=\"User.php.html#129\">App\\Models\\User::toggleActive<\/a>"],[100,1,"<a href=\"User.php.html#140\">App\\Models\\User::events<\/a>"],[0,1,"<a href=\"User.php.html#148\">App\\Models\\User::customRoles<\/a>"],[0,1,"<a href=\"User.php.html#156\">App\\Models\\User::collaborations<\/a>"],[0,1,"<a href=\"User.php.html#164\">App\\Models\\User::pendingCollaborations<\/a>"],[0,1,"<a href=\"User.php.html#172\">App\\Models\\User::collaboratedEvents<\/a>"],[0,1,"<a href=\"User.php.html#187\">App\\Models\\User::assignedTasks<\/a>"],[0,1,"<a href=\"User.php.html#195\">App\\Models\\User::uploadedPhotos<\/a>"],[0,1,"<a href=\"User.php.html#203\">App\\Models\\User::notifications<\/a>"],[0,1,"<a href=\"User.php.html#211\">App\\Models\\User::unreadNotifications<\/a>"],[0,1,"<a href=\"User.php.html#219\">App\\Models\\User::collaboratingEvents<\/a>"],[100,1,"<a href=\"User.php.html#227\">App\\Models\\User::subscriptions<\/a>"],[0,1,"<a href=\"User.php.html#235\">App\\Models\\User::otps<\/a>"],[0,1,"<a href=\"User.php.html#243\">App\\Models\\User::hasOtpEnabled<\/a>"],[0,1,"<a href=\"User.php.html#251\">App\\Models\\User::getPreferredOtpChannel<\/a>"],[0,1,"<a href=\"User.php.html#259\">App\\Models\\User::eventTypes<\/a>"],[0,1,"<a href=\"User.php.html#267\">App\\Models\\User::collaboratorRoles<\/a>"],[0,1,"<a href=\"User.php.html#275\">App\\Models\\User::budgetCategories<\/a>"],[0,1,"<a href=\"User.php.html#283\">App\\Models\\User::refreshTokens<\/a>"],[100,1,"<a href=\"UserBudgetCategory.php.html#32\">App\\Models\\UserBudgetCategory::casts<\/a>"],[0,1,"<a href=\"UserBudgetCategory.php.html#43\">App\\Models\\UserBudgetCategory::user<\/a>"],[0,1,"<a href=\"UserBudgetCategory.php.html#51\">App\\Models\\UserBudgetCategory::scopeDefault<\/a>"],[0,1,"<a href=\"UserBudgetCategory.php.html#59\">App\\Models\\UserBudgetCategory::scopeOrdered<\/a>"],[100,1,"<a href=\"UserCollaboratorRole.php.html#33\">App\\Models\\UserCollaboratorRole::casts<\/a>"],[0,1,"<a href=\"UserCollaboratorRole.php.html#45\">App\\Models\\UserCollaboratorRole::user<\/a>"],[0,1,"<a href=\"UserCollaboratorRole.php.html#53\">App\\Models\\UserCollaboratorRole::scopeDefault<\/a>"],[0,1,"<a href=\"UserCollaboratorRole.php.html#61\">App\\Models\\UserCollaboratorRole::scopeOrdered<\/a>"],[100,1,"<a href=\"UserEventType.php.html#33\">App\\Models\\UserEventType::casts<\/a>"],[0,1,"<a href=\"UserEventType.php.html#44\">App\\Models\\UserEventType::user<\/a>"],[0,1,"<a href=\"UserEventType.php.html#52\">App\\Models\\UserEventType::scopeDefault<\/a>"],[0,1,"<a href=\"UserEventType.php.html#60\">App\\Models\\UserEventType::scopeOrdered<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

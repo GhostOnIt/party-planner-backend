@@ -287,23 +287,10 @@ class EventService
 
     /**
      * Update event status.
-     * Protects cancelled status - once cancelled, it can only be changed manually.
      */
     public function updateStatus(Event $event, EventStatus $status): Event
     {
-        // Protect cancelled status - if event is cancelled, only allow changing to non-cancelled
-        // If trying to change from cancelled, allow it (manual override)
-        // But if trying to change a non-cancelled event to cancelled, allow it
-        if ($event->status === EventStatus::CANCELLED->value && $status !== EventStatus::CANCELLED) {
-            // Allow changing from cancelled to another status (manual override)
-            $event->update(['status' => $status->value]);
-        } elseif ($status === EventStatus::CANCELLED->value) {
-            // Allow setting to cancelled (manual action)
-            $event->update(['status' => $status->value]);
-        } else {
-            // For other status changes, allow them (automatic updates will handle the rest)
-            $event->update(['status' => $status->value]);
-        }
+        $event->update(['status' => $status->value]);
 
         return $event->fresh();
     }

@@ -8,8 +8,12 @@ use App\Enums\UserRole;
 use App\Models\Collaborator;
 use App\Models\Event;
 use App\Models\User;
+use App\Services\PhotoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class EventControllerTest extends TestCase
@@ -349,5 +353,124 @@ class EventControllerTest extends TestCase
         $response->assertOk()
             ->assertJsonFragment(['title' => 'Public Event'])
             ->assertJsonMissing(['description']); // Should not include all details
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cover photo upload tests
+    |--------------------------------------------------------------------------
+    */
+
+    public function test_create_event_with_cover_photo_uploads_and_marks_as_featured(): void
+    {
+        Storage::fake('s3');
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        Sanctum::actingAs($admin);
+
+        $response = $this->postJson('/api/events', [
+            'title' => 'Avec photo',
+            'type' => EventType::ANNIVERSAIRE->value,
+            'date' => now()->addMonth()->format('Y-m-d'),
+            'time' => '18:00',
+            'location' => 'Brazzaville',
+            'expected_guests_count' => 30,
+            'cover_photo' => UploadedFile::fake()->image('cover.jpg', 800, 600),
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonStructure(['event', 'quota'])
+            ->assertJsonMissing(['warning']);
+
+        $this->assertDatabaseHas('events', ['title' => 'Avec photo']);
+        $this->assertDatabaseHas('photos', ['is_featured' => true]);
+    }
+
+    public function test_create_event_returns_warning_when_cover_photo_upload_fails(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        Sanctum::actingAs($admin);
+
+        // Force PhotoService::upload to throw, simulating a storage outage.
+        $this->mock(PhotoService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('upload')
+                ->once()
+                ->andThrow(new \RuntimeException('Storage unreachable'));
+            // setAsFeatured must NOT be reached.
+            $mock->shouldReceive('setAsFeatured')->never();
+        });
+
+        $response = $this->postJson('/api/events', [
+            'title' => 'Photo cassée',
+            'type' => EventType::ANNIVERSAIRE->value,
+            'date' => now()->addMonth()->format('Y-m-d'),
+            'time' => '18:00',
+            'location' => 'Brazzaville',
+            'expected_guests_count' => 30,
+            'cover_photo' => UploadedFile::fake()->image('cover.jpg', 800, 600),
+        ]);
+
+        // Event still created, warning surfaced — no duplicate on retry.
+        $response->assertCreated()
+            ->assertJsonStructure(['event', 'quota', 'warning']);
+
+        $this->assertStringContainsString('photo de couverture', $response->json('warning'));
+        $this->assertDatabaseHas('events', ['title' => 'Photo cassée']);
+        $this->assertDatabaseMissing('photos', ['is_featured' => true]);
+    }
+
+    public function test_update_event_returns_warning_when_cover_photo_upload_fails(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $event = Event::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Original',
+        ]);
+
+        $this->mock(PhotoService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('upload')
+                ->once()
+                ->andThrow(new \RuntimeException('Storage unreachable'));
+            $mock->shouldReceive('setAsFeatured')->never();
+        });
+
+        $response = $this->putJson("/api/events/{$event->id}", [
+            'title' => 'Modifié',
+            'cover_photo' => UploadedFile::fake()->image('cover.jpg', 800, 600),
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['event', 'warning']);
+
+        $this->assertStringContainsString('photo de couverture', $response->json('warning'));
+        $this->assertDatabaseHas('events', [
+            'id' => $event->id,
+            'title' => 'Modifié',
+        ]);
+    }
+
+    public function test_create_event_rejects_oversized_cover_photo_before_creating_event(): void
+    {
+        Storage::fake('s3');
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        Sanctum::actingAs($admin);
+
+        // Max size is read from config — produce a clearly oversized file.
+        $oversized = UploadedFile::fake()->create('huge.jpg', 50_000, 'image/jpeg');
+
+        $response = $this->postJson('/api/events', [
+            'title' => 'Trop gros',
+            'type' => EventType::ANNIVERSAIRE->value,
+            'date' => now()->addMonth()->format('Y-m-d'),
+            'time' => '18:00',
+            'location' => 'Brazzaville',
+            'expected_guests_count' => 30,
+            'cover_photo' => $oversized,
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['cover_photo']);
+
+        $this->assertDatabaseMissing('events', ['title' => 'Trop gros']);
     }
 }

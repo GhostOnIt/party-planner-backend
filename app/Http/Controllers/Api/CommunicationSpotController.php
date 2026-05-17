@@ -12,6 +12,8 @@ use Illuminate\Support\Str;
 
 class CommunicationSpotController extends Controller
 {
+    private const ERR_NOT_A_POLL = "Ce spot n'est pas un sondage";
+
     /**
      * List all communication spots (admin).
      */
@@ -399,7 +401,7 @@ class CommunicationSpotController extends Controller
         $spot = CommunicationSpot::findOrFail($id);
 
         if ($spot->type !== 'poll') {
-            return response()->json(['error' => 'Ce spot n\'est pas un sondage'], 400);
+            return response()->json(['error' => self::ERR_NOT_A_POLL], 400);
         }
 
         $votes = $spot->votes ?? [];
@@ -432,7 +434,7 @@ class CommunicationSpotController extends Controller
         $spot = CommunicationSpot::findOrFail($id);
 
         if ($spot->type !== 'poll') {
-            return response()->json(['error' => 'Ce spot n\'est pas un sondage'], 400);
+            return response()->json(['error' => self::ERR_NOT_A_POLL], 400);
         }
 
         $spot->update(['votes' => []]);
@@ -449,7 +451,7 @@ class CommunicationSpotController extends Controller
         $spot = CommunicationSpot::findOrFail($id);
 
         if ($spot->type !== 'poll') {
-            return response()->json(['error' => 'Ce spot n\'est pas un sondage'], 400);
+            return response()->json(['error' => self::ERR_NOT_A_POLL], 400);
         }
 
         $spot->update([
@@ -468,7 +470,7 @@ class CommunicationSpotController extends Controller
         $spot = CommunicationSpot::findOrFail($id);
 
         if ($spot->type !== 'poll') {
-            return response()->json(['error' => 'Ce spot n\'est pas un sondage'], 400);
+            return response()->json(['error' => self::ERR_NOT_A_POLL], 400);
         }
 
         $votes = $spot->votes ?? [];
@@ -591,7 +593,7 @@ class CommunicationSpotController extends Controller
         if ($spot->type !== 'poll') {
             return response()->json([
                 'success' => false,
-                'message' => 'Ce spot n\'est pas un sondage',
+                'message' => self::ERR_NOT_A_POLL,
                 'hasVoted' => false,
             ], 400);
         }

@@ -334,16 +334,12 @@ class EventController extends Controller
 
         // Si une photo de couverture est fournie par l'utilisateur, l'uploader et la marquer comme featured
         // Sinon, si le template a une photo de couverture, l'utiliser
+        // Note : on n'échoue pas la création si l'upload échoue (évite les doublons sur retry).
+        $coverPhotoWarning = null;
         if ($hasUserCoverPhoto && $coverPhoto) {
             try {
-                // Vérifier que le fichier est valide
                 if (!$coverPhoto->isValid()) {
-                    return response()->json([
-                        'message' => 'Le fichier photo de couverture n\'est pas valide.',
-                        'errors' => [
-                            'cover_photo' => ['Le fichier photo de couverture n\'est pas valide.']
-                        ]
-                    ], 422);
+                    throw new \RuntimeException('Le fichier photo de couverture n\'est pas valide.');
                 }
 
                 $photo = $this->photoService->upload(
@@ -352,22 +348,17 @@ class EventController extends Controller
                     $request->user(),
                     'event_photo'
                 );
-                
+
                 // Marquer la photo comme featured (photo de couverture)
                 $this->photoService->setAsFeatured($photo);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Cover photo upload failed', [
                     'event_id' => $event->id,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
 
-                return response()->json([
-                    'message' => 'L\'upload de la photo de couverture a échoué. Veuillez réessayer.',
-                    'errors' => [
-                        'cover_photo' => ['L\'upload de la photo de couverture a échoué. Veuillez réessayer.']
-                    ]
-                ], 422);
+                $coverPhotoWarning = 'L\'événement a été créé, mais la photo de couverture n\'a pas pu être uploadée. Vous pouvez la rajouter depuis l\'édition de l\'événement.';
             }
         } elseif ($templateCoverPhotoUrl && !$hasUserCoverPhoto) {
             try {
@@ -412,10 +403,15 @@ class EventController extends Controller
         // Ajouter les infos de quota à la réponse
         $quotaInfo = $this->quotaService->getCreationsQuota($request->user());
 
-        return response()->json([
+        $payload = [
             'event' => $event,
             'quota' => $quotaInfo,
-        ], 201);
+        ];
+        if ($coverPhotoWarning) {
+            $payload['warning'] = $coverPhotoWarning;
+        }
+
+        return response()->json($payload, 201);
     }
 
     /**
@@ -587,6 +583,8 @@ class EventController extends Controller
         $event->update($validated);
 
         // Upload new cover photo if provided
+        // Note : on n'échoue pas la mise à jour si l'upload échoue (les autres champs sont déjà persistés).
+        $coverPhotoWarning = null;
         if ($coverPhoto && $coverPhoto->isValid()) {
             try {
                 $photo = $this->photoService->upload(
@@ -596,14 +594,12 @@ class EventController extends Controller
                     'event_photo'
                 );
                 $this->photoService->setAsFeatured($photo);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Event update: cover photo upload failed', [
                     'event_id' => $event->id,
                     'error' => $e->getMessage(),
                 ]);
-                return response()->json([
-                    'message' => 'L\'upload de la photo de couverture a échoué. Veuillez réessayer.',
-                ], 422);
+                $coverPhotoWarning = 'Les modifications ont été enregistrées, mais la nouvelle photo de couverture n\'a pas pu être uploadée. Veuillez réessayer.';
             }
         }
 
@@ -614,6 +610,13 @@ class EventController extends Controller
         }
 
         $event->load(['coverPhoto:id,event_id,url,thumbnail_url', 'featuredPhoto:id,event_id,url,thumbnail_url']);
+
+        if ($coverPhotoWarning) {
+            return response()->json([
+                'event' => $event,
+                'warning' => $coverPhotoWarning,
+            ]);
+        }
 
         return response()->json($event);
     }

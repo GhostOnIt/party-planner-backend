@@ -484,45 +484,7 @@ class SubscriptionService
      */
     public function getLifecycleInfo(?Subscription $subscription): array
     {
-        if (!$subscription) {
-            return [
-                'phase' => 'no_subscription',
-                'days_to_expiry' => null,
-                'grace_days_elapsed' => null,
-                'archive_in_days' => null,
-                'is_restricted' => false,
-                'is_archived' => false,
-            ];
-        }
-
-        $now = now();
-        $expiresAt = $subscription->expires_at;
-        $daysToExpiry = $expiresAt ? (int) floor($now->diffInDays($expiresAt, false)) : null;
-        $graceDaysElapsed = $subscription->grace_started_at
-            ? (int) floor($subscription->grace_started_at->diffInDays($now))
-            : null;
-
-        $phase = 'active';
-        if ($subscription->status === 'archived_restricted') {
-            $phase = 'archived';
-        } elseif ($subscription->status === 'grace_period') {
-            $phase = 'grace_period';
-        } elseif ($daysToExpiry !== null && $daysToExpiry <= 1 && $daysToExpiry >= 0) {
-            $phase = 'renewal_last_day';
-        } elseif ($daysToExpiry !== null && $daysToExpiry <= 7 && $daysToExpiry >= 0) {
-            $phase = 'renewal_due';
-        } elseif ($expiresAt && $expiresAt->isPast()) {
-            $phase = 'expired';
-        }
-
-        return [
-            'phase' => $phase,
-            'days_to_expiry' => $daysToExpiry,
-            'grace_days_elapsed' => $graceDaysElapsed,
-            'archive_in_days' => $graceDaysElapsed === null ? null : max(0, 90 - $graceDaysElapsed),
-            'is_restricted' => in_array($phase, ['grace_period', 'archived', 'expired'], true),
-            'is_archived' => $phase === 'archived',
-        ];
+        return \App\Services\Support\SubscriptionLifecycle::buildPayload($subscription);
     }
 
     /**

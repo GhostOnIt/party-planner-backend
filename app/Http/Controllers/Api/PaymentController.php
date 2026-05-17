@@ -208,12 +208,27 @@ class PaymentController extends Controller
      */
     public function initiateMtn(Request $request): JsonResponse
     {
+        return $this->initiateMobileMoneyPayment(
+            $request,
+            'MTN',
+            fn ($subscription, $phone, $key) => $this->paymentService->initiateMtnPayment($subscription, $phone, $key)
+        );
+    }
+
+    /**
+     * Initie un paiement Mobile Money (MTN ou Airtel) — pipeline commun :
+     * validation → résolution subscription (event ou compte) → idempotence → appel provider.
+     *
+     * @param  callable(Subscription, string, ?string): array  $providerCall
+     */
+    private function initiateMobileMoneyPayment(Request $request, string $providerLabel, callable $providerCall): JsonResponse
+    {
         $validated = $request->validate([
             'event_id' => 'nullable|exists:events,id',
             'subscription_id' => 'nullable|exists:subscriptions,id',
             'phone_number' => 'required|string',
             'plan' => 'sometimes|string|in:starter,pro',
-            'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
+            'plan_type' => 'sometimes|string|in:starter,pro',
             'amount' => 'sometimes|numeric|min:0',
             'idempotency_key' => 'nullable|string|uuid',
         ]);
@@ -221,46 +236,32 @@ class PaymentController extends Controller
         $user = $request->user();
         $subscription = null;
 
-        // Handle account-level subscription (no event_id)
         if (isset($validated['subscription_id'])) {
             $subscription = Subscription::findOrFail($validated['subscription_id']);
-            
-            // Verify ownership
+
             if ($subscription->user_id !== $user->id) {
-                return response()->json([
-                    'message' => 'Vous n\'avez pas accès à cet abonnement.',
-                ], 403);
+                return response()->json(['message' => "Vous n'avez pas accès à cet abonnement."], 403);
             }
 
-            // Verify it's an account-level subscription
             if ($subscription->event_id !== null) {
-                return response()->json([
-                    'message' => 'Cet abonnement est lié à un événement. Utilisez event_id à la place.',
-                ], 422);
+                return response()->json(['message' => "Cet abonnement est lié à un événement. Utilisez event_id à la place."], 422);
             }
-        }
-        // Handle event-level subscription (with event_id)
-        elseif (isset($validated['event_id'])) {
-        $event = Event::findOrFail($validated['event_id']);
+        } elseif (isset($validated['event_id'])) {
+            $event = Event::findOrFail($validated['event_id']);
 
             if ($event->user_id !== $user->id) {
-            return response()->json([
-                'message' => 'Vous n\'avez pas accès à cet événement.',
-            ], 403);
-        }
+                return response()->json(['message' => "Vous n'avez pas accès à cet événement."], 403);
+            }
 
-        // Accept both 'plan' and 'plan_type' from frontend
-        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+            $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
 
-        $subscription = $event->subscription;
-        if (!$subscription) {
-            $guestCount = $event->expected_guests ?? 50;
-            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+            $subscription = $event->subscription;
+            if (!$subscription) {
+                $guestCount = $event->expected_guests ?? 50;
+                $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
             }
         } else {
-            return response()->json([
-                'message' => 'Vous devez fournir soit event_id soit subscription_id.',
-            ], 422);
+            return response()->json(['message' => 'Vous devez fournir soit event_id soit subscription_id.'], 422);
         }
 
         $idempotencyKey = $validated['idempotency_key'] ?? null;
@@ -270,16 +271,16 @@ class PaymentController extends Controller
         }
 
         $phone = $this->normalizePhone($validated['phone_number']);
-        $result = $this->paymentService->initiateMtnPayment($subscription, $phone, $idempotencyKey);
+        $result = $providerCall($subscription, $phone, $idempotencyKey);
 
         if (!$result['success']) {
             return response()->json([
-                'message' => $result['message'] ?? 'Erreur lors de l\'initiation du paiement MTN.',
+                'message' => $result['message'] ?? "Erreur lors de l'initiation du paiement {$providerLabel}.",
             ], 422);
         }
 
         return response()->json([
-            'message' => 'Paiement MTN initié. Veuillez confirmer sur votre téléphone.',
+            'message' => "Paiement {$providerLabel} initié. Veuillez confirmer sur votre téléphone.",
             'payment' => $result['payment'],
             'reference' => $result['reference'] ?? null,
         ]);
@@ -290,81 +291,11 @@ class PaymentController extends Controller
      */
     public function initiateAirtel(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'event_id' => 'nullable|exists:events,id',
-            'subscription_id' => 'nullable|exists:subscriptions,id',
-            'phone_number' => 'required|string',
-            'plan' => 'sometimes|string|in:starter,pro',
-            'plan_type' => 'sometimes|string|in:starter,pro', // Accept both
-            'amount' => 'sometimes|numeric|min:0',
-            'idempotency_key' => 'nullable|string|uuid',
-        ]);
-
-        $user = $request->user();
-        $subscription = null;
-
-        // Handle account-level subscription (no event_id)
-        if (isset($validated['subscription_id'])) {
-            $subscription = Subscription::findOrFail($validated['subscription_id']);
-            
-            // Verify ownership
-            if ($subscription->user_id !== $user->id) {
-                return response()->json([
-                    'message' => 'Vous n\'avez pas accès à cet abonnement.',
-                ], 403);
-            }
-
-            // Verify it's an account-level subscription
-            if ($subscription->event_id !== null) {
-                return response()->json([
-                    'message' => 'Cet abonnement est lié à un événement. Utilisez event_id à la place.',
-                ], 422);
-            }
-        }
-        // Handle event-level subscription (with event_id)
-        elseif (isset($validated['event_id'])) {
-        $event = Event::findOrFail($validated['event_id']);
-
-            if ($event->user_id !== $user->id) {
-            return response()->json([
-                'message' => 'Vous n\'avez pas accès à cet événement.',
-            ], 403);
-        }
-
-        // Accept both 'plan' and 'plan_type' from frontend
-        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
-
-        $subscription = $event->subscription;
-        if (!$subscription) {
-            $guestCount = $event->expected_guests ?? 50;
-            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Vous devez fournir soit event_id soit subscription_id.',
-            ], 422);
-        }
-
-        $idempotencyKey = $validated['idempotency_key'] ?? null;
-        $idempotentResponse = $this->respondIfIdempotentPayment($subscription, $idempotencyKey);
-        if ($idempotentResponse) {
-            return $idempotentResponse;
-        }
-
-        $phone = $this->normalizePhone($validated['phone_number']);
-        $result = $this->paymentService->initiateAirtelPayment($subscription, $phone, $idempotencyKey);
-
-        if (!$result['success']) {
-            return response()->json([
-                'message' => $result['message'] ?? 'Erreur lors de l\'initiation du paiement Airtel.',
-            ], 422);
-        }
-
-        return response()->json([
-            'message' => 'Paiement Airtel initié. Veuillez confirmer sur votre téléphone.',
-            'payment' => $result['payment'],
-            'reference' => $result['reference'] ?? null,
-        ]);
+        return $this->initiateMobileMoneyPayment(
+            $request,
+            'Airtel',
+            fn ($subscription, $phone, $key) => $this->paymentService->initiateAirtelPayment($subscription, $phone, $key)
+        );
     }
 
     /**

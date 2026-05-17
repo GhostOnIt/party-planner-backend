@@ -13,6 +13,8 @@ use Lepresk\MomoApi\MomoApi;
 
 class PaymentService
 {
+    private const BEARER_PREFIX = 'Bearer ';
+
     /**
      * Initiate MTN Mobile Money payment.
      */
@@ -104,7 +106,7 @@ class PaymentService
                 'Ocp-Apim-Subscription-Key' => $config['subscription_key'],
                 'X-Reference-Id'            => $externalId,
                 'X-Target-Environment'      => $config['environment'],
-                'Authorization'             => 'Bearer ' . $accessToken,
+                'Authorization'             => self::BEARER_PREFIX . $accessToken,
             ];
 
             if (!empty($config['callback_url'])) {
@@ -280,7 +282,7 @@ class PaymentService
 
             /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->getAirtelAccessToken(),
+                'Authorization' => self::BEARER_PREFIX . $this->getAirtelAccessToken(),
                 'Content-Type' => 'application/json',
             ])->post($config['api_url'] . '/merchant/v1/payments/', [
                 'reference' => $externalId,
@@ -527,7 +529,7 @@ class PaymentService
                 ->withHeaders([
                     'Ocp-Apim-Subscription-Key' => $config['subscription_key'],
                     'X-Target-Environment'      => $config['environment'],
-                    'Authorization'             => 'Bearer ' . $accessToken,
+                    'Authorization'             => self::BEARER_PREFIX . $accessToken,
                 ])
                 ->get('/collection/v1_0/requesttopay/' . $reference);
 
@@ -558,7 +560,7 @@ class PaymentService
 
         /** @var \Illuminate\Http\Client\Response $response */
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->getAirtelAccessToken(),
+            'Authorization' => self::BEARER_PREFIX . $this->getAirtelAccessToken(),
         ])->get($config['api_url'] . "/standard/v1/payments/{$reference}");
 
         if ($response->successful()) {

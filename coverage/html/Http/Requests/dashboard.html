@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /var/www/app/Http/Requests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../../_css/bootstrap.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../../_css/nv.d3.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../../_css/style.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../../index.html">/var/www/app</a></li>
+         <li class="breadcrumb-item"><a href="../index.html">Http</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Requests</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Admin/AddQuoteNoteRequest.php.html#7">App\Http\Requests\Admin\AddQuoteNoteRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/AssignQuoteRequestRequest.php.html#7">App\Http\Requests\Admin\AssignQuoteRequestRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListActivityLogsRequest.php.html#8">App\Http\Requests\Admin\ListActivityLogsRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListEventsRequest.php.html#10">App\Http\Requests\Admin\ListEventsRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListPaymentsRequest.php.html#10">App\Http\Requests\Admin\ListPaymentsRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListQuoteRequestsRequest.php.html#8">App\Http\Requests\Admin\ListQuoteRequestsRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListSubscriptionsRequest.php.html#10">App\Http\Requests\Admin\ListSubscriptionsRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListUsersRequest.php.html#9">App\Http\Requests\Admin\ListUsersRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ScheduleQuoteCallRequest.php.html#7">App\Http\Requests\Admin\ScheduleQuoteCallRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreCustomOfferRequest.php.html#7">App\Http\Requests\Admin\StoreCustomOfferRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreTemplateRequest.php.html#9">App\Http\Requests\Admin\StoreTemplateRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteOutcomeRequest.php.html#8">App\Http\Requests\Admin\UpdateQuoteOutcomeRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteStageRequest.php.html#7">App\Http\Requests\Admin\UpdateQuoteStageRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateTemplateRequest.php.html#9">App\Http\Requests\Admin\UpdateTemplateRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateUserRoleRequest.php.html#9">App\Http\Requests\Admin\UpdateUserRoleRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#12">App\Http\Requests\Auth\LoginRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#9">App\Http\Requests\Auth\SendOtpRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/VerifyOtpRequest.php.html#9">App\Http\Requests\Auth\VerifyOtpRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#9">App\Http\Requests\Collaborator\StoreCollaboratorRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#9">App\Http\Requests\Collaborator\UpdateCollaboratorRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/StoreCustomRoleRequest.php.html#7">App\Http\Requests\CustomRole\StoreCustomRoleRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/UpdateCustomRoleRequest.php.html#7">App\Http\Requests\CustomRole\UpdateCustomRoleRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/DuplicateEventRequest.php.html#9">App\Http\Requests\Event\DuplicateEventRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/StoreEventRequest.php.html#9">App\Http\Requests\Event\StoreEventRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UpdateEventRequest.php.html#10">App\Http\Requests\Event\UpdateEventRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/ImportGuestsRequest.php.html#7">App\Http\Requests\Guest\ImportGuestsRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/StoreGuestRequest.php.html#7">App\Http\Requests\Guest\StoreGuestRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/UpdateGuestRequest.php.html#9">App\Http\Requests\Guest\UpdateGuestRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation/RsvpRequest.php.html#9">App\Http\Requests\Invitation\RsvpRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment/InitiatePaymentRequest.php.html#7">App\Http\Requests\Payment\InitiatePaymentRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/PublicStorePhotoRequest.php.html#7">App\Http\Requests\Photo\PublicStorePhotoRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/StorePhotoRequest.php.html#9">App\Http\Requests\Photo\StorePhotoRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ProfileUpdateRequest.php.html#9">App\Http\Requests\ProfileUpdateRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RespondToOfferRequest.php.html#8">App\Http\Requests\RespondToOfferRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreBatchLogsRequest.php.html#8">App\Http\Requests\StoreBatchLogsRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreQuoteRequestRequest.php.html#7">App\Http\Requests\StoreQuoteRequestRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/StoreSubscriptionRequest.php.html#8">App\Http\Requests\Subscription\StoreSubscriptionRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/SubscribeRequest.php.html#9">App\Http\Requests\Subscription\SubscribeRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/StoreTaskRequest.php.html#9">App\Http\Requests\Task\StoreTaskRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/UpdateTaskRequest.php.html#10">App\Http\Requests\Task\UpdateTaskRequest</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Budget/Concerns/HasBudgetItemValidation.php.html#13">App\Http\Requests\Budget\Concerns\HasBudgetItemValidation</a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#9">App\Http\Requests\Auth\SendOtpRequest</a></td><td class="text-right">272</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#9">App\Http\Requests\Collaborator\StoreCollaboratorRequest</a></td><td class="text-right">240</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#9">App\Http\Requests\Collaborator\UpdateCollaboratorRequest</a></td><td class="text-right">182</td></tr>
+       <tr><td><a href="Auth/VerifyOtpRequest.php.html#9">App\Http\Requests\Auth\VerifyOtpRequest</a></td><td class="text-right">132</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#12">App\Http\Requests\Auth\LoginRequest</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="Event/DuplicateEventRequest.php.html#9">App\Http\Requests\Event\DuplicateEventRequest</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="Task/StoreTaskRequest.php.html#9">App\Http\Requests\Task\StoreTaskRequest</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="Task/UpdateTaskRequest.php.html#10">App\Http\Requests\Task\UpdateTaskRequest</a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="Admin/UpdateUserRoleRequest.php.html#9">App\Http\Requests\Admin\UpdateUserRoleRequest</a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Event/StoreEventRequest.php.html#9">App\Http\Requests\Event\StoreEventRequest</a></td><td class="text-right">30</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Admin/AddQuoteNoteRequest.php.html#9"><abbr title="App\Http\Requests\Admin\AddQuoteNoteRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/AddQuoteNoteRequest.php.html#14"><abbr title="App\Http\Requests\Admin\AddQuoteNoteRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/AddQuoteNoteRequest.php.html#21"><abbr title="App\Http\Requests\Admin\AddQuoteNoteRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/AssignQuoteRequestRequest.php.html#9"><abbr title="App\Http\Requests\Admin\AssignQuoteRequestRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/AssignQuoteRequestRequest.php.html#14"><abbr title="App\Http\Requests\Admin\AssignQuoteRequestRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/AssignQuoteRequestRequest.php.html#21"><abbr title="App\Http\Requests\Admin\AssignQuoteRequestRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListActivityLogsRequest.php.html#13"><abbr title="App\Http\Requests\Admin\ListActivityLogsRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListActivityLogsRequest.php.html#23"><abbr title="App\Http\Requests\Admin\ListActivityLogsRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListActivityLogsRequest.php.html#65"><abbr title="App\Http\Requests\Admin\ListActivityLogsRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListActivityLogsRequest.php.html#85"><abbr title="App\Http\Requests\Admin\ListActivityLogsRequest::defaults">defaults</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListEventsRequest.php.html#15"><abbr title="App\Http\Requests\Admin\ListEventsRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListEventsRequest.php.html#25"><abbr title="App\Http\Requests\Admin\ListEventsRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListEventsRequest.php.html#45"><abbr title="App\Http\Requests\Admin\ListEventsRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListEventsRequest.php.html#62"><abbr title="App\Http\Requests\Admin\ListEventsRequest::defaults">defaults</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListPaymentsRequest.php.html#15"><abbr title="App\Http\Requests\Admin\ListPaymentsRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListPaymentsRequest.php.html#25"><abbr title="App\Http\Requests\Admin\ListPaymentsRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListPaymentsRequest.php.html#47"><abbr title="App\Http\Requests\Admin\ListPaymentsRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListPaymentsRequest.php.html#66"><abbr title="App\Http\Requests\Admin\ListPaymentsRequest::defaults">defaults</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListQuoteRequestsRequest.php.html#10"><abbr title="App\Http\Requests\Admin\ListQuoteRequestsRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListQuoteRequestsRequest.php.html#15"><abbr title="App\Http\Requests\Admin\ListQuoteRequestsRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListQuoteRequestsRequest.php.html#33"><abbr title="App\Http\Requests\Admin\ListQuoteRequestsRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListQuoteRequestsRequest.php.html#47"><abbr title="App\Http\Requests\Admin\ListQuoteRequestsRequest::defaults">defaults</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListSubscriptionsRequest.php.html#15"><abbr title="App\Http\Requests\Admin\ListSubscriptionsRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListSubscriptionsRequest.php.html#25"><abbr title="App\Http\Requests\Admin\ListSubscriptionsRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListSubscriptionsRequest.php.html#46"><abbr title="App\Http\Requests\Admin\ListSubscriptionsRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListSubscriptionsRequest.php.html#64"><abbr title="App\Http\Requests\Admin\ListSubscriptionsRequest::defaults">defaults</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListUsersRequest.php.html#14"><abbr title="App\Http\Requests\Admin\ListUsersRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListUsersRequest.php.html#24"><abbr title="App\Http\Requests\Admin\ListUsersRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListUsersRequest.php.html#40"><abbr title="App\Http\Requests\Admin\ListUsersRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ListUsersRequest.php.html#54"><abbr title="App\Http\Requests\Admin\ListUsersRequest::defaults">defaults</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ScheduleQuoteCallRequest.php.html#9"><abbr title="App\Http\Requests\Admin\ScheduleQuoteCallRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ScheduleQuoteCallRequest.php.html#14"><abbr title="App\Http\Requests\Admin\ScheduleQuoteCallRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/ScheduleQuoteCallRequest.php.html#21"><abbr title="App\Http\Requests\Admin\ScheduleQuoteCallRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreCustomOfferRequest.php.html#9"><abbr title="App\Http\Requests\Admin\StoreCustomOfferRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreCustomOfferRequest.php.html#14"><abbr title="App\Http\Requests\Admin\StoreCustomOfferRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreCustomOfferRequest.php.html#28"><abbr title="App\Http\Requests\Admin\StoreCustomOfferRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreTemplateRequest.php.html#14"><abbr title="App\Http\Requests\Admin\StoreTemplateRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreTemplateRequest.php.html#24"><abbr title="App\Http\Requests\Admin\StoreTemplateRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/StoreTemplateRequest.php.html#68"><abbr title="App\Http\Requests\Admin\StoreTemplateRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteOutcomeRequest.php.html#10"><abbr title="App\Http\Requests\Admin\UpdateQuoteOutcomeRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteOutcomeRequest.php.html#15"><abbr title="App\Http\Requests\Admin\UpdateQuoteOutcomeRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteOutcomeRequest.php.html#23"><abbr title="App\Http\Requests\Admin\UpdateQuoteOutcomeRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteStageRequest.php.html#9"><abbr title="App\Http\Requests\Admin\UpdateQuoteStageRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteStageRequest.php.html#14"><abbr title="App\Http\Requests\Admin\UpdateQuoteStageRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateQuoteStageRequest.php.html#21"><abbr title="App\Http\Requests\Admin\UpdateQuoteStageRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateTemplateRequest.php.html#14"><abbr title="App\Http\Requests\Admin\UpdateTemplateRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateTemplateRequest.php.html#24"><abbr title="App\Http\Requests\Admin\UpdateTemplateRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateTemplateRequest.php.html#68"><abbr title="App\Http\Requests\Admin\UpdateTemplateRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateUserRoleRequest.php.html#14"><abbr title="App\Http\Requests\Admin\UpdateUserRoleRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateUserRoleRequest.php.html#24"><abbr title="App\Http\Requests\Admin\UpdateUserRoleRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateUserRoleRequest.php.html#39"><abbr title="App\Http\Requests\Admin\UpdateUserRoleRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Admin/UpdateUserRoleRequest.php.html#50"><abbr title="App\Http\Requests\Admin\UpdateUserRoleRequest::withValidator">withValidator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#17"><abbr title="App\Http\Requests\Auth\LoginRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#27"><abbr title="App\Http\Requests\Auth\LoginRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#41"><abbr title="App\Http\Requests\Auth\LoginRequest::authenticate">authenticate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#61"><abbr title="App\Http\Requests\Auth\LoginRequest::ensureIsNotRateLimited">ensureIsNotRateLimited</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#79"><abbr title="App\Http\Requests\Auth\LoginRequest::throttleKey">throttleKey</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#14"><abbr title="App\Http\Requests\Auth\SendOtpRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#24"><abbr title="App\Http\Requests\Auth\SendOtpRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#36"><abbr title="App\Http\Requests\Auth\SendOtpRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#50"><abbr title="App\Http\Requests\Auth\SendOtpRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#77"><abbr title="App\Http\Requests\Auth\SendOtpRequest::withValidator">withValidator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/VerifyOtpRequest.php.html#14"><abbr title="App\Http\Requests\Auth\VerifyOtpRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/VerifyOtpRequest.php.html#24"><abbr title="App\Http\Requests\Auth\VerifyOtpRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/VerifyOtpRequest.php.html#37"><abbr title="App\Http\Requests\Auth\VerifyOtpRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Auth/VerifyOtpRequest.php.html#52"><abbr title="App\Http\Requests\Auth\VerifyOtpRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#16"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#28"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#78"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#88"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::withValidator">withValidator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#125"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#139"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#16"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#28"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#72"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#82"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::withValidator">withValidator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#114"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#127"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/StoreCustomRoleRequest.php.html#12"><abbr title="App\Http\Requests\CustomRole\StoreCustomRoleRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/StoreCustomRoleRequest.php.html#20"><abbr title="App\Http\Requests\CustomRole\StoreCustomRoleRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/StoreCustomRoleRequest.php.html#34"><abbr title="App\Http\Requests\CustomRole\StoreCustomRoleRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/UpdateCustomRoleRequest.php.html#12"><abbr title="App\Http\Requests\CustomRole\UpdateCustomRoleRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/UpdateCustomRoleRequest.php.html#20"><abbr title="App\Http\Requests\CustomRole\UpdateCustomRoleRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CustomRole/UpdateCustomRoleRequest.php.html#34"><abbr title="App\Http\Requests\CustomRole\UpdateCustomRoleRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/DuplicateEventRequest.php.html#11"><abbr title="App\Http\Requests\Event\DuplicateEventRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/DuplicateEventRequest.php.html#19"><abbr title="App\Http\Requests\Event\DuplicateEventRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/DuplicateEventRequest.php.html#42"><abbr title="App\Http\Requests\Event\DuplicateEventRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/StoreEventRequest.php.html#14"><abbr title="App\Http\Requests\Event\StoreEventRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/StoreEventRequest.php.html#24"><abbr title="App\Http\Requests\Event\StoreEventRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/StoreEventRequest.php.html#62"><abbr title="App\Http\Requests\Event\StoreEventRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/StoreEventRequest.php.html#92"><abbr title="App\Http\Requests\Event\StoreEventRequest::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UpdateEventRequest.php.html#15"><abbr title="App\Http\Requests\Event\UpdateEventRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UpdateEventRequest.php.html#25"><abbr title="App\Http\Requests\Event\UpdateEventRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UpdateEventRequest.php.html#54"><abbr title="App\Http\Requests\Event\UpdateEventRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/ImportGuestsRequest.php.html#12"><abbr title="App\Http\Requests\Guest\ImportGuestsRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/ImportGuestsRequest.php.html#22"><abbr title="App\Http\Requests\Guest\ImportGuestsRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/ImportGuestsRequest.php.html#34"><abbr title="App\Http\Requests\Guest\ImportGuestsRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/ImportGuestsRequest.php.html#46"><abbr title="App\Http\Requests\Guest\ImportGuestsRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/StoreGuestRequest.php.html#12"><abbr title="App\Http\Requests\Guest\StoreGuestRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/StoreGuestRequest.php.html#22"><abbr title="App\Http\Requests\Guest\StoreGuestRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/StoreGuestRequest.php.html#37"><abbr title="App\Http\Requests\Guest\StoreGuestRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/UpdateGuestRequest.php.html#14"><abbr title="App\Http\Requests\Guest\UpdateGuestRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/UpdateGuestRequest.php.html#24"><abbr title="App\Http\Requests\Guest\UpdateGuestRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Guest/UpdateGuestRequest.php.html#40"><abbr title="App\Http\Requests\Guest\UpdateGuestRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation/RsvpRequest.php.html#14"><abbr title="App\Http\Requests\Invitation\RsvpRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation/RsvpRequest.php.html#24"><abbr title="App\Http\Requests\Invitation\RsvpRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Invitation/RsvpRequest.php.html#37"><abbr title="App\Http\Requests\Invitation\RsvpRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment/InitiatePaymentRequest.php.html#9"><abbr title="App\Http\Requests\Payment\InitiatePaymentRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment/InitiatePaymentRequest.php.html#14"><abbr title="App\Http\Requests\Payment\InitiatePaymentRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment/InitiatePaymentRequest.php.html#33"><abbr title="App\Http\Requests\Payment\InitiatePaymentRequest::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Payment/InitiatePaymentRequest.php.html#42"><abbr title="App\Http\Requests\Payment\InitiatePaymentRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/PublicStorePhotoRequest.php.html#13"><abbr title="App\Http\Requests\Photo\PublicStorePhotoRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/PublicStorePhotoRequest.php.html#23"><abbr title="App\Http\Requests\Photo\PublicStorePhotoRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/PublicStorePhotoRequest.php.html#45"><abbr title="App\Http\Requests\Photo\PublicStorePhotoRequest::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/PublicStorePhotoRequest.php.html#58"><abbr title="App\Http\Requests\Photo\PublicStorePhotoRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/StorePhotoRequest.php.html#14"><abbr title="App\Http\Requests\Photo\StorePhotoRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/StorePhotoRequest.php.html#26"><abbr title="App\Http\Requests\Photo\StorePhotoRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/StorePhotoRequest.php.html#50"><abbr title="App\Http\Requests\Photo\StorePhotoRequest::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Photo/StorePhotoRequest.php.html#65"><abbr title="App\Http\Requests\Photo\StorePhotoRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ProfileUpdateRequest.php.html#16"><abbr title="App\Http\Requests\ProfileUpdateRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ProfileUpdateRequest.php.html#41"><abbr title="App\Http\Requests\ProfileUpdateRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RespondToOfferRequest.php.html#10"><abbr title="App\Http\Requests\RespondToOfferRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RespondToOfferRequest.php.html#15"><abbr title="App\Http\Requests\RespondToOfferRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RespondToOfferRequest.php.html#23"><abbr title="App\Http\Requests\RespondToOfferRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreBatchLogsRequest.php.html#13"><abbr title="App\Http\Requests\StoreBatchLogsRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreBatchLogsRequest.php.html#23"><abbr title="App\Http\Requests\StoreBatchLogsRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreBatchLogsRequest.php.html#47"><abbr title="App\Http\Requests\StoreBatchLogsRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreQuoteRequestRequest.php.html#9"><abbr title="App\Http\Requests\StoreQuoteRequestRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreQuoteRequestRequest.php.html#14"><abbr title="App\Http\Requests\StoreQuoteRequestRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="StoreQuoteRequestRequest.php.html#31"><abbr title="App\Http\Requests\StoreQuoteRequestRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/StoreSubscriptionRequest.php.html#10"><abbr title="App\Http\Requests\Subscription\StoreSubscriptionRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/StoreSubscriptionRequest.php.html#17"><abbr title="App\Http\Requests\Subscription\StoreSubscriptionRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/StoreSubscriptionRequest.php.html#33"><abbr title="App\Http\Requests\Subscription\StoreSubscriptionRequest::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/StoreSubscriptionRequest.php.html#41"><abbr title="App\Http\Requests\Subscription\StoreSubscriptionRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/SubscribeRequest.php.html#14"><abbr title="App\Http\Requests\Subscription\SubscribeRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/SubscribeRequest.php.html#24"><abbr title="App\Http\Requests\Subscription\SubscribeRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Subscription/SubscribeRequest.php.html#36"><abbr title="App\Http\Requests\Subscription\SubscribeRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/StoreTaskRequest.php.html#14"><abbr title="App\Http\Requests\Task\StoreTaskRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/StoreTaskRequest.php.html#25"><abbr title="App\Http\Requests\Task\StoreTaskRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/StoreTaskRequest.php.html#35"><abbr title="App\Http\Requests\Task\StoreTaskRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/StoreTaskRequest.php.html#51"><abbr title="App\Http\Requests\Task\StoreTaskRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/UpdateTaskRequest.php.html#15"><abbr title="App\Http\Requests\Task\UpdateTaskRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/UpdateTaskRequest.php.html#26"><abbr title="App\Http\Requests\Task\UpdateTaskRequest::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/UpdateTaskRequest.php.html#36"><abbr title="App\Http\Requests\Task\UpdateTaskRequest::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Task/UpdateTaskRequest.php.html#53"><abbr title="App\Http\Requests\Task\UpdateTaskRequest::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Budget/Concerns/HasBudgetItemValidation.php.html#15"><abbr title="App\Http\Requests\Budget\Concerns\HasBudgetItemValidation::authorize">authorize</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Budget/Concerns/HasBudgetItemValidation.php.html#25"><abbr title="App\Http\Requests\Budget\Concerns\HasBudgetItemValidation::rules">rules</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Budget/Concerns/HasBudgetItemValidation.php.html#45"><abbr title="App\Http\Requests\Budget\Concerns\HasBudgetItemValidation::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Budget/Concerns/HasBudgetItemValidation.php.html#55"><abbr title="App\Http\Requests\Budget\Concerns\HasBudgetItemValidation::attributes">attributes</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Budget/Concerns/HasBudgetItemValidation.php.html#72"><abbr title="App\Http\Requests\Budget\Concerns\HasBudgetItemValidation::messages">messages</abbr></a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#50"><abbr title="App\Http\Requests\Auth\SendOtpRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="Auth/VerifyOtpRequest.php.html#52"><abbr title="App\Http\Requests\Auth\VerifyOtpRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#88"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::withValidator">withValidator</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#82"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::withValidator">withValidator</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="Auth/SendOtpRequest.php.html#77"><abbr title="App\Http\Requests\Auth\SendOtpRequest::withValidator">withValidator</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="Event/DuplicateEventRequest.php.html#42"><abbr title="App\Http\Requests\Event\DuplicateEventRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="Task/StoreTaskRequest.php.html#14"><abbr title="App\Http\Requests\Task\StoreTaskRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Task/UpdateTaskRequest.php.html#15"><abbr title="App\Http\Requests\Task\UpdateTaskRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="Admin/UpdateUserRoleRequest.php.html#50"><abbr title="App\Http\Requests\Admin\UpdateUserRoleRequest::withValidator">withValidator</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Collaborator/StoreCollaboratorRequest.php.html#78"><abbr title="App\Http\Requests\Collaborator\StoreCollaboratorRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Collaborator/UpdateCollaboratorRequest.php.html#72"><abbr title="App\Http\Requests\Collaborator\UpdateCollaboratorRequest::prepareForValidation">prepareForValidation</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#41"><abbr title="App\Http\Requests\Auth\LoginRequest::authenticate">authenticate</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Auth/LoginRequest.php.html#61"><abbr title="App\Http\Requests\Auth\LoginRequest::ensureIsNotRateLimited">ensureIsNotRateLimited</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Event/StoreEventRequest.php.html#24"><abbr title="App\Http\Requests\Event\StoreEventRequest::rules">rules</abbr></a></td><td class="text-right">6</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.12</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.21</a> and <a href="https://phpunit.de/">PHPUnit 11.5.51</a> at Thu May 14 15:42:39 UTC 2026.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../../_js/jquery.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../../_js/d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../../_js/nv.d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([41,0,0,0,0,0,0,0,0,0,0,2], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([150,0,0,0,0,0,0,0,0,0,0,0], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[0,3,"<a href=\"Admin\/AddQuoteNoteRequest.php.html#7\">App\\Http\\Requests\\Admin\\AddQuoteNoteRequest<\/a>"],[0,3,"<a href=\"Admin\/AssignQuoteRequestRequest.php.html#7\">App\\Http\\Requests\\Admin\\AssignQuoteRequestRequest<\/a>"],[0,4,"<a href=\"Admin\/ListActivityLogsRequest.php.html#8\">App\\Http\\Requests\\Admin\\ListActivityLogsRequest<\/a>"],[0,4,"<a href=\"Admin\/ListEventsRequest.php.html#10\">App\\Http\\Requests\\Admin\\ListEventsRequest<\/a>"],[0,4,"<a href=\"Admin\/ListPaymentsRequest.php.html#10\">App\\Http\\Requests\\Admin\\ListPaymentsRequest<\/a>"],[0,4,"<a href=\"Admin\/ListQuoteRequestsRequest.php.html#8\">App\\Http\\Requests\\Admin\\ListQuoteRequestsRequest<\/a>"],[0,4,"<a href=\"Admin\/ListSubscriptionsRequest.php.html#10\">App\\Http\\Requests\\Admin\\ListSubscriptionsRequest<\/a>"],[0,4,"<a href=\"Admin\/ListUsersRequest.php.html#9\">App\\Http\\Requests\\Admin\\ListUsersRequest<\/a>"],[0,3,"<a href=\"Admin\/ScheduleQuoteCallRequest.php.html#7\">App\\Http\\Requests\\Admin\\ScheduleQuoteCallRequest<\/a>"],[0,3,"<a href=\"Admin\/StoreCustomOfferRequest.php.html#7\">App\\Http\\Requests\\Admin\\StoreCustomOfferRequest<\/a>"],[0,3,"<a href=\"Admin\/StoreTemplateRequest.php.html#9\">App\\Http\\Requests\\Admin\\StoreTemplateRequest<\/a>"],[0,3,"<a href=\"Admin\/UpdateQuoteOutcomeRequest.php.html#8\">App\\Http\\Requests\\Admin\\UpdateQuoteOutcomeRequest<\/a>"],[0,3,"<a href=\"Admin\/UpdateQuoteStageRequest.php.html#7\">App\\Http\\Requests\\Admin\\UpdateQuoteStageRequest<\/a>"],[0,3,"<a href=\"Admin\/UpdateTemplateRequest.php.html#9\">App\\Http\\Requests\\Admin\\UpdateTemplateRequest<\/a>"],[0,6,"<a href=\"Admin\/UpdateUserRoleRequest.php.html#9\">App\\Http\\Requests\\Admin\\UpdateUserRoleRequest<\/a>"],[0,7,"<a href=\"Auth\/LoginRequest.php.html#12\">App\\Http\\Requests\\Auth\\LoginRequest<\/a>"],[0,16,"<a href=\"Auth\/SendOtpRequest.php.html#9\">App\\Http\\Requests\\Auth\\SendOtpRequest<\/a>"],[0,11,"<a href=\"Auth\/VerifyOtpRequest.php.html#9\">App\\Http\\Requests\\Auth\\VerifyOtpRequest<\/a>"],[100,0,"<a href=\"Budget\/StoreBudgetItemRequest.php.html#8\">App\\Http\\Requests\\Budget\\StoreBudgetItemRequest<\/a>"],[100,0,"<a href=\"Budget\/UpdateBudgetItemRequest.php.html#8\">App\\Http\\Requests\\Budget\\UpdateBudgetItemRequest<\/a>"],[0,15,"<a href=\"Collaborator\/StoreCollaboratorRequest.php.html#9\">App\\Http\\Requests\\Collaborator\\StoreCollaboratorRequest<\/a>"],[0,13,"<a href=\"Collaborator\/UpdateCollaboratorRequest.php.html#9\">App\\Http\\Requests\\Collaborator\\UpdateCollaboratorRequest<\/a>"],[0,3,"<a href=\"CustomRole\/StoreCustomRoleRequest.php.html#7\">App\\Http\\Requests\\CustomRole\\StoreCustomRoleRequest<\/a>"],[0,3,"<a href=\"CustomRole\/UpdateCustomRoleRequest.php.html#7\">App\\Http\\Requests\\CustomRole\\UpdateCustomRoleRequest<\/a>"],[0,7,"<a href=\"Event\/DuplicateEventRequest.php.html#9\">App\\Http\\Requests\\Event\\DuplicateEventRequest<\/a>"],[0,5,"<a href=\"Event\/StoreEventRequest.php.html#9\">App\\Http\\Requests\\Event\\StoreEventRequest<\/a>"],[0,3,"<a href=\"Event\/UpdateEventRequest.php.html#10\">App\\Http\\Requests\\Event\\UpdateEventRequest<\/a>"],[0,4,"<a href=\"Guest\/ImportGuestsRequest.php.html#7\">App\\Http\\Requests\\Guest\\ImportGuestsRequest<\/a>"],[0,3,"<a href=\"Guest\/StoreGuestRequest.php.html#7\">App\\Http\\Requests\\Guest\\StoreGuestRequest<\/a>"],[0,3,"<a href=\"Guest\/UpdateGuestRequest.php.html#9\">App\\Http\\Requests\\Guest\\UpdateGuestRequest<\/a>"],[0,3,"<a href=\"Invitation\/RsvpRequest.php.html#9\">App\\Http\\Requests\\Invitation\\RsvpRequest<\/a>"],[0,4,"<a href=\"Payment\/InitiatePaymentRequest.php.html#7\">App\\Http\\Requests\\Payment\\InitiatePaymentRequest<\/a>"],[0,4,"<a href=\"Photo\/PublicStorePhotoRequest.php.html#7\">App\\Http\\Requests\\Photo\\PublicStorePhotoRequest<\/a>"],[0,4,"<a href=\"Photo\/StorePhotoRequest.php.html#9\">App\\Http\\Requests\\Photo\\StorePhotoRequest<\/a>"],[0,2,"<a href=\"ProfileUpdateRequest.php.html#9\">App\\Http\\Requests\\ProfileUpdateRequest<\/a>"],[0,3,"<a href=\"RespondToOfferRequest.php.html#8\">App\\Http\\Requests\\RespondToOfferRequest<\/a>"],[0,3,"<a href=\"StoreBatchLogsRequest.php.html#8\">App\\Http\\Requests\\StoreBatchLogsRequest<\/a>"],[0,3,"<a href=\"StoreQuoteRequestRequest.php.html#7\">App\\Http\\Requests\\StoreQuoteRequestRequest<\/a>"],[0,4,"<a href=\"Subscription\/StoreSubscriptionRequest.php.html#8\">App\\Http\\Requests\\Subscription\\StoreSubscriptionRequest<\/a>"],[0,3,"<a href=\"Subscription\/SubscribeRequest.php.html#9\">App\\Http\\Requests\\Subscription\\SubscribeRequest<\/a>"],[0,7,"<a href=\"Task\/StoreTaskRequest.php.html#9\">App\\Http\\Requests\\Task\\StoreTaskRequest<\/a>"],[0,7,"<a href=\"Task\/UpdateTaskRequest.php.html#10\">App\\Http\\Requests\\Task\\UpdateTaskRequest<\/a>"],[0,5,"<a href=\"Budget\/Concerns\/HasBudgetItemValidation.php.html#13\">App\\Http\\Requests\\Budget\\Concerns\\HasBudgetItemValidation<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[0,1,"<a href=\"Admin\/AddQuoteNoteRequest.php.html#9\">App\\Http\\Requests\\Admin\\AddQuoteNoteRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/AddQuoteNoteRequest.php.html#14\">App\\Http\\Requests\\Admin\\AddQuoteNoteRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/AddQuoteNoteRequest.php.html#21\">App\\Http\\Requests\\Admin\\AddQuoteNoteRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/AssignQuoteRequestRequest.php.html#9\">App\\Http\\Requests\\Admin\\AssignQuoteRequestRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/AssignQuoteRequestRequest.php.html#14\">App\\Http\\Requests\\Admin\\AssignQuoteRequestRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/AssignQuoteRequestRequest.php.html#21\">App\\Http\\Requests\\Admin\\AssignQuoteRequestRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/ListActivityLogsRequest.php.html#13\">App\\Http\\Requests\\Admin\\ListActivityLogsRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/ListActivityLogsRequest.php.html#23\">App\\Http\\Requests\\Admin\\ListActivityLogsRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/ListActivityLogsRequest.php.html#65\">App\\Http\\Requests\\Admin\\ListActivityLogsRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/ListActivityLogsRequest.php.html#85\">App\\Http\\Requests\\Admin\\ListActivityLogsRequest::defaults<\/a>"],[0,1,"<a href=\"Admin\/ListEventsRequest.php.html#15\">App\\Http\\Requests\\Admin\\ListEventsRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/ListEventsRequest.php.html#25\">App\\Http\\Requests\\Admin\\ListEventsRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/ListEventsRequest.php.html#45\">App\\Http\\Requests\\Admin\\ListEventsRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/ListEventsRequest.php.html#62\">App\\Http\\Requests\\Admin\\ListEventsRequest::defaults<\/a>"],[0,1,"<a href=\"Admin\/ListPaymentsRequest.php.html#15\">App\\Http\\Requests\\Admin\\ListPaymentsRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/ListPaymentsRequest.php.html#25\">App\\Http\\Requests\\Admin\\ListPaymentsRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/ListPaymentsRequest.php.html#47\">App\\Http\\Requests\\Admin\\ListPaymentsRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/ListPaymentsRequest.php.html#66\">App\\Http\\Requests\\Admin\\ListPaymentsRequest::defaults<\/a>"],[0,1,"<a href=\"Admin\/ListQuoteRequestsRequest.php.html#10\">App\\Http\\Requests\\Admin\\ListQuoteRequestsRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/ListQuoteRequestsRequest.php.html#15\">App\\Http\\Requests\\Admin\\ListQuoteRequestsRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/ListQuoteRequestsRequest.php.html#33\">App\\Http\\Requests\\Admin\\ListQuoteRequestsRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/ListQuoteRequestsRequest.php.html#47\">App\\Http\\Requests\\Admin\\ListQuoteRequestsRequest::defaults<\/a>"],[0,1,"<a href=\"Admin\/ListSubscriptionsRequest.php.html#15\">App\\Http\\Requests\\Admin\\ListSubscriptionsRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/ListSubscriptionsRequest.php.html#25\">App\\Http\\Requests\\Admin\\ListSubscriptionsRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/ListSubscriptionsRequest.php.html#46\">App\\Http\\Requests\\Admin\\ListSubscriptionsRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/ListSubscriptionsRequest.php.html#64\">App\\Http\\Requests\\Admin\\ListSubscriptionsRequest::defaults<\/a>"],[0,1,"<a href=\"Admin\/ListUsersRequest.php.html#14\">App\\Http\\Requests\\Admin\\ListUsersRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/ListUsersRequest.php.html#24\">App\\Http\\Requests\\Admin\\ListUsersRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/ListUsersRequest.php.html#40\">App\\Http\\Requests\\Admin\\ListUsersRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/ListUsersRequest.php.html#54\">App\\Http\\Requests\\Admin\\ListUsersRequest::defaults<\/a>"],[0,1,"<a href=\"Admin\/ScheduleQuoteCallRequest.php.html#9\">App\\Http\\Requests\\Admin\\ScheduleQuoteCallRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/ScheduleQuoteCallRequest.php.html#14\">App\\Http\\Requests\\Admin\\ScheduleQuoteCallRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/ScheduleQuoteCallRequest.php.html#21\">App\\Http\\Requests\\Admin\\ScheduleQuoteCallRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/StoreCustomOfferRequest.php.html#9\">App\\Http\\Requests\\Admin\\StoreCustomOfferRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/StoreCustomOfferRequest.php.html#14\">App\\Http\\Requests\\Admin\\StoreCustomOfferRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/StoreCustomOfferRequest.php.html#28\">App\\Http\\Requests\\Admin\\StoreCustomOfferRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/StoreTemplateRequest.php.html#14\">App\\Http\\Requests\\Admin\\StoreTemplateRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/StoreTemplateRequest.php.html#24\">App\\Http\\Requests\\Admin\\StoreTemplateRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/StoreTemplateRequest.php.html#68\">App\\Http\\Requests\\Admin\\StoreTemplateRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/UpdateQuoteOutcomeRequest.php.html#10\">App\\Http\\Requests\\Admin\\UpdateQuoteOutcomeRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/UpdateQuoteOutcomeRequest.php.html#15\">App\\Http\\Requests\\Admin\\UpdateQuoteOutcomeRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/UpdateQuoteOutcomeRequest.php.html#23\">App\\Http\\Requests\\Admin\\UpdateQuoteOutcomeRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/UpdateQuoteStageRequest.php.html#9\">App\\Http\\Requests\\Admin\\UpdateQuoteStageRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/UpdateQuoteStageRequest.php.html#14\">App\\Http\\Requests\\Admin\\UpdateQuoteStageRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/UpdateQuoteStageRequest.php.html#21\">App\\Http\\Requests\\Admin\\UpdateQuoteStageRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/UpdateTemplateRequest.php.html#14\">App\\Http\\Requests\\Admin\\UpdateTemplateRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/UpdateTemplateRequest.php.html#24\">App\\Http\\Requests\\Admin\\UpdateTemplateRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/UpdateTemplateRequest.php.html#68\">App\\Http\\Requests\\Admin\\UpdateTemplateRequest::messages<\/a>"],[0,1,"<a href=\"Admin\/UpdateUserRoleRequest.php.html#14\">App\\Http\\Requests\\Admin\\UpdateUserRoleRequest::authorize<\/a>"],[0,1,"<a href=\"Admin\/UpdateUserRoleRequest.php.html#24\">App\\Http\\Requests\\Admin\\UpdateUserRoleRequest::rules<\/a>"],[0,1,"<a href=\"Admin\/UpdateUserRoleRequest.php.html#39\">App\\Http\\Requests\\Admin\\UpdateUserRoleRequest::messages<\/a>"],[0,3,"<a href=\"Admin\/UpdateUserRoleRequest.php.html#50\">App\\Http\\Requests\\Admin\\UpdateUserRoleRequest::withValidator<\/a>"],[0,1,"<a href=\"Auth\/LoginRequest.php.html#17\">App\\Http\\Requests\\Auth\\LoginRequest::authorize<\/a>"],[0,1,"<a href=\"Auth\/LoginRequest.php.html#27\">App\\Http\\Requests\\Auth\\LoginRequest::rules<\/a>"],[0,2,"<a href=\"Auth\/LoginRequest.php.html#41\">App\\Http\\Requests\\Auth\\LoginRequest::authenticate<\/a>"],[0,2,"<a href=\"Auth\/LoginRequest.php.html#61\">App\\Http\\Requests\\Auth\\LoginRequest::ensureIsNotRateLimited<\/a>"],[0,1,"<a href=\"Auth\/LoginRequest.php.html#79\">App\\Http\\Requests\\Auth\\LoginRequest::throttleKey<\/a>"],[0,1,"<a href=\"Auth\/SendOtpRequest.php.html#14\">App\\Http\\Requests\\Auth\\SendOtpRequest::authorize<\/a>"],[0,1,"<a href=\"Auth\/SendOtpRequest.php.html#24\">App\\Http\\Requests\\Auth\\SendOtpRequest::rules<\/a>"],[0,1,"<a href=\"Auth\/SendOtpRequest.php.html#36\">App\\Http\\Requests\\Auth\\SendOtpRequest::messages<\/a>"],[0,8,"<a href=\"Auth\/SendOtpRequest.php.html#50\">App\\Http\\Requests\\Auth\\SendOtpRequest::prepareForValidation<\/a>"],[0,5,"<a href=\"Auth\/SendOtpRequest.php.html#77\">App\\Http\\Requests\\Auth\\SendOtpRequest::withValidator<\/a>"],[0,1,"<a href=\"Auth\/VerifyOtpRequest.php.html#14\">App\\Http\\Requests\\Auth\\VerifyOtpRequest::authorize<\/a>"],[0,1,"<a href=\"Auth\/VerifyOtpRequest.php.html#24\">App\\Http\\Requests\\Auth\\VerifyOtpRequest::rules<\/a>"],[0,1,"<a href=\"Auth\/VerifyOtpRequest.php.html#37\">App\\Http\\Requests\\Auth\\VerifyOtpRequest::messages<\/a>"],[0,8,"<a href=\"Auth\/VerifyOtpRequest.php.html#52\">App\\Http\\Requests\\Auth\\VerifyOtpRequest::prepareForValidation<\/a>"],[0,1,"<a href=\"Collaborator\/StoreCollaboratorRequest.php.html#16\">App\\Http\\Requests\\Collaborator\\StoreCollaboratorRequest::authorize<\/a>"],[0,1,"<a href=\"Collaborator\/StoreCollaboratorRequest.php.html#28\">App\\Http\\Requests\\Collaborator\\StoreCollaboratorRequest::rules<\/a>"],[0,3,"<a href=\"Collaborator\/StoreCollaboratorRequest.php.html#78\">App\\Http\\Requests\\Collaborator\\StoreCollaboratorRequest::prepareForValidation<\/a>"],[0,8,"<a href=\"Collaborator\/StoreCollaboratorRequest.php.html#88\">App\\Http\\Requests\\Collaborator\\StoreCollaboratorRequest::withValidator<\/a>"],[0,1,"<a href=\"Collaborator\/StoreCollaboratorRequest.php.html#125\">App\\Http\\Requests\\Collaborator\\StoreCollaboratorRequest::attributes<\/a>"],[0,1,"<a href=\"Collaborator\/StoreCollaboratorRequest.php.html#139\">App\\Http\\Requests\\Collaborator\\StoreCollaboratorRequest::messages<\/a>"],[0,1,"<a href=\"Collaborator\/UpdateCollaboratorRequest.php.html#16\">App\\Http\\Requests\\Collaborator\\UpdateCollaboratorRequest::authorize<\/a>"],[0,1,"<a href=\"Collaborator\/UpdateCollaboratorRequest.php.html#28\">App\\Http\\Requests\\Collaborator\\UpdateCollaboratorRequest::rules<\/a>"],[0,3,"<a href=\"Collaborator\/UpdateCollaboratorRequest.php.html#72\">App\\Http\\Requests\\Collaborator\\UpdateCollaboratorRequest::prepareForValidation<\/a>"],[0,6,"<a href=\"Collaborator\/UpdateCollaboratorRequest.php.html#82\">App\\Http\\Requests\\Collaborator\\UpdateCollaboratorRequest::withValidator<\/a>"],[0,1,"<a href=\"Collaborator\/UpdateCollaboratorRequest.php.html#114\">App\\Http\\Requests\\Collaborator\\UpdateCollaboratorRequest::attributes<\/a>"],[0,1,"<a href=\"Collaborator\/UpdateCollaboratorRequest.php.html#127\">App\\Http\\Requests\\Collaborator\\UpdateCollaboratorRequest::messages<\/a>"],[0,1,"<a href=\"CustomRole\/StoreCustomRoleRequest.php.html#12\">App\\Http\\Requests\\CustomRole\\StoreCustomRoleRequest::authorize<\/a>"],[0,1,"<a href=\"CustomRole\/StoreCustomRoleRequest.php.html#20\">App\\Http\\Requests\\CustomRole\\StoreCustomRoleRequest::rules<\/a>"],[0,1,"<a href=\"CustomRole\/StoreCustomRoleRequest.php.html#34\">App\\Http\\Requests\\CustomRole\\StoreCustomRoleRequest::messages<\/a>"],[0,1,"<a href=\"CustomRole\/UpdateCustomRoleRequest.php.html#12\">App\\Http\\Requests\\CustomRole\\UpdateCustomRoleRequest::authorize<\/a>"],[0,1,"<a href=\"CustomRole\/UpdateCustomRoleRequest.php.html#20\">App\\Http\\Requests\\CustomRole\\UpdateCustomRoleRequest::rules<\/a>"],[0,1,"<a href=\"CustomRole\/UpdateCustomRoleRequest.php.html#34\">App\\Http\\Requests\\CustomRole\\UpdateCustomRoleRequest::messages<\/a>"],[0,1,"<a href=\"Event\/DuplicateEventRequest.php.html#11\">App\\Http\\Requests\\Event\\DuplicateEventRequest::authorize<\/a>"],[0,1,"<a href=\"Event\/DuplicateEventRequest.php.html#19\">App\\Http\\Requests\\Event\\DuplicateEventRequest::rules<\/a>"],[0,5,"<a href=\"Event\/DuplicateEventRequest.php.html#42\">App\\Http\\Requests\\Event\\DuplicateEventRequest::prepareForValidation<\/a>"],[0,1,"<a href=\"Event\/StoreEventRequest.php.html#14\">App\\Http\\Requests\\Event\\StoreEventRequest::authorize<\/a>"],[0,2,"<a href=\"Event\/StoreEventRequest.php.html#24\">App\\Http\\Requests\\Event\\StoreEventRequest::rules<\/a>"],[0,1,"<a href=\"Event\/StoreEventRequest.php.html#62\">App\\Http\\Requests\\Event\\StoreEventRequest::messages<\/a>"],[0,1,"<a href=\"Event\/StoreEventRequest.php.html#92\">App\\Http\\Requests\\Event\\StoreEventRequest::attributes<\/a>"],[0,1,"<a href=\"Event\/UpdateEventRequest.php.html#15\">App\\Http\\Requests\\Event\\UpdateEventRequest::authorize<\/a>"],[0,1,"<a href=\"Event\/UpdateEventRequest.php.html#25\">App\\Http\\Requests\\Event\\UpdateEventRequest::rules<\/a>"],[0,1,"<a href=\"Event\/UpdateEventRequest.php.html#54\">App\\Http\\Requests\\Event\\UpdateEventRequest::messages<\/a>"],[0,1,"<a href=\"Guest\/ImportGuestsRequest.php.html#12\">App\\Http\\Requests\\Guest\\ImportGuestsRequest::authorize<\/a>"],[0,1,"<a href=\"Guest\/ImportGuestsRequest.php.html#22\">App\\Http\\Requests\\Guest\\ImportGuestsRequest::rules<\/a>"],[0,1,"<a href=\"Guest\/ImportGuestsRequest.php.html#34\">App\\Http\\Requests\\Guest\\ImportGuestsRequest::prepareForValidation<\/a>"],[0,1,"<a href=\"Guest\/ImportGuestsRequest.php.html#46\">App\\Http\\Requests\\Guest\\ImportGuestsRequest::messages<\/a>"],[0,1,"<a href=\"Guest\/StoreGuestRequest.php.html#12\">App\\Http\\Requests\\Guest\\StoreGuestRequest::authorize<\/a>"],[0,1,"<a href=\"Guest\/StoreGuestRequest.php.html#22\">App\\Http\\Requests\\Guest\\StoreGuestRequest::rules<\/a>"],[0,1,"<a href=\"Guest\/StoreGuestRequest.php.html#37\">App\\Http\\Requests\\Guest\\StoreGuestRequest::messages<\/a>"],[0,1,"<a href=\"Guest\/UpdateGuestRequest.php.html#14\">App\\Http\\Requests\\Guest\\UpdateGuestRequest::authorize<\/a>"],[0,1,"<a href=\"Guest\/UpdateGuestRequest.php.html#24\">App\\Http\\Requests\\Guest\\UpdateGuestRequest::rules<\/a>"],[0,1,"<a href=\"Guest\/UpdateGuestRequest.php.html#40\">App\\Http\\Requests\\Guest\\UpdateGuestRequest::messages<\/a>"],[0,1,"<a href=\"Invitation\/RsvpRequest.php.html#14\">App\\Http\\Requests\\Invitation\\RsvpRequest::authorize<\/a>"],[0,1,"<a href=\"Invitation\/RsvpRequest.php.html#24\">App\\Http\\Requests\\Invitation\\RsvpRequest::rules<\/a>"],[0,1,"<a href=\"Invitation\/RsvpRequest.php.html#37\">App\\Http\\Requests\\Invitation\\RsvpRequest::messages<\/a>"],[0,1,"<a href=\"Payment\/InitiatePaymentRequest.php.html#9\">App\\Http\\Requests\\Payment\\InitiatePaymentRequest::authorize<\/a>"],[0,1,"<a href=\"Payment\/InitiatePaymentRequest.php.html#14\">App\\Http\\Requests\\Payment\\InitiatePaymentRequest::rules<\/a>"],[0,1,"<a href=\"Payment\/InitiatePaymentRequest.php.html#33\">App\\Http\\Requests\\Payment\\InitiatePaymentRequest::attributes<\/a>"],[0,1,"<a href=\"Payment\/InitiatePaymentRequest.php.html#42\">App\\Http\\Requests\\Payment\\InitiatePaymentRequest::messages<\/a>"],[0,1,"<a href=\"Photo\/PublicStorePhotoRequest.php.html#13\">App\\Http\\Requests\\Photo\\PublicStorePhotoRequest::authorize<\/a>"],[0,1,"<a href=\"Photo\/PublicStorePhotoRequest.php.html#23\">App\\Http\\Requests\\Photo\\PublicStorePhotoRequest::rules<\/a>"],[0,1,"<a href=\"Photo\/PublicStorePhotoRequest.php.html#45\">App\\Http\\Requests\\Photo\\PublicStorePhotoRequest::attributes<\/a>"],[0,1,"<a href=\"Photo\/PublicStorePhotoRequest.php.html#58\">App\\Http\\Requests\\Photo\\PublicStorePhotoRequest::messages<\/a>"],[0,1,"<a href=\"Photo\/StorePhotoRequest.php.html#14\">App\\Http\\Requests\\Photo\\StorePhotoRequest::authorize<\/a>"],[0,1,"<a href=\"Photo\/StorePhotoRequest.php.html#26\">App\\Http\\Requests\\Photo\\StorePhotoRequest::rules<\/a>"],[0,1,"<a href=\"Photo\/StorePhotoRequest.php.html#50\">App\\Http\\Requests\\Photo\\StorePhotoRequest::attributes<\/a>"],[0,1,"<a href=\"Photo\/StorePhotoRequest.php.html#65\">App\\Http\\Requests\\Photo\\StorePhotoRequest::messages<\/a>"],[0,1,"<a href=\"ProfileUpdateRequest.php.html#16\">App\\Http\\Requests\\ProfileUpdateRequest::rules<\/a>"],[0,1,"<a href=\"ProfileUpdateRequest.php.html#41\">App\\Http\\Requests\\ProfileUpdateRequest::messages<\/a>"],[0,1,"<a href=\"RespondToOfferRequest.php.html#10\">App\\Http\\Requests\\RespondToOfferRequest::authorize<\/a>"],[0,1,"<a href=\"RespondToOfferRequest.php.html#15\">App\\Http\\Requests\\RespondToOfferRequest::rules<\/a>"],[0,1,"<a href=\"RespondToOfferRequest.php.html#23\">App\\Http\\Requests\\RespondToOfferRequest::messages<\/a>"],[0,1,"<a href=\"StoreBatchLogsRequest.php.html#13\">App\\Http\\Requests\\StoreBatchLogsRequest::authorize<\/a>"],[0,1,"<a href=\"StoreBatchLogsRequest.php.html#23\">App\\Http\\Requests\\StoreBatchLogsRequest::rules<\/a>"],[0,1,"<a href=\"StoreBatchLogsRequest.php.html#47\">App\\Http\\Requests\\StoreBatchLogsRequest::messages<\/a>"],[0,1,"<a href=\"StoreQuoteRequestRequest.php.html#9\">App\\Http\\Requests\\StoreQuoteRequestRequest::authorize<\/a>"],[0,1,"<a href=\"StoreQuoteRequestRequest.php.html#14\">App\\Http\\Requests\\StoreQuoteRequestRequest::rules<\/a>"],[0,1,"<a href=\"StoreQuoteRequestRequest.php.html#31\">App\\Http\\Requests\\StoreQuoteRequestRequest::messages<\/a>"],[0,1,"<a href=\"Subscription\/StoreSubscriptionRequest.php.html#10\">App\\Http\\Requests\\Subscription\\StoreSubscriptionRequest::authorize<\/a>"],[0,1,"<a href=\"Subscription\/StoreSubscriptionRequest.php.html#17\">App\\Http\\Requests\\Subscription\\StoreSubscriptionRequest::rules<\/a>"],[0,1,"<a href=\"Subscription\/StoreSubscriptionRequest.php.html#33\">App\\Http\\Requests\\Subscription\\StoreSubscriptionRequest::attributes<\/a>"],[0,1,"<a href=\"Subscription\/StoreSubscriptionRequest.php.html#41\">App\\Http\\Requests\\Subscription\\StoreSubscriptionRequest::messages<\/a>"],[0,1,"<a href=\"Subscription\/SubscribeRequest.php.html#14\">App\\Http\\Requests\\Subscription\\SubscribeRequest::authorize<\/a>"],[0,1,"<a href=\"Subscription\/SubscribeRequest.php.html#24\">App\\Http\\Requests\\Subscription\\SubscribeRequest::rules<\/a>"],[0,1,"<a href=\"Subscription\/SubscribeRequest.php.html#36\">App\\Http\\Requests\\Subscription\\SubscribeRequest::messages<\/a>"],[0,4,"<a href=\"Task\/StoreTaskRequest.php.html#14\">App\\Http\\Requests\\Task\\StoreTaskRequest::prepareForValidation<\/a>"],[0,1,"<a href=\"Task\/StoreTaskRequest.php.html#25\">App\\Http\\Requests\\Task\\StoreTaskRequest::authorize<\/a>"],[0,1,"<a href=\"Task\/StoreTaskRequest.php.html#35\">App\\Http\\Requests\\Task\\StoreTaskRequest::rules<\/a>"],[0,1,"<a href=\"Task\/StoreTaskRequest.php.html#51\">App\\Http\\Requests\\Task\\StoreTaskRequest::messages<\/a>"],[0,4,"<a href=\"Task\/UpdateTaskRequest.php.html#15\">App\\Http\\Requests\\Task\\UpdateTaskRequest::prepareForValidation<\/a>"],[0,1,"<a href=\"Task\/UpdateTaskRequest.php.html#26\">App\\Http\\Requests\\Task\\UpdateTaskRequest::authorize<\/a>"],[0,1,"<a href=\"Task\/UpdateTaskRequest.php.html#36\">App\\Http\\Requests\\Task\\UpdateTaskRequest::rules<\/a>"],[0,1,"<a href=\"Task\/UpdateTaskRequest.php.html#53\">App\\Http\\Requests\\Task\\UpdateTaskRequest::messages<\/a>"],[0,1,"<a href=\"Budget\/Concerns\/HasBudgetItemValidation.php.html#15\">App\\Http\\Requests\\Budget\\Concerns\\HasBudgetItemValidation::authorize<\/a>"],[0,1,"<a href=\"Budget\/Concerns\/HasBudgetItemValidation.php.html#25\">App\\Http\\Requests\\Budget\\Concerns\\HasBudgetItemValidation::rules<\/a>"],[0,1,"<a href=\"Budget\/Concerns\/HasBudgetItemValidation.php.html#45\">App\\Http\\Requests\\Budget\\Concerns\\HasBudgetItemValidation::prepareForValidation<\/a>"],[0,1,"<a href=\"Budget\/Concerns\/HasBudgetItemValidation.php.html#55\">App\\Http\\Requests\\Budget\\Concerns\\HasBudgetItemValidation::attributes<\/a>"],[0,1,"<a href=\"Budget\/Concerns\/HasBudgetItemValidation.php.html#72\">App\\Http\\Requests\\Budget\\Concerns\\HasBudgetItemValidation::messages<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>
