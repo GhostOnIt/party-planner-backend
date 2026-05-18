@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Mail;
 class FeedbackController extends Controller
 {
     /**
-     * Submit pilot-phase feedback (user accounts only; sent to configured inbox).
+     * Submit in-app user feedback (user accounts only; sent to configured inbox).
      */
     public function store(Request $request): JsonResponse
     {
@@ -20,8 +20,14 @@ class FeedbackController extends Controller
 
         if ($user->role === UserRole::ADMIN) {
             return response()->json([
-                'message' => 'Le feedback pilote est réservé aux comptes utilisateur.',
+                'message' => 'Le feedback est réservé aux comptes utilisateur.',
             ], 403);
+        }
+
+        if (! filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
+            return response()->json([
+                'message' => 'Votre compte ne possède pas d’adresse e-mail valide pour envoyer un message.',
+            ], 422);
         }
 
         $validated = $request->validate([

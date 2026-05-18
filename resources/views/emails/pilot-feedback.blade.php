@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Feedback pilote</title>
+    <title>Feedback utilisateur</title>
 </head>
 <body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #1e293b;">
     <p style="margin: 0 0 1rem;">

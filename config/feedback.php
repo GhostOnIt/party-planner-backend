@@ -4,10 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Pilot feedback recipient
+    | User feedback recipient
     |--------------------------------------------------------------------------
     |
-    | Address that receives in-app pilot feedback submissions (never set from the client).
+    | Address that receives in-app user feedback submissions (never set from the client).
     |
     */
 

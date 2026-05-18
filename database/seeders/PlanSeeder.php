@@ -179,4 +179,3 @@ class PlanSeeder extends Seeder
         }
     }
 }
-

@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Mail\PilotFeedbackMail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -30,8 +31,13 @@ class FeedbackControllerTest extends TestCase
         ]);
 
         Mail::assertSent(PilotFeedbackMail::class, function (PilotFeedbackMail $mail) use ($user): bool {
+            $replyTo = $mail->envelope()->replyTo[0] ?? null;
+
             return $mail->user->is($user)
-                && $mail->feedbackBody === 'Super app, merci pour la phase pilote.';
+                && $mail->feedbackBody === 'Super app, merci pour la phase pilote.'
+                && $replyTo instanceof Address
+                && $replyTo->address === $user->email
+                && $replyTo->name === $user->name;
         });
     }
 
@@ -62,7 +68,7 @@ class FeedbackControllerTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function test_admin_cannot_send_pilot_feedback(): void
+    public function test_admin_cannot_send_feedback(): void
     {
         Mail::fake();
 
