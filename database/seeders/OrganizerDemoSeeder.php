@@ -17,6 +17,7 @@ use App\Models\Invitation;
 use App\Models\Notification;
 use App\Models\Payment;
 use App\Models\Photo;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Task;
 use App\Models\User;
@@ -54,9 +55,11 @@ class OrganizerDemoSeeder extends Seeder
     public function run(): void
     {
         $this->seedOrganizerUser();
+        $this->seedOrganizerAccountSubscription();
         $corporate = $this->seedCorporateEvent();
         $this->seedWeddingEvent();
         $this->seedPastEvent();
+        $this->ensureAllOrganizerDemoEventsEntitlements();
         $this->seedUserDefaults();
         $this->printDemoInfo($corporate);
     }
@@ -97,6 +100,91 @@ class OrganizerDemoSeeder extends Seeder
         }
     }
 
+    private function seedOrganizerAccountSubscription(): void
+    {
+        $plan = Plan::where('slug', 'pro')->first();
+        if (! $plan) {
+            return;
+        }
+
+        Subscription::firstOrCreate(
+            [
+                'user_id' => $this->organizer->id,
+                'event_id' => null,
+            ],
+            [
+                'plan_id' => $plan->id,
+                'plan_type' => 'pro',
+                'status' => 'active',
+                'base_price' => $plan->price,
+                'guest_count' => 0,
+                'guest_price_per_unit' => 0,
+                'total_price' => $plan->price,
+                'payment_status' => 'paid',
+                'payment_method' => 'mtn_mobile_money',
+                'starts_at' => now(),
+                'expires_at' => now()->addYear(),
+            ]
+        );
+    }
+
+    /**
+     * Attributs Pro requis pour afficher les onglets Invités / Tâches / Budget / Collaborateurs.
+     *
+     * @return array<string, mixed>
+     */
+    private function proEventEntitlementAttributes(): array
+    {
+        $plan = Plan::where('slug', 'pro')->first();
+        if (! $plan) {
+            return [];
+        }
+
+        $limits = $plan->getLimitsArray();
+
+        return [
+            'features_enabled' => array_filter(
+                $plan->getFeaturesArray(),
+                fn ($enabled) => $enabled === true
+            ),
+            'max_guests_allowed' => $limits['guests.max_per_event'] ?? 500,
+            'max_collaborators_allowed' => $limits['collaborators.max_per_event'] ?? 10,
+            'max_photos_allowed' => $limits['photos.max_per_event'] ?? 500,
+        ];
+    }
+
+    private function ensureDemoEventEntitlements(Event $event): void
+    {
+        $attrs = $this->proEventEntitlementAttributes();
+        if ($attrs === []) {
+            return;
+        }
+
+        if (empty($event->features_enabled)) {
+            $event->update($attrs);
+        }
+    }
+
+    private function ensureAllOrganizerDemoEventsEntitlements(): void
+    {
+        $titles = [
+            'Gala annuel des Partenaires 2026',
+            'Mariage Bamoussessa — Client M. & Mme Okemba',
+            'Soirée de clôture Forum Économique 2025',
+        ];
+
+        foreach ($titles as $title) {
+            $event = Event::query()
+                ->where('user_id', $this->organizer->id)
+                ->where('title', $title)
+                ->first();
+
+            if ($event) {
+                $this->ensureDemoEventEntitlements($event);
+            }
+        }
+    }
+
     private function seedCorporateEvent(): Event
     {
         $corporate = Event::firstOrCreate(
@@ -104,7 +192,7 @@ class OrganizerDemoSeeder extends Seeder
                 'user_id' => $this->organizer->id,
                 'title' => 'Gala annuel des Partenaires 2026',
             ],
-            [
+            array_merge([
                 'type' => EventType::AUTRE->value,
                 'description' => 'Gala corporate annuel réunissant partenaires institutionnels et entreprises. '
                     . 'Organisé par l\'agence pour le compte du comité des partenaires.',
@@ -115,10 +203,12 @@ class OrganizerDemoSeeder extends Seeder
                 'theme' => 'Excellence & Partenariat',
                 'expected_guests_count' => 200,
                 'status' => EventStatus::UPCOMING->value,
-            ]
+            ], $this->proEventEntitlementAttributes())
         );
 
         if ($corporate->guests()->count() > 0) {
+            $this->ensureDemoEventEntitlements($corporate);
+
             return $corporate;
         }
 
@@ -544,17 +634,22 @@ class OrganizerDemoSeeder extends Seeder
 
     private function seedCorporateSubscription(Event $event): void
     {
+        $plan = Plan::where('slug', 'pro')->first();
+
         $subscription = Subscription::firstOrCreate(
             ['event_id' => $event->id],
             [
                 'user_id' => $this->organizer->id,
+                'plan_id' => $plan?->id,
                 'plan_type' => 'pro',
+                'status' => 'active',
                 'base_price' => 15000,
                 'guest_count' => 200,
                 'guest_price_per_unit' => 30,
                 'total_price' => 15000,
                 'payment_status' => 'paid',
                 'payment_method' => 'mtn_mobile_money',
+                'starts_at' => now(),
                 'expires_at' => now()->addYear(),
             ]
         );
@@ -579,7 +674,7 @@ class OrganizerDemoSeeder extends Seeder
                 'user_id' => $this->organizer->id,
                 'title' => 'Mariage Bamoussessa — Client M. & Mme Okemba',
             ],
-            [
+            array_merge([
                 'type' => EventType::MARIAGE->value,
                 'description' => 'Mariage traditionnel et réception. '
                     . 'Événement géré par l\'agence pour le compte de M. et Mme Okemba.',
@@ -590,10 +685,12 @@ class OrganizerDemoSeeder extends Seeder
                 'theme' => 'Élégance africaine contemporaine',
                 'expected_guests_count' => 60,
                 'status' => EventStatus::UPCOMING->value,
-            ]
+            ], $this->proEventEntitlementAttributes())
         );
 
         if ($wedding->guests()->count() > 0) {
+            $this->ensureDemoEventEntitlements($wedding);
+
             return;
         }
 
@@ -671,7 +768,7 @@ class OrganizerDemoSeeder extends Seeder
                 'user_id' => $this->organizer->id,
                 'title' => 'Soirée de clôture Forum Économique 2025',
             ],
-            [
+            array_merge([
                 'type' => EventType::SOIREE->value,
                 'description' => 'Soirée de clôture du forum — bilan et networking des participants.',
                 'date' => now()->subWeeks(3),
@@ -680,10 +777,12 @@ class OrganizerDemoSeeder extends Seeder
                 'estimated_budget' => 2_000_000,
                 'expected_guests_count' => 40,
                 'status' => EventStatus::COMPLETED->value,
-            ]
+            ], $this->proEventEntitlementAttributes())
         );
 
         if ($past->guests()->count() > 0) {
+            $this->ensureDemoEventEntitlements($past);
+
             return;
         }
 
