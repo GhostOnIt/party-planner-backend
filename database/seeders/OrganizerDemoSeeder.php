@@ -277,7 +277,7 @@ class OrganizerDemoSeeder extends Seeder
             ['event_id' => $event->id, 'name' => $name],
             array_merge([
                 'email' => Str::slug($name) . '@example.com',
-                'phone' => '06' . fake()->numerify('########'),
+                'phone' => '06' . \fake()->numerify('########'),
                 'rsvp_status' => $status->value,
                 'invitation_sent_at' => now()->subDays(rand(5, 25)),
             ], $extra)
@@ -288,7 +288,7 @@ class OrganizerDemoSeeder extends Seeder
             [
                 'token' => Str::random(32),
                 'sent_at' => $guest->invitation_sent_at,
-                'opened_at' => fake()->boolean(65) ? now()->subDays(rand(1, 8)) : null,
+                'opened_at' => \fake()->boolean(65) ? now()->subDays(rand(1, 8)) : null,
                 'responded_at' => $status !== RsvpStatus::PENDING ? now()->subDays(rand(1, 5)) : null,
             ]
         );
@@ -408,7 +408,7 @@ class OrganizerDemoSeeder extends Seeder
                     'title' => $taskData['title'],
                 ],
                 [
-                    'assigned_to_user_id' => fake()->boolean(40)
+                    'assigned_to_user_id' => \fake()->boolean(40)
                         ? $this->collaboratorUsers[2]->id
                         : $this->organizer->id,
                     'status' => $status->value,
