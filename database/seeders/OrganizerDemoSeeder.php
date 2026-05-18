@@ -59,7 +59,7 @@ class OrganizerDemoSeeder extends Seeder
         $corporate = $this->seedCorporateEvent();
         $this->seedWeddingEvent();
         $this->seedPastEvent();
-        $this->ensureAllOrganizerDemoEventsEntitlements();
+        $this->ensureAllOrganizerDemoEventsEntitlements(force: true);
         $this->seedUserDefaults();
         $this->printDemoInfo($corporate);
     }
@@ -107,7 +107,7 @@ class OrganizerDemoSeeder extends Seeder
             return;
         }
 
-        Subscription::firstOrCreate(
+        Subscription::updateOrCreate(
             [
                 'user_id' => $this->organizer->id,
                 'event_id' => null,
@@ -126,6 +126,23 @@ class OrganizerDemoSeeder extends Seeder
                 'expires_at' => now()->addYear(),
             ]
         );
+    }
+
+    /**
+     * Répare abonnement + features_enabled sur les événements déjà seedés (sans recréer les invités).
+     */
+    public function repairExistingDemoData(): void
+    {
+        $this->organizer = User::query()
+            ->where('email', $this->demoEmail(1))
+            ->first();
+
+        if (! $this->organizer) {
+            return;
+        }
+
+        $this->seedOrganizerAccountSubscription();
+        $this->ensureAllOrganizerDemoEventsEntitlements(force: true);
     }
 
     /**
@@ -153,19 +170,25 @@ class OrganizerDemoSeeder extends Seeder
         ];
     }
 
-    private function ensureDemoEventEntitlements(Event $event): void
+    private function ensureDemoEventEntitlements(Event $event, bool $force = false): void
     {
         $attrs = $this->proEventEntitlementAttributes();
         if ($attrs === []) {
             return;
         }
 
-        if (empty($event->features_enabled)) {
+        $features = $event->features_enabled ?? [];
+        $hasCoreFeatures = ($features['guests.manage'] ?? false) === true
+            && ($features['tasks.enabled'] ?? false) === true
+            && ($features['budget.enabled'] ?? false) === true
+            && ($features['collaborators.manage'] ?? false) === true;
+
+        if ($force || ! $hasCoreFeatures) {
             $event->update($attrs);
         }
     }
 
-    private function ensureAllOrganizerDemoEventsEntitlements(): void
+    private function ensureAllOrganizerDemoEventsEntitlements(bool $force = false): void
     {
         $titles = [
             'Gala annuel des Partenaires 2026',
@@ -180,7 +203,7 @@ class OrganizerDemoSeeder extends Seeder
                 ->first();
 
             if ($event) {
-                $this->ensureDemoEventEntitlements($event);
+                $this->ensureDemoEventEntitlements($event, $force);
             }
         }
     }
