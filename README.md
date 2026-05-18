@@ -454,41 +454,135 @@ tests/
 
 ## Sauvegardes PostgreSQL (S3)
 
-Sauvegardes automatiques via [spatie/laravel-backup](https://github.com/spatie/laravel-backup) :
+Sauvegardes automatiques de la base via [spatie/laravel-backup](https://github.com/spatie/laravel-backup).
 
-- **Fréquence** : toutes les 2 heures (`backup:run --only-db`)
-- **Destination** : disque `s3-backups` (même `AWS_BUCKET`, préfixe `BACKUP_S3_ROOT`)
-- **Nom des archives** : `party-planner/YYYY-MM-DD-HH-MM-SS.zip` (horodaté)
-- **Rétention** : 90 jours (`backup:clean` quotidien)
+| Paramètre | Valeur |
+|-----------|--------|
+| Fréquence | Toutes les **2 heures** |
+| Contenu | Base PostgreSQL uniquement (`--only-db`) |
+| Disque Laravel | `s3-backups` (réutilise `AWS_*` du `.env`) |
+| Préfixe S3 | `BACKUP_S3_ROOT` (défaut : `backups/party-planner`) |
+| Nom des archives | `party-planner/YYYY-MM-DD-HH-MM-SS.zip` (un **nouveau** fichier à chaque run) |
+| Rétention | **90 jours** (`BACKUP_RETENTION_DAYS`) |
+| Fuseau planificateur | `BACKUP_TIMEZONE` (défaut : `Africa/Brazzaville`) |
 
-### Déploiement VPS (après `git pull`)
+Chemin S3 typique (ex. production) :
 
-```bash
-cd ~/party-planner-backend
-composer install --no-dev --optimize-autoloader
-php artisan config:cache
+`s3://{AWS_BUCKET}/backups/party-planner/party-planner/2026-05-18-13-42-35.zip`
 
-# Client PostgreSQL pour pg_dump (utilisateur qui exécute PHP / cron)
-sudo apt install -y postgresql-client
-which pg_dump
+### Variables d'environnement
 
-# DB_HOST joignable depuis PHP (souvent 127.0.0.1, pas "postgres")
-grep '^DB_' .env
+Les identifiants **DB_*** et **AWS_*** du `.env` suffisent. Options dans `.env.example` :
 
-# Test manuel
-php artisan backup:run --only-db
+- `BACKUP_DISK` — disque de destination (défaut `s3-backups`)
+- `BACKUP_S3_ROOT` — dossier dans le bucket
+- `BACKUP_NAME` — nom du jeu de sauvegardes (défaut `party-planner`)
+- `BACKUP_RETENTION_DAYS` — rétention (défaut `90`)
+- `BACKUP_TIMEZONE` — fuseau du scheduler
+- `BACKUP_NOTIFICATION_EMAIL` — alertes en cas d'échec (sinon `FEEDBACK_MAIL_TO`)
+- `PG_DUMP_PATH` — chemin de `pg_dump` sur le serveur
 
-# Vérifier S3
-aws s3 ls "s3://VOTRE_BUCKET/backups/party-planner/party-planner/" --human-readable
-```
+### Tâches planifiées (`routes/console.php`)
 
-**Cron scheduler** (obligatoire) :
+| Commande | Planification |
+|----------|----------------|
+| `backup:run --only-db` | Toutes les 2 heures |
+| `backup:clean` | Quotidien à 03:30 |
+| `backup:monitor` | Quotidien à 04:00 |
+
+Le cron système doit exécuter le scheduler Laravel **chaque minute** :
 
 ```cron
 * * * * * cd /home/alex/party-planner-backend && /usr/bin/php artisan schedule:run >> /home/alex/logs/schedule.log 2>&1
 ```
 
-Variables optionnelles : voir `.env.example` (`BACKUP_*`, `PG_DUMP_PATH`). Les clés `AWS_*` et `DB_*` existantes suffisent.
+Vérifier la planification :
+
+```bash
+php artisan schedule:list
+```
+
+### Déploiement VPS (après `git pull`)
+
+```bash
+cd ~/party-planner-backend
+git pull
+composer install --no-dev --optimize-autoloader
+php artisan config:cache
+
+# Extensions / outils (utilisateur qui exécute PHP / cron)
+sudo apt install -y postgresql-client php-zip
+which pg_dump
+php -m | grep -E 'zip|pgsql'
+
+# DB_HOST joignable depuis PHP (souvent 127.0.0.1, pas "postgres")
+grep '^DB_' .env
+```
+
+### Commandes utiles
+
+**Lancer une sauvegarde immédiate :**
+
+```bash
+php artisan backup:run --only-db
+# Verbose :
+php artisan backup:run --only-db -v
+```
+
+**Lister les sauvegardes sur S3 (sans AWS CLI) :**
+
+```bash
+php artisan backup:list
+```
+
+**Contrôle de santé (dernière sauvegarde de moins de 24 h) :**
+
+```bash
+php artisan backup:monitor
+```
+
+**Appliquer la rétention manuellement :**
+
+```bash
+php artisan backup:clean
+```
+
+### Vérifier que ça fonctionne
+
+1. `php artisan backup:run --only-db` se termine par `Backup completed!`
+2. `php artisan backup:list` affiche le disque `s3-backups` en ✅ / Healthy
+3. Console AWS S3 → bucket → `backups/party-planner/party-planner/` → fichier `.zip` daté (~taille du dump)
+
+La CLI `aws` sur le VPS est **optionnelle** (Laravel envoie déjà vers S3). Si installée :
+
+```bash
+sudo apt install -y awscli
+aws s3 ls "s3://${AWS_BUCKET}/backups/party-planner/party-planner/" --human-readable
+```
+
+### Restauration (aperçu, staging de préférence)
+
+1. Télécharger l'archive depuis S3 (console ou `aws s3 cp`)
+2. Extraire le dump SQL du `.zip`
+3. Restaurer vers une base de test ou la prod **avec prudence** :
+
+```bash
+# Exemple : restaurer dans le conteneur Postgres
+gunzip -c chemin/vers/dump.sql.gz 2>/dev/null | docker exec -i party-planner-postgres \
+  psql -U party_app -d party-planner
+```
+
+Tester d'abord sur une copie de la base. Le dump peut contenir `--clean` (suppression des objets existants).
+
+### Dépannage
+
+| Symptôme | Piste |
+|----------|--------|
+| `pg_dump: command not found` | `sudo apt install postgresql-client` |
+| Connexion DB refusée | `DB_HOST=127.0.0.1`, `DB_PORT=5432` dans `.env` |
+| `Class "ZipArchive" not found` | `sudo apt install php-zip` puis redémarrer PHP-FPM si besoin |
+| Erreur S3 / Access Denied | Droits IAM sur `s3://{bucket}/backups/party-planner/*` |
+| Pas de backup automatique | `crontab -l`, logs `~/logs/schedule.log`, `php artisan schedule:list` |
 
 ## Licence
 
