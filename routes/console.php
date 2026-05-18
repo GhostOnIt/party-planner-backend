@@ -65,3 +65,23 @@ Schedule::command('quote-requests:escalate-aged --days=7')
     ->timezone('UTC')
     ->withoutOverlapping()
     ->onOneServer();
+
+// Sauvegardes PostgreSQL complètes → S3 (Spatie Backup).
+$backupTimezone = env('BACKUP_TIMEZONE', 'Africa/Brazzaville');
+
+Schedule::command('backup:run --only-db')
+    ->everyTwoHours()
+    ->timezone($backupTimezone)
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('backup:clean')
+    ->dailyAt('03:30')
+    ->timezone($backupTimezone)
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('backup:monitor')
+    ->dailyAt('04:00')
+    ->timezone($backupTimezone)
+    ->onOneServer();

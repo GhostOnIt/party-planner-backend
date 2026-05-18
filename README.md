@@ -452,6 +452,44 @@ tests/
     └── Services/
 ```
 
+## Sauvegardes PostgreSQL (S3)
+
+Sauvegardes automatiques via [spatie/laravel-backup](https://github.com/spatie/laravel-backup) :
+
+- **Fréquence** : toutes les 2 heures (`backup:run --only-db`)
+- **Destination** : disque `s3-backups` (même `AWS_BUCKET`, préfixe `BACKUP_S3_ROOT`)
+- **Nom des archives** : `party-planner/YYYY-MM-DD-HH-MM-SS.zip` (horodaté)
+- **Rétention** : 90 jours (`backup:clean` quotidien)
+
+### Déploiement VPS (après `git pull`)
+
+```bash
+cd ~/party-planner-backend
+composer install --no-dev --optimize-autoloader
+php artisan config:cache
+
+# Client PostgreSQL pour pg_dump (utilisateur qui exécute PHP / cron)
+sudo apt install -y postgresql-client
+which pg_dump
+
+# DB_HOST joignable depuis PHP (souvent 127.0.0.1, pas "postgres")
+grep '^DB_' .env
+
+# Test manuel
+php artisan backup:run --only-db
+
+# Vérifier S3
+aws s3 ls "s3://VOTRE_BUCKET/backups/party-planner/party-planner/" --human-readable
+```
+
+**Cron scheduler** (obligatoire) :
+
+```cron
+* * * * * cd /home/alex/party-planner-backend && /usr/bin/php artisan schedule:run >> /home/alex/logs/schedule.log 2>&1
+```
+
+Variables optionnelles : voir `.env.example` (`BACKUP_*`, `PG_DUMP_PATH`). Les clés `AWS_*` et `DB_*` existantes suffisent.
+
 ## Licence
 
 Proprietary - Tous droits reserves.

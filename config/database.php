@@ -96,6 +96,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
+            'dump' => [
+                'pg_dump_path' => env('PG_DUMP_PATH', 'pg_dump'),
+            ],
         ],
 
         'sqlsrv' => [
