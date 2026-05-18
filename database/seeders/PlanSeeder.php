@@ -52,46 +52,6 @@ class PlanSeeder extends Seeder
                 ],
             ],
 
-            // Phase pilote — accès complet, gratuit, une seule activation par compte, 3 mois
-            [
-                'name' => 'Phase pilote',
-                'title' => 'Phase pilote — accès complet pendant 3 mois (sans paiement)',
-                'slug' => 'phase-pilote',
-                'description' => 'Offre réservée à la phase pilote : toutes les fonctionnalités, sans frais, durée limitée à 3 mois, activable une fois par compte.',
-                'price' => 0,
-                'duration_days' => 90,
-                'is_trial' => false,
-                'is_one_time_use' => true,
-                'is_active' => true,
-                'sort_order' => 5,
-                'limits' => [
-                    'events.creations_per_billing_period' => -1,
-                    'guests.max_per_event' => -1,
-                    'collaborators.max_per_event' => -1,
-                    'photos.max_per_event' => -1,
-                ],
-                'features' => [
-                    'budget.enabled' => true,
-                    'tasks.enabled' => true,
-                    'guests.manage' => true,
-                    'guests.import' => true,
-                    'guests.export' => true,
-                    'invitations.sms' => true,
-                    'invitations.whatsapp' => true,
-                    'collaborators.manage' => true,
-                    'roles_permissions.enabled' => true,
-                    'exports.pdf' => true,
-                    'exports.excel' => true,
-                    'exports.csv' => true,
-                    'history.enabled' => true,
-                    'reporting.enabled' => true,
-                    'branding.custom' => true,
-                    'support.whatsapp_priority' => true,
-                    'multi_client.enabled' => true,
-                    'checkin.tablet' => true,
-                ],
-            ],
-
             // Starter - 3 500 FCFA / mois
             [
                 'name' => 'Starter',
