@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Enums\CollaboratorRole;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
+use App\Enums\NotificationType;
+use App\Enums\PhotoType;
 use App\Enums\RsvpStatus;
 use App\Enums\TaskStatus;
 use App\Models\BudgetItem;
@@ -124,15 +126,9 @@ class OrganizerDemoSeeder extends Seeder
         $this->seedCorporateGuests($corporate);
         $taskIds = $this->seedCorporateTasks($corporate);
         $this->seedCorporateBudget($corporate, $taskIds);
-        Photo::factory(8)->moodboard()->create([
-            'event_id' => $corporate->id,
-            'uploaded_by_user_id' => $this->organizer->id,
-        ]);
+        $this->createDemoPhotos($corporate, PhotoType::MOODBOARD, 8);
         $this->seedCorporateSubscription($corporate);
-        Notification::factory(6)->unread()->create([
-            'user_id' => $this->organizer->id,
-            'event_id' => $corporate->id,
-        ]);
+        $this->createDemoNotifications($corporate, 6);
 
         return $corporate;
     }
@@ -277,7 +273,7 @@ class OrganizerDemoSeeder extends Seeder
             ['event_id' => $event->id, 'name' => $name],
             array_merge([
                 'email' => Str::slug($name) . '@example.com',
-                'phone' => '06' . \fake()->numerify('########'),
+                'phone' => $this->randomPhone(),
                 'rsvp_status' => $status->value,
                 'invitation_sent_at' => now()->subDays(rand(5, 25)),
             ], $extra)
@@ -288,7 +284,7 @@ class OrganizerDemoSeeder extends Seeder
             [
                 'token' => Str::random(32),
                 'sent_at' => $guest->invitation_sent_at,
-                'opened_at' => \fake()->boolean(65) ? now()->subDays(rand(1, 8)) : null,
+                'opened_at' => $this->randomChance(65) ? now()->subDays(rand(1, 8)) : null,
                 'responded_at' => $status !== RsvpStatus::PENDING ? now()->subDays(rand(1, 5)) : null,
             ]
         );
@@ -408,7 +404,7 @@ class OrganizerDemoSeeder extends Seeder
                     'title' => $taskData['title'],
                 ],
                 [
-                    'assigned_to_user_id' => \fake()->boolean(40)
+                    'assigned_to_user_id' => $this->randomChance(40)
                         ? $this->collaboratorUsers[2]->id
                         : $this->organizer->id,
                     'status' => $status->value,
@@ -617,7 +613,7 @@ class OrganizerDemoSeeder extends Seeder
             $this->createGuestWithInvitation($wedding, $name, $status);
         }
 
-        Guest::factory(48)->create(['event_id' => $wedding->id]);
+        $this->seedBulkGuests($wedding, 48);
 
         $weddingTasks = [
             ['title' => 'Réserver le domaine La Corniche', 'status' => TaskStatus::COMPLETED, 'priority' => 'high'],
@@ -665,10 +661,7 @@ class OrganizerDemoSeeder extends Seeder
             );
         }
 
-        Photo::factory(4)->moodboard()->create([
-            'event_id' => $wedding->id,
-            'uploaded_by_user_id' => $this->organizer->id,
-        ]);
+        $this->createDemoPhotos($wedding, PhotoType::MOODBOARD, 4);
     }
 
     private function seedPastEvent(): void
@@ -713,20 +706,123 @@ class OrganizerDemoSeeder extends Seeder
             );
         }
 
-        Guest::factory(28)
-            ->accepted()
-            ->create(['event_id' => $past->id])
-            ->each(function (Guest $guest) use ($past) {
-                $guest->update([
-                    'checked_in' => true,
-                    'checked_in_at' => $past->date->copy()->setTime(20, rand(0, 59)),
-                ]);
-            });
+        $this->seedBulkGuests($past, 28, function () use ($past): array {
+            return [
+                'rsvp_status' => RsvpStatus::ACCEPTED->value,
+                'checked_in' => true,
+                'checked_in_at' => $past->date->copy()->setTime(20, random_int(0, 59)),
+            ];
+        });
 
-        Photo::factory(14)->eventPhoto()->create([
-            'event_id' => $past->id,
-            'uploaded_by_user_id' => $this->organizer->id,
-        ]);
+        $this->createDemoPhotos($past, PhotoType::EVENT_PHOTO, 14);
+    }
+
+    private function randomPhone(): string
+    {
+        return '06' . str_pad((string) random_int(0, 99_999_999), 8, '0', STR_PAD_LEFT);
+    }
+
+    private function randomChance(int $percent): bool
+    {
+        return random_int(1, 100) <= $percent;
+    }
+
+    private function createDemoPhotos(Event $event, PhotoType $type, int $count): void
+    {
+        $widths = [800, 1024, 1280, 1920];
+        $heights = [600, 768, 960, 1080];
+
+        for ($i = 0; $i < $count; $i++) {
+            $width = $widths[array_rand($widths)];
+            $height = $heights[array_rand($heights)];
+            $seed = random_int(1, 10_000);
+
+            Photo::create([
+                'event_id' => $event->id,
+                'uploaded_by_user_id' => $this->organizer->id,
+                'type' => $type->value,
+                'url' => "https://picsum.photos/{$width}/{$height}?random={$seed}",
+                'thumbnail_url' => "https://picsum.photos/300/200?random={$seed}",
+                'is_featured' => $i === 0,
+            ]);
+        }
+    }
+
+    private function createDemoNotifications(Event $event, int $count): void
+    {
+        $items = [
+            [
+                'type' => NotificationType::GUEST_REMINDER,
+                'title' => 'Rappel invités',
+                'message' => '12 invités n\'ont pas encore répondu au Gala.',
+            ],
+            [
+                'type' => NotificationType::TASK_REMINDER,
+                'title' => 'Rappel de tâche',
+                'message' => 'La tâche « Finaliser protocole accueil » arrive à échéance demain.',
+            ],
+            [
+                'type' => NotificationType::BUDGET_ALERT,
+                'title' => 'Alerte budget',
+                'message' => 'Votre budget traiteur approche du plafond estimé.',
+            ],
+            [
+                'type' => NotificationType::EVENT_REMINDER,
+                'title' => 'Rappel événement',
+                'message' => 'Votre événement est dans 60 jours.',
+            ],
+            [
+                'type' => NotificationType::COLLABORATION_INVITE,
+                'title' => 'Invitation collaboration',
+                'message' => 'Un collaborateur a accepté votre invitation.',
+            ],
+            [
+                'type' => NotificationType::GUEST_REMINDER,
+                'title' => 'Nouveau RSVP',
+                'message' => 'Nouveau RSVP reçu pour le Gala annuel.',
+            ],
+        ];
+
+        for ($i = 0; $i < $count; $i++) {
+            $item = $items[$i % count($items)];
+
+            Notification::create([
+                'user_id' => $this->organizer->id,
+                'event_id' => $event->id,
+                'type' => $item['type']->value,
+                'title' => $item['title'],
+                'message' => $item['message'],
+                'read_at' => null,
+                'sent_via' => $i % 2 === 0 ? 'email' : 'push',
+            ]);
+        }
+    }
+
+    /**
+     * @param  callable(int): array<string, mixed>|null  $extraAttributes
+     */
+    private function seedBulkGuests(Event $event, int $count, ?callable $extraAttributes = null): void
+    {
+        $statuses = RsvpStatus::cases();
+
+        for ($i = 1; $i <= $count; $i++) {
+            $status = $statuses[array_rand($statuses)];
+
+            $attributes = [
+                'event_id' => $event->id,
+                'name' => "Invité supplémentaire {$i}",
+                'email' => "invite-{$i}-" . Str::slug($event->title) . '@example.com',
+                'phone' => $this->randomPhone(),
+                'rsvp_status' => $status->value,
+                'invitation_sent_at' => now()->subDays(rand(1, 30)),
+            ];
+
+            if ($extraAttributes !== null) {
+                $attributes = array_merge($attributes, $extraAttributes($i));
+            }
+
+            Guest::create($attributes);
+        }
     }
 
     private function seedUserDefaults(): void
