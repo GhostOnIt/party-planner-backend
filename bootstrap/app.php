@@ -34,6 +34,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'log.activity' => \App\Http\Middleware\LogApiActivity::class,
         ]);
 
+        // Pas de route web nommée "login" : évite RouteNotFoundException pour les hits
+        // non-JSON (ex. métriques) quand auth:sanctum rejette la requête.
+        $middleware->redirectGuestsTo(function (): string {
+            $frontend = rtrim((string) env('FRONTEND_URL', ''), '/');
+
+            return $frontend !== '' ? $frontend.'/login' : url('/');
+        });
+
         // Disable CSRF verification for webhook routes
         $middleware->validateCsrfTokens(except: [
             'webhooks/*',

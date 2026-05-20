@@ -88,7 +88,7 @@ class CommunicationSpotController extends Controller
     /**
      * Get a single spot (admin).
      */
-    public function show(int $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -206,7 +206,7 @@ class CommunicationSpotController extends Controller
     /**
      * Update a spot (admin).
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -361,7 +361,7 @@ class CommunicationSpotController extends Controller
     /**
      * Delete a spot (admin).
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -380,7 +380,7 @@ class CommunicationSpotController extends Controller
     /**
      * Toggle spot active status (admin).
      */
-    public function toggle(Request $request, int $id): JsonResponse
+    public function toggle(Request $request, string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -396,7 +396,7 @@ class CommunicationSpotController extends Controller
     /**
      * Get poll results (admin).
      */
-    public function results(int $id): JsonResponse
+    public function results(string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -429,7 +429,7 @@ class CommunicationSpotController extends Controller
     /**
      * Reset poll votes (admin).
      */
-    public function resetVotes(int $id): JsonResponse
+    public function resetVotes(string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -446,7 +446,7 @@ class CommunicationSpotController extends Controller
     /**
      * Close a poll (admin).
      */
-    public function close(int $id): JsonResponse
+    public function close(string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -465,7 +465,7 @@ class CommunicationSpotController extends Controller
     /**
      * Export poll results (admin).
      */
-    public function export(int $id): JsonResponse
+    public function export(string $id): JsonResponse
     {
         $spot = CommunicationSpot::findOrFail($id);
 
@@ -557,7 +557,7 @@ class CommunicationSpotController extends Controller
     /**
      * Track a view (public/authenticated).
      */
-    public function trackView(Request $request, int $id): JsonResponse
+    public function trackView(Request $request, string $id): JsonResponse
     {
         $spot = CommunicationSpot::find($id);
 
@@ -571,7 +571,7 @@ class CommunicationSpotController extends Controller
     /**
      * Track a click (public/authenticated).
      */
-    public function trackClick(Request $request, int $id): JsonResponse
+    public function trackClick(Request $request, string $id): JsonResponse
     {
         $spot = CommunicationSpot::find($id);
 
@@ -585,7 +585,7 @@ class CommunicationSpotController extends Controller
     /**
      * Vote on a poll (authenticated).
      */
-    public function vote(Request $request, int $id): JsonResponse
+    public function vote(Request $request, string $id): JsonResponse
     {
         $user = $request->user();
         $spot = CommunicationSpot::findOrFail($id);
