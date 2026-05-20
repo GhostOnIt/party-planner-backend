@@ -8,6 +8,7 @@ use App\Models\CommunicationSpot;
 use App\Models\CommunicationSpotVote;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 class CommunicationSpotController extends Controller
@@ -100,6 +101,10 @@ class CommunicationSpotController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Capturer le fichier avant merge() (référence fiable pour l’upload)
+        $newImageFile = $request->file('image');
+        $hasNewImage = $newImageFile instanceof UploadedFile && $newImageFile->isValid();
+
         // Ne pas réinjecter le fichier via merge() (évite des cas où hasFile('image') devient incohérent)
         $data = $request->except(['image']);
         $jsonFields = ['primaryButton', 'secondaryButton', 'pollOptions', 'displayLocations', 'targetRoles'];
@@ -143,8 +148,8 @@ class CommunicationSpotController extends Controller
         ]);
 
         $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('communication-spots', 's3');
+        if ($hasNewImage) {
+            $imagePath = $newImageFile->store('communication-spots', 's3');
         }
 
         // Build poll options with IDs
@@ -210,6 +215,10 @@ class CommunicationSpotController extends Controller
     {
         $spot = CommunicationSpot::findOrFail($id);
 
+        // Capturer le fichier avant merge() (évite les cas où hasFile('image') ne voit plus l’upload)
+        $newImageFile = $request->file('image');
+        $hasNewImage = $newImageFile instanceof UploadedFile && $newImageFile->isValid();
+
         // Ne pas réinjecter le fichier (ni l'URL existante) via merge : fichier = uniquement $request->file('image')
         $data = $request->except(['image']);
         $jsonFields = ['primaryButton', 'secondaryButton', 'pollOptions', 'displayLocations', 'targetRoles'];
@@ -253,20 +262,20 @@ class CommunicationSpotController extends Controller
         ];
         
         // Only validate image if a file is being uploaded
-        if ($request->hasFile('image')) {
+        if ($hasNewImage) {
             $rules['image'] = 'nullable|image|max:5120';
         }
         
         $validated = $request->validate($rules);
 
-        if ($request->hasFile('image')) {
+        if ($hasNewImage) {
             if ($spot->image) {
                 $oldPath = StorageHelper::urlToPath($spot->image);
                 if ($oldPath) {
                     StorageHelper::diskForUrl($spot->image)->delete($oldPath);
                 }
             }
-            $imagePath = $request->file('image')->store('communication-spots', 's3');
+            $imagePath = $newImageFile->store('communication-spots', 's3');
             $spot->image = StorageHelper::url($imagePath);
         }
 
