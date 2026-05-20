@@ -564,9 +564,15 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
 
     /*
     |--------------------------------------------------------------------------
-    | Public Plans (for pricing page)
+    | Trial plan (auth requise : on filtre selon les essais déjà consommés)
     |--------------------------------------------------------------------------
     */
-    Route::get('/plans', [AdminPlanController::class, 'publicIndex']);
     Route::get('/plans/trial/available', [AdminPlanController::class, 'getAvailableTrial']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public Plans (pricing page accessible sans login)
+|--------------------------------------------------------------------------
+*/
+Route::get('/plans', [AdminPlanController::class, 'publicIndex']);
