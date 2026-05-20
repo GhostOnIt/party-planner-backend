@@ -100,8 +100,8 @@ class CommunicationSpotController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Parse JSON strings from FormData
-        $data = $request->all();
+        // Ne pas réinjecter le fichier via merge() (évite des cas où hasFile('image') devient incohérent)
+        $data = $request->except(['image']);
         $jsonFields = ['primaryButton', 'secondaryButton', 'pollOptions', 'displayLocations', 'targetRoles'];
         foreach ($jsonFields as $field) {
             if (isset($data[$field]) && is_string($data[$field])) {
@@ -210,8 +210,8 @@ class CommunicationSpotController extends Controller
     {
         $spot = CommunicationSpot::findOrFail($id);
 
-        // Parse JSON strings from FormData
-        $data = $request->all();
+        // Ne pas réinjecter le fichier (ni l'URL existante) via merge : fichier = uniquement $request->file('image')
+        $data = $request->except(['image']);
         $jsonFields = ['primaryButton', 'secondaryButton', 'pollOptions', 'displayLocations', 'targetRoles'];
         foreach ($jsonFields as $field) {
             if (isset($data[$field]) && is_string($data[$field])) {
@@ -222,11 +222,6 @@ class CommunicationSpotController extends Controller
         // Handle boolean from FormData
         if (isset($data['isActive'])) {
             $data['isActive'] = filter_var($data['isActive'], FILTER_VALIDATE_BOOLEAN);
-        }
-        
-        // Remove image from data if it's a string URL (existing image, not a new upload)
-        if (isset($data['image']) && is_string($data['image']) && !$request->hasFile('image')) {
-            unset($data['image']);
         }
         
         $request->merge($data);
