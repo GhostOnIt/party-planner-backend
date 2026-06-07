@@ -84,6 +84,9 @@ Route::prefix('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
+// Static authenticated invitation endpoints must stay before the public token route.
+Route::middleware('auth:sanctum')->get('/invitations/pending-count', [CollaboratorController::class, 'pendingInvitationsCount']);
+
 // Public invitation endpoints
 Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.show');
 Route::post('/invitations/{token}/respond', [InvitationController::class, 'respond']);
@@ -273,7 +276,6 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     Route::get('/invitations/by-token/{token}', [CollaboratorController::class, 'getByToken']);
     Route::post('/invitations/by-token/{token}/accept', [CollaboratorController::class, 'acceptByToken']);
     Route::post('/invitations/by-token/{token}/reject', [CollaboratorController::class, 'rejectByToken']);
-    Route::get('/invitations/pending-count', [CollaboratorController::class, 'pendingInvitationsCount']);
     Route::get('/user/invitations', [CollaboratorController::class, 'pendingInvitations']);
 
     // Event created for you (admin created event for non-registered email)
