@@ -142,6 +142,12 @@ class LogApiActivity
             return false;
         }
 
+        // Les lectures API fréquentes génèrent beaucoup de jobs sous charge.
+        // Garder LOG_API_READS=true si l'audit des lectures est requis.
+        if ($request->isMethod('GET') && !filter_var(env('LOG_API_READS', false), FILTER_VALIDATE_BOOLEAN)) {
+            return false;
+        }
+
         return true;
     }
 

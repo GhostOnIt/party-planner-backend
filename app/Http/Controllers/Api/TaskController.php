@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Task;
+use App\Services\EventReadCacheService;
 use App\Services\PermissionService;
 use App\Services\TaskBudgetService;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,8 @@ class TaskController extends Controller
 {
     public function __construct(
         protected PermissionService $permissionService,
-        protected TaskBudgetService $taskBudgetService
+        protected TaskBudgetService $taskBudgetService,
+        protected EventReadCacheService $eventReadCacheService
     ) {}
 
     /**
@@ -99,6 +101,7 @@ class TaskController extends Controller
         }
 
         $task->load('budgetItem');
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($task, 201);
     }
@@ -193,6 +196,7 @@ class TaskController extends Controller
         }
 
         $task->load('budgetItem');
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($task);
     }
@@ -208,6 +212,7 @@ class TaskController extends Controller
         $this->taskBudgetService->removeBudgetItemFromTask($task);
 
         $task->delete();
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json(null, 204);
     }

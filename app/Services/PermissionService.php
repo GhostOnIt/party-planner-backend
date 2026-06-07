@@ -12,6 +12,20 @@ use Illuminate\Support\Collection;
 class PermissionService
 {
     /**
+     * Cache collaborator lookups for the lifetime of the current request.
+     *
+     * @var array<string, Collaborator|null>
+     */
+    private array $collaboratorCache = [];
+
+    /**
+     * Cache all permission names for the lifetime of the current request.
+     *
+     * @var array<int, array<int, string>>
+     */
+    private array $allPermissionsCache = [];
+
+    /**
      * Get custom roles assigned to a collaborator (supports new pivot + legacy column).
      */
     private function getCollaboratorCustomRoles(Collaborator $collaborator): Collection
@@ -186,7 +200,9 @@ class PermissionService
      */
     public function getAllPermissions(): array
     {
-        return Permission::pluck('name')->toArray();
+        $connectionId = spl_object_id(app('db')->connection());
+
+        return $this->allPermissionsCache[$connectionId] ??= Permission::pluck('name')->toArray();
     }
 
     /**
@@ -274,9 +290,19 @@ class PermissionService
      */
     private function getCollaborator(Event $event, User $user): ?Collaborator
     {
-        return $event->collaborators()
+        $cacheKey = $event->getKey() . ':' . $user->getKey();
+
+        if (array_key_exists($cacheKey, $this->collaboratorCache)) {
+            return $this->collaboratorCache[$cacheKey];
+        }
+
+        return $this->collaboratorCache[$cacheKey] = $event->collaborators()
             ->where('user_id', $user->id)
-            ->with('customRole.permissions')
+            ->with([
+                'collaboratorRoles',
+                'customRole.permissions',
+                'customRoles.permissions',
+            ])
             ->first();
     }
 

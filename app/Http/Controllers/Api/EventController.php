@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Notifications\EventCreatedForUserNotification;
 use App\Services\EventService;
 use App\Services\EventStatusService;
+use App\Services\EventReadCacheService;
 use App\Services\PermissionService;
 use App\Services\PhotoService;
 use App\Services\QuotaService;
@@ -33,6 +34,7 @@ class EventController extends Controller
     protected SubscriptionService $subscriptionService;
     protected EventService $eventService;
     protected EventStatusService $eventStatusService;
+    protected EventReadCacheService $eventReadCacheService;
 
     public function __construct(
         PhotoService $photoService,
@@ -40,7 +42,8 @@ class EventController extends Controller
         QuotaService $quotaService,
         SubscriptionService $subscriptionService,
         EventService $eventService,
-        EventStatusService $eventStatusService
+        EventStatusService $eventStatusService,
+        EventReadCacheService $eventReadCacheService
     ) {
         $this->photoService = $photoService;
         $this->permissionService = $permissionService;
@@ -48,6 +51,7 @@ class EventController extends Controller
         $this->subscriptionService = $subscriptionService;
         $this->eventService = $eventService;
         $this->eventStatusService = $eventStatusService;
+        $this->eventReadCacheService = $eventReadCacheService;
     }
 
     /**
@@ -122,10 +126,13 @@ class EventController extends Controller
 
         // Sorting
         $sortBy = $request->input('sort_by', 'date');
-        $sortDir = $request->input('sort_dir', 'desc');
+        if (!in_array($sortBy, ['date', 'created_at', 'title', 'status'], true)) {
+            $sortBy = 'date';
+        }
+        $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortBy, $sortDir);
 
-        $perPage = $request->input('per_page', 10);
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 25);
         $events = $query
             ->with([
                 'user:id,name,avatar',
@@ -135,27 +142,11 @@ class EventController extends Controller
                     $q->where('email', $user->email)->select('event_id', 'token');
                 }
             ])
-            ->withCount([
-                'guests',
-                'guests as guests_confirmed_count' => function ($query) {
-                    $query->where('rsvp_status', 'accepted');
-                },
-                'guests as guests_declined_count' => function ($query) {
-                    $query->where('rsvp_status', 'declined');
-                },
-                'guests as guests_pending_count' => function ($query) {
-                    $query->where('rsvp_status', 'pending');
-                },
-                'tasks',
-                'tasks as tasks_completed_count' => function ($query) {
-                    $query->where('status', 'completed');
-                }
-            ])
-            ->withSum('budgetItems as budget_spent', 'actual_cost')
             ->paginate($perPage);
 
         // Add pending_claim and claim_token for events with invitation
         $events->getCollection()->transform(function ($event) use ($user) {
+            $event->forceFill($this->eventReadCacheService->eventSummaryStats($event));
             $invitation = $event->eventCreationInvitations->first();
             if ($invitation && strtolower($invitation->email) === strtolower($user->email)) {
                 $event->pending_claim = true;
@@ -401,6 +392,8 @@ class EventController extends Controller
         ]);
 
         // Ajouter les infos de quota à la réponse
+        $this->eventReadCacheService->invalidateUser($owner);
+        $this->eventReadCacheService->invalidateUser($request->user());
         $quotaInfo = $this->quotaService->getCreationsQuota($request->user());
 
         $payload = [
@@ -459,6 +452,8 @@ class EventController extends Controller
         if (!$user->isAdmin()) {
             $this->quotaService->consumeCreation($user);
         }
+        $this->eventReadCacheService->invalidateUser($user);
+        $this->eventReadCacheService->invalidateEvent($newEvent);
 
         $newEvent->load([
             'coverPhoto:id,event_id,url,thumbnail_url',
@@ -502,33 +497,7 @@ class EventController extends Controller
             'subscription.plan:id,name,title,slug',
         ]);
 
-        // Ajouter les compteurs de statistiques
-        $event->loadCount([
-            'guests',
-            'guests as guests_confirmed_count' => function ($query) {
-                $query->where('rsvp_status', 'accepted');
-            },
-            'guests as guests_declined_count' => function ($query) {
-                $query->where('rsvp_status', 'declined');
-            },
-            'guests as guests_pending_count' => function ($query) {
-                $query->where('rsvp_status', 'pending');
-            },
-            'tasks',
-            'tasks as tasks_completed_count' => function ($query) {
-                $query->where('status', 'completed');
-            },
-            'budgetItems',
-            'collaborators',
-        ]);
-
-        // Somme des coûts payés (budget_spent) et des coûts estimés des lignes de budget
-        $event->loadSum([
-            'budgetItems as budget_spent' => function ($query) {
-                $query->where('paid', true);
-            },
-        ], 'actual_cost');
-        $event->loadSum('budgetItems as budget_items_estimated', 'estimated_cost');
+        $event->forceFill($this->eventReadCacheService->eventSummaryStats($event));
 
         return response()->json($event);
     }
@@ -610,6 +579,7 @@ class EventController extends Controller
         }
 
         $event->load(['coverPhoto:id,event_id,url,thumbnail_url', 'featuredPhoto:id,event_id,url,thumbnail_url']);
+        $this->eventReadCacheService->invalidateEvent($event);
 
         if ($coverPhotoWarning) {
             return response()->json([
@@ -628,6 +598,8 @@ class EventController extends Controller
     {
         $this->authorize('delete', $event);
 
+        $this->eventReadCacheService->invalidateEvent($event);
+        $this->eventReadCacheService->invalidateUser($event->user_id);
         $event->delete();
 
         return response()->json(null, 204);
@@ -657,16 +629,22 @@ class EventController extends Controller
     public function getPermissions(Event $event): JsonResponse
     {
         $user = request()->user();
+        $permissions = $this->eventReadCacheService->rememberPermissions(
+            $user,
+            $event,
+            fn () => $this->permissionService->getUserPermissions($user, $event)
+        );
+        $canInvite = in_array('collaborators.invite', $permissions, true);
 
         return response()->json([
-            'permissions' => $this->permissionService->getUserPermissions($user, $event),
+            'permissions' => $permissions,
             'role' => $this->getUserRole($user, $event),
             'is_owner' => $event->user_id === $user->id,
-            'can_manage' => $this->permissionService->userCan($user, $event, 'collaborators.invite'),
-            'can_invite' => $this->permissionService->userCan($user, $event, 'collaborators.invite'),
-            'can_edit_roles' => $this->permissionService->userCan($user, $event, 'collaborators.edit_roles'),
-            'can_remove_collaborators' => $this->permissionService->userCan($user, $event, 'collaborators.remove'),
-            'can_create_custom_roles' => $this->permissionService->userCan($user, $event, 'collaborators.invite'), // Same as can_invite for now
+            'can_manage' => $canInvite,
+            'can_invite' => $canInvite,
+            'can_edit_roles' => in_array('collaborators.edit_roles', $permissions, true),
+            'can_remove_collaborators' => in_array('collaborators.remove', $permissions, true),
+            'can_create_custom_roles' => $canInvite, // Same as can_invite for now
         ]);
     }
 

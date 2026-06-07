@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Guest;
+use App\Services\EventReadCacheService;
 use App\Services\GuestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,8 @@ use Illuminate\Validation\Rule;
 class GuestController extends Controller
 {
     public function __construct(
-        protected GuestService $guestService
+        protected GuestService $guestService,
+        protected EventReadCacheService $eventReadCacheService
     ) {}
     /**
      * Display a listing of guests for an event.
@@ -62,7 +64,10 @@ class GuestController extends Controller
     $guests = $query->paginate($perPage);
 
     // Get stats if needed (optional, can be removed if stats come from separate endpoint)
-    $stats = $this->guestService->getStatistics($event);
+    $stats = $this->eventReadCacheService->rememberGuestStats(
+        $event,
+        fn () => $this->guestService->getStatistics($event)
+    );
 
     return response()->json([
         'data' => $guests->items(),
@@ -118,6 +123,7 @@ class GuestController extends Controller
         unset($validated['send_invitation']);
 
         $guest = $this->guestService->create($event, $validated, $sendInvitation);
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($guest, 201);
     }
@@ -210,6 +216,7 @@ class GuestController extends Controller
         ]);
 
         $guest->update($validated);
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($guest);
     }
@@ -222,6 +229,7 @@ class GuestController extends Controller
         $this->authorize('delete', $guest);
 
         $guest->delete();
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json(null, 204);
     }
@@ -292,6 +300,7 @@ class GuestController extends Controller
 
         try {
             $guest = $this->guestService->checkIn($guest);
+            $this->eventReadCacheService->invalidateEvent($event);
 
             return response()->json([
                 'message' => 'Check-in effectué avec succès.',
@@ -319,6 +328,7 @@ class GuestController extends Controller
         }
 
         $guest = $this->guestService->undoCheckIn($guest);
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json([
             'message' => 'Check-in annulé avec succès.',
@@ -333,7 +343,10 @@ class GuestController extends Controller
     {
         $this->authorize('viewAny', [Guest::class, $event]);
 
-        $stats = $this->guestService->getStatistics($event);
+        $stats = $this->eventReadCacheService->rememberGuestStats(
+            $event,
+            fn () => $this->guestService->getStatistics($event)
+        );
         $canAddMore = $this->guestService->canAddGuest($event);
         $remainingSlots = $this->guestService->getRemainingSlots($event);
 
@@ -375,6 +388,7 @@ class GuestController extends Controller
         } else {
             $results = $this->guestService->importFromCsv($event, $file, $options);
         }
+        $this->eventReadCacheService->invalidateEvent($event);
 
         $statusCode = empty($results['errors']) ? 200 : 207;
 

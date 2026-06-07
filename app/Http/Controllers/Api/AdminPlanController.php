@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Services\EventReadCacheService;
 use App\Services\PlanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,8 @@ use Illuminate\Validation\Rule;
 class AdminPlanController extends Controller
 {
     public function __construct(
-        protected PlanService $planService
+        protected PlanService $planService,
+        protected EventReadCacheService $eventReadCacheService
     ) {}
 
     /**
@@ -109,6 +111,7 @@ class AdminPlanController extends Controller
         }
 
         $plan = Plan::create($validated);
+        $this->eventReadCacheService->invalidatePublicPlans();
 
         return response()->json([
             'message' => 'Plan créé avec succès.',
@@ -164,6 +167,7 @@ class AdminPlanController extends Controller
         ]);
 
         $plan->update($validated);
+        $this->eventReadCacheService->invalidatePublicPlans();
 
         return response()->json([
             'message' => 'Plan mis à jour avec succès.',
@@ -197,6 +201,7 @@ class AdminPlanController extends Controller
         }
 
         $plan->delete();
+        $this->eventReadCacheService->invalidatePublicPlans();
 
         return response()->json([
             'message' => 'Plan supprimé avec succès.',
@@ -209,6 +214,7 @@ class AdminPlanController extends Controller
     public function toggleActive(Plan $plan): JsonResponse
     {
         $plan->update(['is_active' => !$plan->is_active]);
+        $this->eventReadCacheService->invalidatePublicPlans();
 
         return response()->json([
             'message' => $plan->is_active 
@@ -226,54 +232,56 @@ class AdminPlanController extends Controller
     public function publicIndex(Request $request): JsonResponse
     {
         $user = $request->user();
-        $plans = $this->planService->getActive($user);
+        $plansArray = $this->eventReadCacheService->rememberPublicPlans($user, function () use ($user) {
+            $plans = $this->planService->getActive($user);
 
-        // Get subscription statistics per plan (only for paid plans, excluding trials)
-        $subscriptionStats = \App\Models\Subscription::whereNotNull('plan_id')
-            ->where(function ($query) {
-                $query->where('status', 'active')
-                      ->orWhere('payment_status', 'paid');
-            })
-            ->where(function ($query) {
-                $query->whereNull('expires_at')
-                      ->orWhere('expires_at', '>', now());
-            })
-            ->selectRaw('plan_id, COUNT(*) as subscriptions_count')
-            ->groupBy('plan_id')
-            ->pluck('subscriptions_count', 'plan_id')
-            ->toArray();
+            // Get subscription statistics per plan (only for paid plans, excluding trials)
+            $subscriptionStats = \App\Models\Subscription::whereNotNull('plan_id')
+                ->where(function ($query) {
+                    $query->where('status', 'active')
+                          ->orWhere('payment_status', 'paid');
+                })
+                ->where(function ($query) {
+                    $query->whereNull('expires_at')
+                          ->orWhere('expires_at', '>', now());
+                })
+                ->selectRaw('plan_id, COUNT(*) as subscriptions_count')
+                ->groupBy('plan_id')
+                ->pluck('subscriptions_count', 'plan_id')
+                ->toArray();
 
-        // Find the plan with most active subscriptions (popular plan)
-        // Exclude trial plans from popular calculation
-        $popularPlanId = null;
-        $maxSubscriptions = 0;
-        foreach ($subscriptionStats as $planId => $count) {
-            $plan = $plans->firstWhere('id', $planId);
-            // Only consider paid plans (not trials) for popularity
-            if ($plan && !$plan->is_trial && $count > $maxSubscriptions) {
-                $maxSubscriptions = $count;
-                $popularPlanId = $planId;
+            // Find the plan with most active subscriptions (popular plan)
+            // Exclude trial plans from popular calculation
+            $popularPlanId = null;
+            $maxSubscriptions = 0;
+            foreach ($subscriptionStats as $planId => $count) {
+                $plan = $plans->firstWhere('id', $planId);
+                // Only consider paid plans (not trials) for popularity
+                if ($plan && !$plan->is_trial && $count > $maxSubscriptions) {
+                    $maxSubscriptions = $count;
+                    $popularPlanId = $planId;
+                }
             }
-        }
 
-        $plansArray = $plans->map(function ($plan) use ($popularPlanId) {
-            return [
-                'id' => $plan->id,
-                'name' => $plan->name,
-                'slug' => $plan->slug,
-                'description' => $plan->description,
-                'price' => $plan->price,
-                'formatted_price' => $plan->formatted_price,
-                'duration_days' => $plan->duration_days,
-                'duration_label' => $plan->duration_label,
-                'is_trial' => $plan->is_trial,
-                'is_one_time_use' => $plan->is_one_time_use,
-                'is_active' => $plan->is_active,
-                'is_popular' => $plan->id === $popularPlanId,
-                'limits' => $plan->limits,
-                'features' => $plan->features,
-            ];
-        })->values()->toArray(); // Convert Collection to array and reindex
+            return $plans->map(function ($plan) use ($popularPlanId) {
+                return [
+                    'id' => $plan->id,
+                    'name' => $plan->name,
+                    'slug' => $plan->slug,
+                    'description' => $plan->description,
+                    'price' => $plan->price,
+                    'formatted_price' => $plan->formatted_price,
+                    'duration_days' => $plan->duration_days,
+                    'duration_label' => $plan->duration_label,
+                    'is_trial' => $plan->is_trial,
+                    'is_one_time_use' => $plan->is_one_time_use,
+                    'is_active' => $plan->is_active,
+                    'is_popular' => $plan->id === $popularPlanId,
+                    'limits' => $plan->limits,
+                    'features' => $plan->features,
+                ];
+            })->values()->toArray(); // Convert Collection to array and reindex
+        });
 
         return response()->json([
             'data' => $plansArray,
@@ -312,4 +320,3 @@ class AdminPlanController extends Controller
         ]);
     }
 }
-

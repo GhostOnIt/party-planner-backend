@@ -8,13 +8,15 @@ use App\Http\Requests\Budget\UpdateBudgetItemRequest;
 use App\Models\BudgetItem;
 use App\Models\Event;
 use App\Services\BudgetService;
+use App\Services\EventReadCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BudgetController extends Controller
 {
     public function __construct(
-        protected BudgetService $budgetService
+        protected BudgetService $budgetService,
+        protected EventReadCacheService $eventReadCacheService
     ) {}
 
     /**
@@ -37,8 +39,14 @@ class BudgetController extends Controller
         }
 
         $items = $query->orderBy('category')->orderBy('name')->get();
-        $stats = $this->budgetService->getStatistics($event);
-        $byCategory = $this->budgetService->getByCategory($event);
+        $stats = $this->eventReadCacheService->rememberBudgetStats(
+            $event,
+            fn () => $this->budgetService->getStatistics($event)
+        );
+        $byCategory = $this->eventReadCacheService->rememberBudgetByCategory(
+            $event,
+            fn () => $this->budgetService->getByCategory($event)->toArray()
+        );
 
         return response()->json([
             'items' => $items,
@@ -54,8 +62,14 @@ class BudgetController extends Controller
     {
         $this->authorize('viewAny', [BudgetItem::class, $event]);
 
-        $stats = $this->budgetService->getStatistics($event);
-        $byCategory = $this->budgetService->getByCategory($event);
+        $stats = $this->eventReadCacheService->rememberBudgetStats(
+            $event,
+            fn () => $this->budgetService->getStatistics($event)
+        );
+        $byCategory = $this->eventReadCacheService->rememberBudgetByCategory(
+            $event,
+            fn () => $this->budgetService->getByCategory($event)->toArray()
+        );
 
         return response()->json([
             'stats' => $stats,
@@ -81,6 +95,7 @@ class BudgetController extends Controller
         $this->authorize('create', [BudgetItem::class, $event]);
 
         $item = $this->budgetService->create($event, $request->validated());
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($item, 201);
     }
@@ -93,6 +108,7 @@ class BudgetController extends Controller
         $this->authorize('update', $item);
 
         $item = $this->budgetService->update($item, $request->validated());
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($item);
     }
@@ -105,6 +121,7 @@ class BudgetController extends Controller
         $this->authorize('delete', $item);
 
         $this->budgetService->delete($item);
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json(null, 204);
     }
@@ -118,6 +135,7 @@ class BudgetController extends Controller
 
         $paymentDate = $request->input('payment_date');
         $item = $this->budgetService->markAsPaid($item, $paymentDate);
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($item);
     }
@@ -130,6 +148,7 @@ class BudgetController extends Controller
         $this->authorize('manageBudget', $event);
 
         $item = $this->budgetService->markAsUnpaid($item);
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json($item);
     }
@@ -166,6 +185,7 @@ class BudgetController extends Controller
             }
             $count++;
         }
+        $this->eventReadCacheService->invalidateEvent($event);
 
         return response()->json([
             'message' => "{$count} items updated",

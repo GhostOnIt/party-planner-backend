@@ -8,6 +8,7 @@ use App\Http\Requests\Collaborator\UpdateCollaboratorRequest;
 use App\Models\Event;
 use App\Models\User;
 use App\Services\CollaboratorService;
+use App\Services\EventReadCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +16,8 @@ use Illuminate\Validation\ValidationException;
 class CollaboratorController extends Controller
 {
     public function __construct(
-        protected CollaboratorService $collaboratorService
+        protected CollaboratorService $collaboratorService,
+        protected EventReadCacheService $eventReadCacheService
     ) {}
 
     /**
@@ -27,7 +29,7 @@ class CollaboratorController extends Controller
 
         $collaborators = $this->collaboratorService->getCollaborators($event);
         $pendingInvitations = $this->collaboratorService->getPendingCollaborationInvitations($event);
-        $stats = $this->collaboratorService->getStatistics($event);
+        $stats = $this->collaboratorService->getStatistics($event, $collaborators);
         $canAddCollaborator = $this->collaboratorService->canAddCollaborator($event);
         $remainingSlots = PHP_INT_MAX; // Unlimited collaborators
 
@@ -136,6 +138,8 @@ class CollaboratorController extends Controller
             $collaborator = $result;
             $collaborator->roles = $collaborator->getRoleValues();
             $collaborator->load(['user', 'customRoles']);
+            $this->eventReadCacheService->invalidateEvent($event);
+            $this->eventReadCacheService->invalidatePermissions($event, $collaborator->user_id);
             return response()->json([
                 'message' => 'Invitation envoyée.',
                 'collaborator' => $collaborator,
@@ -145,6 +149,7 @@ class CollaboratorController extends Controller
 
         $invitation = $result;
         $invitation->load('event');
+        $this->eventReadCacheService->invalidateEvent($event);
         return response()->json([
             'message' => 'Invitation envoyée. La personne pourra accepter après connexion ou inscription.',
             'pending_invitation' => [
@@ -182,6 +187,8 @@ class CollaboratorController extends Controller
             $roles,
             $request->validated('custom_role_ids', [])
         );
+        $this->eventReadCacheService->invalidateEvent($event);
+        $this->eventReadCacheService->invalidatePermissions($event, $user);
 
         // Add roles to collaborator for frontend compatibility
         $collaborator->roles = $collaborator->getRoleValues();
@@ -209,6 +216,8 @@ class CollaboratorController extends Controller
         if (!$this->collaboratorService->remove($collaborator)) {
             return response()->json(['message' => 'Impossible de retirer ce collaborateur.'], 422);
         }
+        $this->eventReadCacheService->invalidateEvent($event);
+        $this->eventReadCacheService->invalidatePermissions($event, $user);
 
         return response()->json(['message' => 'Collaborateur retiré.']);
     }
@@ -230,6 +239,8 @@ class CollaboratorController extends Controller
         }
 
         $this->collaboratorService->accept($collaborator);
+        $this->eventReadCacheService->invalidateEvent($event);
+        $this->eventReadCacheService->invalidatePermissions($event, $user);
 
         return response()->json([
             'message' => 'Invitation acceptée.',
@@ -250,6 +261,8 @@ class CollaboratorController extends Controller
         }
 
         $this->collaboratorService->decline($collaborator);
+        $this->eventReadCacheService->invalidateEvent($event);
+        $this->eventReadCacheService->invalidatePermissions($event, $user);
 
         return response()->json(['message' => 'Invitation déclinée.']);
     }
@@ -264,6 +277,8 @@ class CollaboratorController extends Controller
         if (!$this->collaboratorService->leave($event, $user)) {
             return response()->json(['message' => 'Impossible de quitter cet événement.'], 422);
         }
+        $this->eventReadCacheService->invalidateEvent($event);
+        $this->eventReadCacheService->invalidatePermissions($event, $user);
 
         return response()->json(['message' => 'Vous avez quitté l\'événement.']);
     }
@@ -390,6 +405,8 @@ class CollaboratorController extends Controller
         }
 
         $this->collaboratorService->accept($collaborator);
+        $this->eventReadCacheService->invalidateEvent($collaborator->event_id);
+        $this->eventReadCacheService->invalidatePermissions($collaborator->event_id, $user);
 
         return response()->json([
             'message' => 'Invitation acceptée.',
@@ -414,6 +431,8 @@ class CollaboratorController extends Controller
         }
 
         $this->collaboratorService->decline($collaborator);
+        $this->eventReadCacheService->invalidateEvent($collaborator->event_id);
+        $this->eventReadCacheService->invalidatePermissions($collaborator->event_id, $user);
 
         return response()->json(['message' => 'Invitation refusée.']);
     }
@@ -429,6 +448,8 @@ class CollaboratorController extends Controller
         if (!$this->collaboratorService->leave($event, $user)) {
             return response()->json(['message' => 'Impossible de quitter cet événement.'], 422);
         }
+        $this->eventReadCacheService->invalidateEvent($event);
+        $this->eventReadCacheService->invalidatePermissions($event, $user);
 
         return response()->json(['message' => 'Vous avez quitté l\'événement.']);
     }

@@ -7,6 +7,7 @@ use App\Http\Requests\Subscription\StoreSubscriptionRequest;
 use App\Models\Event;
 use App\Models\Plan;
 use App\Services\EntitlementService;
+use App\Services\EventReadCacheService;
 use App\Services\QuotaService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +18,8 @@ class SubscriptionController extends Controller
     public function __construct(
         protected SubscriptionService $subscriptionService,
         protected QuotaService $quotaService,
-        protected EntitlementService $entitlementService
+        protected EntitlementService $entitlementService,
+        protected EventReadCacheService $eventReadCacheService
     ) {}
 
     /**
@@ -197,7 +199,10 @@ class SubscriptionController extends Controller
     {
         $user = $request->user();
         $subscription = $this->subscriptionService->getUserLatestAccountSubscription($user);
-        $quota = $this->quotaService->getCreationsQuota($user);
+        $quota = $this->eventReadCacheService->rememberQuota(
+            $user,
+            fn () => $this->quotaService->getCreationsQuota($user)
+        );
         $lifecycle = $this->subscriptionService->getLifecycleInfo($subscription);
 
         if (!$subscription) {
@@ -250,7 +255,10 @@ class SubscriptionController extends Controller
     public function quota(Request $request): JsonResponse
     {
         $user = $request->user();
-        $quota = $this->quotaService->getCreationsQuota($user);
+        $quota = $this->eventReadCacheService->rememberQuota(
+            $user,
+            fn () => $this->quotaService->getCreationsQuota($user)
+        );
         $warning = $this->quotaService->shouldWarnAboutQuota($user);
 
         return response()->json([
@@ -265,7 +273,10 @@ class SubscriptionController extends Controller
     public function entitlements(Request $request): JsonResponse
     {
         $user = $request->user();
-        $entitlements = $this->entitlementService->getEffectiveEntitlements($user);
+        $entitlements = $this->eventReadCacheService->rememberEntitlements(
+            $user,
+            fn () => $this->entitlementService->getEffectiveEntitlements($user)
+        );
 
         return response()->json($entitlements);
     }
@@ -349,6 +360,7 @@ class SubscriptionController extends Controller
                 ]);
 
                 $requiresPayment = !$plan->is_trial && $plan->price > 0;
+                $this->eventReadCacheService->invalidateUser($user);
 
                 return response()->json([
                     'message' => $plan->is_trial
@@ -396,10 +408,12 @@ class SubscriptionController extends Controller
 
             // Cancel old account-level line before creating the new one.
             $existingSubscription->update(['status' => 'cancelled']);
+            $this->eventReadCacheService->invalidateUser($user);
         }
 
         // Create new subscription
         $subscription = $this->subscriptionService->createSubscriptionWithPlan($user, $plan);
+        $this->eventReadCacheService->invalidateUser($user);
 
         $requiresPayment = !$plan->is_trial && $plan->price > 0;
 

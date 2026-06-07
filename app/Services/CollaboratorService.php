@@ -383,9 +383,15 @@ class CollaboratorService
     /**
      * Get collaborator statistics (unlimited collaborators now).
      */
-    public function getStatistics(Event $event): array
+    public function getStatistics(Event $event, ?Collection $collaborators = null): array
     {
-        $collaborators = $event->collaborators;
+        $collaborators ??= $event->relationLoaded('collaborators')
+            ? $event->collaborators
+            : $event->collaborators()->get();
+
+        $customRolesCount = $collaborators
+            ->filter(fn (Collaborator $collaborator) => $collaborator->hasCustomRole())
+            ->count();
 
         return [
             'total' => $collaborators->count(),
@@ -394,7 +400,7 @@ class CollaboratorService
             'editors' => $collaborators->whereIn('role', ['owner', 'editor', 'coordinator'])->count(),
             'viewers' => $collaborators->whereIn('role', ['viewer', 'supervisor', 'reporter'])->count(),
             // Count collaborators having at least one custom role (new pivot system; legacy column also migrated).
-            'custom_roles' => $event->collaborators()->whereHas('customRoles')->count(),
+            'custom_roles' => $customRolesCount,
         ];
     }
 

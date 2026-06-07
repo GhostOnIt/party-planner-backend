@@ -82,6 +82,10 @@ class CustomRole extends Model
      */
     public function hasPermission(string $permissionName): bool
     {
+        if ($this->relationLoaded('permissions')) {
+            return $this->permissions->contains('name', $permissionName);
+        }
+
         return $this->permissions()->where('name', $permissionName)->exists();
     }
 
@@ -90,6 +94,10 @@ class CustomRole extends Model
      */
     public function hasAnyPermissionInModule(string $module): bool
     {
+        if ($this->relationLoaded('permissions')) {
+            return $this->permissions->contains('module', $module);
+        }
+
         return $this->permissions()->where('module', $module)->exists();
     }
 
@@ -98,6 +106,10 @@ class CustomRole extends Model
      */
     public function getPermissionNames(): array
     {
+        if ($this->relationLoaded('permissions')) {
+            return $this->permissions->pluck('name')->toArray();
+        }
+
         return $this->permissions()->pluck('name')->toArray();
     }
 
