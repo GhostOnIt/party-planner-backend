@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Collaborator;
 
 use App\Enums\CollaboratorRole;
+use App\Services\PermissionService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class UpdateCollaboratorRequest extends FormRequest
     {
         $event = $this->route('event');
 
-        return $this->user()->can('inviteCollaborator', $event);
+        return app(PermissionService::class)->userCan($this->user(), $event, 'collaborators.edit_roles');
     }
 
     /**

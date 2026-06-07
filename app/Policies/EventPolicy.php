@@ -86,8 +86,7 @@ class EventPolicy
      */
     public function collaborate(User $user, Event $event): bool
     {
-        // Owner-only for collaborator management
-        return $event->user_id === $user->id;
+        return $this->permissionService->userCanInModule($user, $event, 'collaborators');
     }
 
     /**
@@ -95,8 +94,7 @@ class EventPolicy
      */
     public function inviteCollaborator(User $user, Event $event): bool
     {
-        // Owner-only
-        return $event->user_id === $user->id;
+        return $this->permissionService->userCan($user, $event, 'collaborators.invite');
     }
 
     /**
@@ -108,8 +106,8 @@ class EventPolicy
         if ($collaboratorToRemove->id === $event->user_id) {
             return false;
         }
-        // Owner-only
-        return $event->user_id === $user->id;
+
+        return $this->permissionService->userCan($user, $event, 'collaborators.remove');
     }
 
     /**

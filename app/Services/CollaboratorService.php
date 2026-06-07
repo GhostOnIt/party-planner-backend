@@ -458,6 +458,22 @@ class CollaboratorService
                     'expected_email' => $collabInvitation->email,
                 ];
             }
+
+            $event = $collabInvitation->event;
+            if ($event->user_id === $user->id) {
+                $collabInvitation->delete();
+                return null;
+            }
+
+            $existingCollaborator = $event->collaborators()
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existingCollaborator) {
+                $collabInvitation->delete();
+                return ['invitation' => $existingCollaborator];
+            }
+
             // Claim: create Collaborator, delete CollaborationInvitation
             $roles = $collabInvitation->roles ?? [];
             $customRoleIds = $collabInvitation->custom_role_ids ?? [];
@@ -468,7 +484,7 @@ class CollaboratorService
                 $roles = ['viewer'];
             }
             // Create collaborator with same token so /invite/{token} still works after claim
-            $collaborator = $collabInvitation->event->collaborators()->create([
+            $collaborator = $event->collaborators()->create([
                 'user_id' => $user->id,
                 'role' => $roles[0] ?? null,
                 'custom_role_id' => !empty($customRoleIds) ? $customRoleIds[0] : null,

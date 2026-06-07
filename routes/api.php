@@ -245,6 +245,8 @@ Route::middleware(['auth:sanctum', 'log.activity'])->group(function () {
         Route::post('/accept', [CollaboratorController::class, 'accept']);
         Route::post('/decline', [CollaboratorController::class, 'decline']);
         Route::post('/leave', [CollaboratorController::class, 'leave']);
+        Route::post('/pending/{invitation}/resend', [CollaboratorController::class, 'resendPendingInvitation']);
+        Route::delete('/pending/{invitation}', [CollaboratorController::class, 'cancelPendingInvitation']);
         Route::post('/{user}/resend', [CollaboratorController::class, 'resendInvitation']);
     });
 
@@ -269,6 +271,9 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     |--------------------------------------------------------------------------
     */
     Route::get('/invitations/by-token/{token}', [CollaboratorController::class, 'getByToken']);
+    Route::post('/invitations/by-token/{token}/accept', [CollaboratorController::class, 'acceptByToken']);
+    Route::post('/invitations/by-token/{token}/reject', [CollaboratorController::class, 'rejectByToken']);
+    Route::get('/invitations/pending-count', [CollaboratorController::class, 'pendingInvitationsCount']);
     Route::get('/user/invitations', [CollaboratorController::class, 'pendingInvitations']);
 
     // Event created for you (admin created event for non-registered email)

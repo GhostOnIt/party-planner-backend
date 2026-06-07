@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api;
 
 use App\Models\Collaborator;
+use App\Models\CollaborationInvitation;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -171,7 +172,7 @@ class CollaboratorControllerTest extends TestCase
             ->assertJsonValidationErrors(['role']);
     }
 
-    public function test_non_owner_cannot_invite_collaborator(): void
+    public function test_collaborator_without_permission_cannot_invite_collaborator(): void
     {
         $collaborator = User::factory()->create();
         Sanctum::actingAs($collaborator);
@@ -179,7 +180,7 @@ class CollaboratorControllerTest extends TestCase
         Collaborator::factory()->create([
             'event_id' => $this->event->id,
             'user_id' => $collaborator->id,
-            'role' => 'editor',
+            'role' => 'viewer',
         ]);
 
         $newUser = User::factory()->create();
@@ -190,6 +191,33 @@ class CollaboratorControllerTest extends TestCase
         ]);
 
         $response->assertForbidden();
+    }
+
+    public function test_coordinator_can_invite_collaborator(): void
+    {
+        $coordinator = User::factory()->create();
+        Sanctum::actingAs($coordinator);
+
+        Collaborator::factory()->create([
+            'event_id' => $this->event->id,
+            'user_id' => $coordinator->id,
+            'role' => 'coordinator',
+            'accepted_at' => now(),
+        ]);
+
+        $newUser = User::factory()->create();
+
+        $response = $this->postJson("/api/events/{$this->event->id}/collaborators", [
+            'email' => $newUser->email,
+            'role' => 'viewer',
+        ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('collaborators', [
+            'event_id' => $this->event->id,
+            'user_id' => $newUser->id,
+            'role' => 'viewer',
+        ]);
     }
 
     /*
@@ -248,7 +276,7 @@ class CollaboratorControllerTest extends TestCase
         ]);
     }
 
-    public function test_collaborator_cannot_remove_other_collaborator(): void
+    public function test_collaborator_without_permission_cannot_remove_other_collaborator(): void
     {
         $collaborator1 = User::factory()->create();
         $collaborator2 = User::factory()->create();
@@ -258,7 +286,7 @@ class CollaboratorControllerTest extends TestCase
         Collaborator::factory()->create([
             'event_id' => $this->event->id,
             'user_id' => $collaborator1->id,
-            'role' => 'editor',
+            'role' => 'viewer',
         ]);
         Collaborator::factory()->create([
             'event_id' => $this->event->id,
@@ -266,13 +294,38 @@ class CollaboratorControllerTest extends TestCase
             'role' => 'viewer',
         ]);
 
-        // The policy removeCollaborator expects an additional User parameter
-        // but the controller doesn't provide it correctly. This test checks
-        // that non-owners get a 403 error
         $response = $this->deleteJson("/api/events/{$this->event->id}/collaborators/{$collaborator2->id}");
 
-        // Expect 403 or 500 due to policy implementation
-        $this->assertTrue(in_array($response->status(), [403, 500]));
+        $response->assertForbidden();
+    }
+
+    public function test_coordinator_can_remove_other_collaborator(): void
+    {
+        $coordinator = User::factory()->create();
+        $collaborator = User::factory()->create();
+
+        Sanctum::actingAs($coordinator);
+
+        Collaborator::factory()->create([
+            'event_id' => $this->event->id,
+            'user_id' => $coordinator->id,
+            'role' => 'coordinator',
+            'accepted_at' => now(),
+        ]);
+        Collaborator::factory()->create([
+            'event_id' => $this->event->id,
+            'user_id' => $collaborator->id,
+            'role' => 'viewer',
+            'accepted_at' => now(),
+        ]);
+
+        $response = $this->deleteJson("/api/events/{$this->event->id}/collaborators/{$collaborator->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('collaborators', [
+            'event_id' => $this->event->id,
+            'user_id' => $collaborator->id,
+        ]);
     }
 
     /*
@@ -410,5 +463,89 @@ class CollaboratorControllerTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(2, 'invitations'); // API returns 'invitations' key
+    }
+
+    public function test_pending_invitation_count_is_available(): void
+    {
+        $collaborator = User::factory()->create();
+        Sanctum::actingAs($collaborator);
+
+        Collaborator::factory()->count(2)->create([
+            'user_id' => $collaborator->id,
+            'accepted_at' => null,
+        ]);
+
+        $response = $this->getJson('/api/invitations/pending-count');
+
+        $response->assertOk()
+            ->assertJsonPath('count', 2);
+    }
+
+    public function test_invitation_token_rejects_wrong_account(): void
+    {
+        $expectedUser = User::factory()->create();
+        $wrongUser = User::factory()->create();
+        Sanctum::actingAs($wrongUser);
+
+        $invitation = CollaborationInvitation::create([
+            'event_id' => $this->event->id,
+            'email' => $expectedUser->email,
+            'roles' => ['viewer'],
+            'token' => 'token-wrong-account',
+            'invited_at' => now(),
+        ]);
+
+        $response = $this->getJson("/api/invitations/by-token/{$invitation->token}");
+
+        $response->assertForbidden()
+            ->assertJsonPath('expected_email', $expectedUser->email);
+    }
+
+    public function test_user_can_accept_invitation_by_token(): void
+    {
+        $collaborator = User::factory()->create();
+        Sanctum::actingAs($collaborator);
+
+        $invitation = CollaborationInvitation::create([
+            'event_id' => $this->event->id,
+            'email' => $collaborator->email,
+            'roles' => ['viewer'],
+            'token' => 'token-accept',
+            'invited_at' => now(),
+        ]);
+
+        $response = $this->postJson("/api/invitations/by-token/{$invitation->token}/accept");
+
+        $response->assertOk();
+        $this->assertDatabaseHas('collaborators', [
+            'event_id' => $this->event->id,
+            'user_id' => $collaborator->id,
+        ]);
+
+        $created = Collaborator::where('event_id', $this->event->id)
+            ->where('user_id', $collaborator->id)
+            ->first();
+        $this->assertNotNull($created?->accepted_at);
+        $this->assertDatabaseMissing('collaboration_invitations', ['id' => $invitation->id]);
+    }
+
+    public function test_user_can_leave_collaboration_by_uuid_event_id(): void
+    {
+        $collaborator = User::factory()->create();
+        Sanctum::actingAs($collaborator);
+
+        Collaborator::factory()->create([
+            'event_id' => $this->event->id,
+            'user_id' => $collaborator->id,
+            'accepted_at' => now(),
+        ]);
+
+        $response = $this->deleteJson("/api/user/collaborations/{$this->event->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('collaborators', [
+            'event_id' => $this->event->id,
+            'user_id' => $collaborator->id,
+        ]);
     }
 }

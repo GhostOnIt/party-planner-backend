@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Collaborator\StoreCollaboratorRequest;
 use App\Http\Requests\Collaborator\UpdateCollaboratorRequest;
+use App\Jobs\SendCollaborationInvitationGuestJob;
+use App\Models\CollaborationInvitation;
 use App\Models\Event;
 use App\Models\User;
 use App\Services\CollaboratorService;
@@ -44,10 +46,12 @@ class CollaboratorController extends Controller
             $roleValues = $inv->roles ?? [];
             return [
                 'id' => 'pending-' . $inv->id,
+                'invitation_id' => $inv->id,
                 'type' => 'pending_invitation',
                 'email' => $inv->email,
                 'roles' => $roleValues,
                 'role' => $roleValues[0] ?? null,
+                'custom_role_ids' => $inv->custom_role_ids ?? [],
                 'invited_at' => $inv->invited_at?->toIso8601String(),
                 'user' => [
                     'id' => null,
@@ -306,6 +310,46 @@ class CollaboratorController extends Controller
     }
 
     /**
+     * Resend an invitation sent to an email that is not registered yet.
+     */
+    public function resendPendingInvitation(Event $event, CollaborationInvitation $invitation): JsonResponse
+    {
+        $this->authorize('inviteCollaborator', $event);
+
+        if ($invitation->event_id !== $event->id) {
+            return response()->json(['message' => 'Invitation non trouvée.'], 404);
+        }
+
+        $invitation->update(['invited_at' => now()]);
+        $freshInvitation = $invitation->fresh(['event.user']);
+
+        if (!$freshInvitation) {
+            return response()->json(['message' => 'Invitation non trouvée.'], 404);
+        }
+
+        SendCollaborationInvitationGuestJob::dispatch($freshInvitation);
+
+        return response()->json(['message' => 'Invitation renvoyée.']);
+    }
+
+    /**
+     * Cancel an invitation sent to an email that is not registered yet.
+     */
+    public function cancelPendingInvitation(Event $event, CollaborationInvitation $invitation): JsonResponse
+    {
+        $this->authorize('inviteCollaborator', $event);
+
+        if ($invitation->event_id !== $event->id) {
+            return response()->json(['message' => 'Invitation non trouvée.'], 404);
+        }
+
+        $invitation->delete();
+        $this->eventReadCacheService->invalidateEvent($event);
+
+        return response()->json(['message' => 'Invitation annulée.']);
+    }
+
+    /**
      * Get invitation by token (for /invite/{token} page).
      * Auth required. Returns 403 if wrong account, 404 if not found.
      */
@@ -330,6 +374,8 @@ class CollaboratorController extends Controller
 
         $collaborator = $result['invitation'];
         $collaborator->load(['event.user', 'collaboratorRoles', 'customRoles']);
+        $this->eventReadCacheService->invalidateEvent($collaborator->event_id);
+        $this->eventReadCacheService->invalidatePermissions($collaborator->event_id, $user);
         $event = $collaborator->event;
         $inviter = $event->user;
 
@@ -341,6 +387,65 @@ class CollaboratorController extends Controller
             'roles' => $collaborator->getRoleValues(),
             'status' => 'pending',
         ]);
+    }
+
+    /**
+     * Accept invitation by token.
+     */
+    public function acceptByToken(Request $request, string $token): JsonResponse
+    {
+        $result = $this->collaboratorService->getInvitationByToken($token, $request->user());
+
+        if ($result === null) {
+            return response()->json(['message' => 'Invitation introuvable ou expirée.'], 404);
+        }
+
+        if (isset($result['error'])) {
+            return response()->json(['message' => $result['message'], 'expected_email' => $result['expected_email'] ?? null], 403);
+        }
+
+        $collaborator = $result['invitation'];
+
+        if ($collaborator->isAccepted()) {
+            return response()->json(['message' => 'Invitation déjà acceptée.'], 422);
+        }
+
+        $this->collaboratorService->accept($collaborator);
+        $this->eventReadCacheService->invalidateEvent($collaborator->event_id);
+        $this->eventReadCacheService->invalidatePermissions($collaborator->event_id, $request->user());
+
+        return response()->json([
+            'message' => 'Invitation acceptée.',
+            'collaborator' => $collaborator->fresh()->load(['user', 'event']),
+        ]);
+    }
+
+    /**
+     * Reject invitation by token.
+     */
+    public function rejectByToken(Request $request, string $token): JsonResponse
+    {
+        $result = $this->collaboratorService->getInvitationByToken($token, $request->user());
+
+        if ($result === null) {
+            return response()->json(['message' => 'Invitation introuvable ou expirée.'], 404);
+        }
+
+        if (isset($result['error'])) {
+            return response()->json(['message' => $result['message'], 'expected_email' => $result['expected_email'] ?? null], 403);
+        }
+
+        $collaborator = $result['invitation'];
+
+        if ($collaborator->isAccepted()) {
+            return response()->json(['message' => 'Impossible de refuser une invitation déjà acceptée.'], 422);
+        }
+
+        $this->collaboratorService->decline($collaborator);
+        $this->eventReadCacheService->invalidateEvent($collaborator->event_id);
+        $this->eventReadCacheService->invalidatePermissions($collaborator->event_id, $request->user());
+
+        return response()->json(['message' => 'Invitation refusée.']);
     }
 
     /**
@@ -386,6 +491,18 @@ class CollaboratorController extends Controller
         });
 
         return response()->json(['invitations' => $invitations]);
+    }
+
+    /**
+     * Get pending invitations count for the authenticated user.
+     */
+    public function pendingInvitationsCount(Request $request): JsonResponse
+    {
+        $this->collaboratorService->claimPendingInvitationsForUser($request->user());
+
+        return response()->json([
+            'count' => $this->collaboratorService->getUserPendingInvitations($request->user())->count(),
+        ]);
     }
 
     /**
@@ -440,7 +557,7 @@ class CollaboratorController extends Controller
     /**
      * Leave collaboration by event ID.
      */
-    public function leaveByEventId(Request $request, int $eventId): JsonResponse
+    public function leaveByEventId(Request $request, string $eventId): JsonResponse
     {
         $user = $request->user();
         $event = Event::findOrFail($eventId);
