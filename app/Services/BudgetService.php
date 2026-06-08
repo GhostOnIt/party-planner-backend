@@ -357,9 +357,22 @@ class BudgetService
         $item->refresh();
         $totalPaid = (float) $item->payments()->sum('amount');
         $actualCost = (float) ($item->actual_cost ?? 0);
-        $isPaid = $totalPaid > 0 && ($actualCost <= 0 || $totalPaid >= $actualCost);
+        $estimatedCost = (float) ($item->estimated_cost ?? 0);
+        $newActualCost = $actualCost;
+
+        if ($totalPaid > $actualCost) {
+            $newActualCost = $totalPaid;
+        }
+
+        $targetAmount = $newActualCost > 0 ? $newActualCost : $estimatedCost;
+        if ($newActualCost > 0 && $newActualCost < $estimatedCost && $totalPaid < $estimatedCost) {
+            $targetAmount = $estimatedCost;
+        }
+
+        $isPaid = $totalPaid > 0 && ($targetAmount <= 0 || $totalPaid >= $targetAmount);
 
         $item->update([
+            'actual_cost' => $newActualCost > 0 ? $newActualCost : null,
             'paid' => $isPaid,
             'payment_date' => $isPaid
                 ? $item->payments()->latest('payment_date')->value('payment_date')

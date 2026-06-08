@@ -126,15 +126,20 @@ class BudgetItem extends Model
 
     public function getRemainingAmountAttribute(): float
     {
-        return max((float) ($this->actual_cost ?? 0) - $this->total_paid, 0);
+        return max($this->getPaymentTargetAmount() - $this->total_paid, 0);
     }
 
     public function getPaymentStatusAttribute(): string
     {
         $actualCost = (float) ($this->actual_cost ?? 0);
+        $estimatedCost = (float) ($this->estimated_cost ?? 0);
 
         if ($this->total_paid <= 0) {
             return 'unpaid';
+        }
+
+        if ($actualCost > 0 && $actualCost < $estimatedCost && $this->total_paid < $estimatedCost) {
+            return 'partially_paid';
         }
 
         if ($actualCost > 0 && $this->total_paid < $actualCost) {
@@ -151,6 +156,22 @@ class BudgetItem extends Model
         }
 
         return $this->paymentAttachments()->count();
+    }
+
+    protected function getPaymentTargetAmount(): float
+    {
+        $actualCost = (float) ($this->actual_cost ?? 0);
+        $estimatedCost = (float) ($this->estimated_cost ?? 0);
+
+        if ($actualCost > 0 && $actualCost < $estimatedCost && $this->total_paid < $estimatedCost) {
+            return $estimatedCost;
+        }
+
+        if ($actualCost > 0) {
+            return $actualCost;
+        }
+
+        return $estimatedCost;
     }
 
     /**

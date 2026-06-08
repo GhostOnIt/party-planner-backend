@@ -298,7 +298,8 @@ class BudgetControllerTest extends TestCase
 
         $item = BudgetItem::factory()->unpaid()->create([
             'event_id' => $this->event->id,
-            'actual_cost' => 500000,
+            'estimated_cost' => 500000,
+            'actual_cost' => null,
         ]);
 
         $response = $this->postJson("/api/events/{$this->event->id}/budget/items/{$item->id}/payments", [
@@ -316,6 +317,43 @@ class BudgetControllerTest extends TestCase
         $this->assertSame('partially_paid', $item->payment_status);
         $this->assertEquals(200000, $item->total_paid);
         $this->assertEquals(300000, $item->remaining_amount);
+        $this->assertEquals(200000, (float) $item->actual_cost);
+    }
+
+    public function test_multiple_payments_update_actual_cost_and_all_attachments_are_returned(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $item = BudgetItem::factory()->unpaid()->create([
+            'event_id' => $this->event->id,
+            'estimated_cost' => 400000,
+            'actual_cost' => 0,
+        ]);
+
+        $firstPayment = BudgetItemPayment::factory()->forItem($item)->create(['amount' => 250000]);
+        BudgetPaymentAttachment::factory()->forPayment($firstPayment)->create(['original_name' => 'recu-1.pdf']);
+        app(\App\Services\BudgetService::class)->updatePayment($firstPayment, ['amount' => 250000]);
+
+        $secondResponse = $this->postJson("/api/events/{$this->event->id}/budget/items/{$item->id}/payments", [
+            'amount' => 250000,
+            'payment_date' => '2026-06-08',
+        ]);
+        $secondPaymentId = $secondResponse->json('id');
+        BudgetPaymentAttachment::factory()
+            ->forPayment(BudgetItemPayment::findOrFail($secondPaymentId))
+            ->create(['original_name' => 'recu-2.pdf']);
+
+        $response = $this->getJson("/api/events/{$this->event->id}/budget");
+
+        $response->assertOk()
+            ->assertJsonPath('items.0.payment_status', 'paid')
+            ->assertJsonPath('items.0.total_paid', 500000)
+            ->assertJsonPath('items.0.attachments_count', 2);
+
+        $item->refresh();
+
+        $this->assertTrue($item->paid);
+        $this->assertEquals(500000, (float) $item->actual_cost);
     }
 
     public function test_mark_paid_creates_payment_for_remaining_amount(): void
