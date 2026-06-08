@@ -356,6 +356,54 @@ class BudgetControllerTest extends TestCase
         $this->assertEquals(500000, (float) $item->actual_cost);
     }
 
+    public function test_cannot_add_payment_to_already_paid_budget_item(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $item = BudgetItem::factory()->unpaid()->create([
+            'event_id' => $this->event->id,
+            'estimated_cost' => 400000,
+            'actual_cost' => 400000,
+            'paid' => true,
+        ]);
+
+        BudgetItemPayment::factory()->forItem($item)->create(['amount' => 400000]);
+
+        $response = $this->postJson("/api/events/{$this->event->id}/budget/items/{$item->id}/payments", [
+            'amount' => 100000,
+            'payment_date' => '2026-06-08',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['amount']);
+    }
+
+    public function test_mark_unpaid_clears_payments_and_actual_cost(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $item = BudgetItem::factory()->unpaid()->create([
+            'event_id' => $this->event->id,
+            'estimated_cost' => 400000,
+            'actual_cost' => 450000,
+            'paid' => true,
+        ]);
+
+        BudgetItemPayment::factory()->forItem($item)->create(['amount' => 250000]);
+        BudgetItemPayment::factory()->forItem($item)->create(['amount' => 200000]);
+
+        $response = $this->postJson("/api/events/{$this->event->id}/budget/items/{$item->id}/mark-unpaid");
+
+        $response->assertOk()
+            ->assertJsonFragment(['paid' => false]);
+
+        $item->refresh();
+
+        $this->assertNull($item->actual_cost);
+        $this->assertEquals(0, $item->payments()->count());
+        $this->assertSame('unpaid', $item->payment_status);
+    }
+
     public function test_mark_paid_creates_payment_for_remaining_amount(): void
     {
         Sanctum::actingAs($this->user);

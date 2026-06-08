@@ -12,6 +12,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class BudgetService
 {
@@ -276,6 +277,7 @@ class BudgetService
         });
 
         $item->update([
+            'actual_cost' => null,
             'paid' => false,
             'payment_date' => null,
         ]);
@@ -285,6 +287,14 @@ class BudgetService
 
     public function createPayment(BudgetItem $item, array $data, ?User $user = null): BudgetItemPayment
     {
+        $item->refresh();
+
+        if ($item->payment_status === 'paid') {
+            throw ValidationException::withMessages([
+                'amount' => 'Cette ligne budgétaire est déjà payée.',
+            ]);
+        }
+
         $payment = $item->payments()->create([
             'event_id' => $item->event_id,
             'created_by' => $user?->id,
@@ -356,13 +366,8 @@ class BudgetService
     {
         $item->refresh();
         $totalPaid = (float) $item->payments()->sum('amount');
-        $actualCost = (float) ($item->actual_cost ?? 0);
         $estimatedCost = (float) ($item->estimated_cost ?? 0);
-        $newActualCost = $actualCost;
-
-        if ($totalPaid > $actualCost) {
-            $newActualCost = $totalPaid;
-        }
+        $newActualCost = $totalPaid > 0 ? $totalPaid : 0;
 
         $targetAmount = $newActualCost > 0 ? $newActualCost : $estimatedCost;
         if ($newActualCost > 0 && $newActualCost < $estimatedCost && $totalPaid < $estimatedCost) {
