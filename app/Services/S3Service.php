@@ -490,6 +490,25 @@ class S3Service
     }
 
     /**
+     * Upload a private proof document for a budget item payment.
+     */
+    public function uploadBudgetPaymentAttachment(string $eventId, string $budgetItemId, string $paymentId, UploadedFile $file): array
+    {
+        return $this->upload(
+            $file,
+            "events/{$eventId}/budget/{$budgetItemId}/payments/{$paymentId}",
+            null,
+            'private',
+            [
+                'event_id' => $eventId,
+                'budget_item_id' => $budgetItemId,
+                'payment_id' => $paymentId,
+                'type' => 'budget_payment_attachment',
+            ]
+        );
+    }
+
+    /**
      * Get signed URL for event photo.
      */
     public function getEventPhotoUrl(string $path, int $minutes = 60): ?string

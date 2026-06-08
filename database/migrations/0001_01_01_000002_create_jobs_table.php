@@ -13,7 +13,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('jobs', function (Blueprint $table) {
-            $table->uuid('id')->default(DB::raw('gen_random_uuid()'))->primary();
+            $id = $table->uuid('id')->primary();
+            if (DB::getDriverName() === 'pgsql') {
+                $id->default(DB::raw('gen_random_uuid()'));
+            }
             $table->string('queue')->index();
             $table->longText('payload');
             $table->unsignedTinyInteger('attempts');
@@ -36,7 +39,10 @@ return new class extends Migration
         });
 
         Schema::create('failed_jobs', function (Blueprint $table) {
-            $table->uuid('id')->default(DB::raw('gen_random_uuid()'))->primary();
+            $id = $table->uuid('id')->primary();
+            if (DB::getDriverName() === 'pgsql') {
+                $id->default(DB::raw('gen_random_uuid()'));
+            }
             $table->text('connection');
             $table->text('queue');
             $table->longText('payload');

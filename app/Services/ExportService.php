@@ -131,7 +131,7 @@ class ExportService
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $items = $event->budgetItems()->orderBy('category')->get();
+        $items = $event->budgetItems()->with('payments.attachments')->orderBy('category')->get();
 
         $callback = function () use ($items, $event) {
             $file = fopen('php://output', 'w');
@@ -145,7 +145,10 @@ class ExportService
                 'Nom',
                 'Coût estimé',
                 'Coût réel',
-                'Payé',
+                'Montant payé',
+                'Reste à payer',
+                'Statut paiement',
+                'Justificatifs',
                 'Date de paiement',
                 'Notes',
             ], ';');
@@ -157,7 +160,10 @@ class ExportService
                     $item->name,
                     number_format($item->estimated_cost, 2, ',', ' '),
                     number_format($item->actual_cost ?? 0, 2, ',', ' '),
-                    $item->paid ? 'Oui' : 'Non',
+                    number_format($item->total_paid, 2, ',', ' '),
+                    number_format($item->remaining_amount, 2, ',', ' '),
+                    $this->getPaymentStatusLabel($item->payment_status),
+                    $item->attachments_count,
                     $item->payment_date?->format('d/m/Y') ?? '',
                     $item->notes,
                 ], ';');
@@ -170,8 +176,10 @@ class ExportService
                 '',
                 number_format($items->sum('estimated_cost'), 2, ',', ' '),
                 number_format($items->sum('actual_cost'), 2, ',', ' '),
+                number_format($items->sum('total_paid'), 2, ',', ' '),
+                number_format(max($items->sum('actual_cost') - $items->sum('total_paid'), 0), 2, ',', ' '),
                 '',
-                '',
+                $items->sum('attachments_count'),
                 '',
             ], ';');
 
@@ -186,13 +194,13 @@ class ExportService
      */
     public function exportBudgetToPdf(Event $event): Response
     {
-        $items = $event->budgetItems()->orderBy('category')->get();
+        $items = $event->budgetItems()->with('payments.attachments')->orderBy('category')->get();
 
         $stats = [
             'total_estimated' => $items->sum('estimated_cost'),
             'total_actual' => $items->sum('actual_cost'),
-            'total_paid' => $items->where('paid', true)->sum('actual_cost'),
-            'total_unpaid' => $items->where('paid', false)->sum('actual_cost'),
+            'total_paid' => $items->sum('total_paid'),
+            'total_unpaid' => max($items->sum('actual_cost') - $items->sum('total_paid'), 0),
             'items_count' => $items->count(),
             'by_category' => $items->groupBy('category')->map(fn($group) => [
                 'estimated' => $group->sum('estimated_cost'),
@@ -218,7 +226,7 @@ class ExportService
      */
     public function exportEventReportPdf(Event $event): Response
     {
-        $event->load(['guests', 'tasks', 'budgetItems', 'photos', 'collaborators.user', 'user']);
+        $event->load(['guests', 'tasks', 'budgetItems.payments.attachments', 'photos', 'collaborators.user', 'user']);
 
         $guestStats = [
             'total' => $event->guests->count(),
@@ -238,7 +246,7 @@ class ExportService
         $budgetStats = [
             'total_estimated' => $event->budgetItems->sum('estimated_cost'),
             'total_actual' => $event->budgetItems->sum('actual_cost'),
-            'total_paid' => $event->budgetItems->where('paid', true)->sum('actual_cost'),
+            'total_paid' => $event->budgetItems->sum('total_paid'),
         ];
 
         $pdf = Pdf::loadView('exports.event-report-pdf', [
@@ -329,6 +337,15 @@ class ExportService
             'transportation' => 'Transport',
             'other' => 'Autre',
             default => $category,
+        };
+    }
+
+    protected function getPaymentStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'paid' => 'Payé',
+            'partially_paid' => 'Partiel',
+            default => 'Non payé',
         };
     }
 

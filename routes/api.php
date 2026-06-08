@@ -208,6 +208,13 @@ Route::middleware(['auth:sanctum', 'log.activity'])->group(function () {
         Route::delete('/items/{item}', [BudgetController::class, 'destroy']);
         Route::post('/items/{item}/mark-paid', [BudgetController::class, 'markPaid']);
         Route::post('/items/{item}/mark-unpaid', [BudgetController::class, 'markUnpaid']);
+        Route::get('/items/{item}/payments', [BudgetController::class, 'payments']);
+        Route::post('/items/{item}/payments', [BudgetController::class, 'storePayment']);
+        Route::put('/items/{item}/payments/{payment}', [BudgetController::class, 'updatePayment']);
+        Route::delete('/items/{item}/payments/{payment}', [BudgetController::class, 'destroyPayment']);
+        Route::post('/items/{item}/payments/{payment}/attachments', [BudgetController::class, 'storePaymentAttachment']);
+        Route::get('/items/{item}/payments/{payment}/attachments/{attachment}/signed-url', [BudgetController::class, 'paymentAttachmentSignedUrl']);
+        Route::delete('/items/{item}/payments/{payment}/attachments/{attachment}', [BudgetController::class, 'destroyPaymentAttachment']);
         Route::post('/bulk-update', [BudgetController::class, 'bulkUpdate']);
     });
 

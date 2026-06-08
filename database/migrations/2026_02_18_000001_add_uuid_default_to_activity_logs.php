@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         // Vérifier si le default existe déjà, sinon l'ajouter
         $defaultExists = DB::selectOne("
             SELECT column_default 
@@ -32,6 +36,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         // Retirer le default (optionnel, car on ne peut pas vraiment "annuler" cette modification)
         DB::statement('ALTER TABLE activity_logs ALTER COLUMN id DROP DEFAULT');
     }

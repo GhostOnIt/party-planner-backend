@@ -53,7 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // Pour les requêtes API : ne jamais exposer exception, file, line, trace au client
         $exceptions->renderable(function (\Throwable $e, Request $request) {
-            if (!$request->expectsJson()) {
+            if (!$request->expectsJson() && !$request->is('api/*')) {
                 return null;
             }
             // Laisser Laravel gérer la validation (422 + errors)

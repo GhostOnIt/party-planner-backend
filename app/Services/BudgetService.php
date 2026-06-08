@@ -4,14 +4,21 @@ namespace App\Services;
 
 use App\Enums\BudgetCategory;
 use App\Models\BudgetItem;
+use App\Models\BudgetItemPayment;
+use App\Models\BudgetPaymentAttachment;
 use App\Models\Event;
 use App\Models\Notification;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 
 class BudgetService
 {
+    public function __construct(
+        protected S3Service $s3Service
+    ) {}
+
     /**
      * Create a new budget item.
      */
@@ -49,12 +56,12 @@ class BudgetService
      */
     public function getStatistics(Event $event): array
     {
-        $items = $event->budgetItems;
+        $items = $event->budgetItems()->with('payments.attachments')->get();
 
         $totalEstimated = $items->sum('estimated_cost');
         $totalActual = $items->sum('actual_cost');
-        $totalPaid = $items->where('paid', true)->sum('actual_cost');
-        $totalUnpaid = $items->where('paid', false)->sum('actual_cost');
+        $totalPaid = $items->sum('total_paid');
+        $totalUnpaid = max($totalActual - $totalPaid, 0);
 
         $eventBudget = $event->estimated_budget ?? 0;
         $budgetRemaining = $eventBudget - $totalActual;
@@ -74,8 +81,13 @@ class BudgetService
             'variance' => $variance,
             'variance_percent' => round($variancePercent, 2),
             'items_count' => $items->count(),
-            'paid_items_count' => $items->where('paid', true)->count(),
-            'unpaid_items_count' => $items->where('paid', false)->count(),
+            'paid_items_count' => $items->where('payment_status', 'paid')->count(),
+            'partially_paid_items_count' => $items->where('payment_status', 'partially_paid')->count(),
+            'unpaid_items_count' => $items->where('payment_status', 'unpaid')->count(),
+            'payment_proofs_count' => $items->sum('attachments_count'),
+            'missing_proof_paid_items_count' => $items
+                ->filter(fn ($item) => $item->payment_status === 'paid' && $item->attachments_count === 0)
+                ->count(),
             'is_over_budget' => $totalActual > $eventBudget && $eventBudget > 0,
             'is_over_estimated' => $totalActual > $totalEstimated,
         ];
@@ -86,7 +98,7 @@ class BudgetService
      */
     public function getByCategory(Event $event): Collection
     {
-        $items = $event->budgetItems;
+        $items = $event->budgetItems()->with('payments.attachments')->get();
 
         return $items->groupBy('category')->map(function ($categoryItems, $category) {
             return [
@@ -95,8 +107,8 @@ class BudgetService
                 'items' => $categoryItems,
                 'estimated' => $categoryItems->sum('estimated_cost'),
                 'actual' => $categoryItems->sum('actual_cost'),
-                'paid' => $categoryItems->where('paid', true)->sum('actual_cost'),
-                'unpaid' => $categoryItems->where('paid', false)->sum('actual_cost'),
+                'paid' => $categoryItems->sum('total_paid'),
+                'unpaid' => max($categoryItems->sum('actual_cost') - $categoryItems->sum('total_paid'), 0),
                 'variance' => $categoryItems->sum('actual_cost') - $categoryItems->sum('estimated_cost'),
                 'count' => $categoryItems->count(),
             ];
@@ -236,12 +248,22 @@ class BudgetService
      */
     public function markAsPaid(BudgetItem $item, ?string $paymentDate = null): BudgetItem
     {
+        $remainingAmount = $item->remaining_amount;
+
+        if ($remainingAmount > 0) {
+            $this->createPayment($item, [
+                'amount' => $remainingAmount,
+                'payment_date' => $paymentDate ?? now()->toDateString(),
+                'notes' => 'Paiement du solde restant',
+            ]);
+        }
+
         $item->update([
             'paid' => true,
             'payment_date' => $paymentDate ?? now()->toDateString(),
         ]);
 
-        return $item->fresh();
+        return $item->fresh(['payments.attachments']);
     }
 
     /**
@@ -249,12 +271,100 @@ class BudgetService
      */
     public function markAsUnpaid(BudgetItem $item): BudgetItem
     {
+        $item->payments()->each(function (BudgetItemPayment $payment) {
+            $this->deletePayment($payment);
+        });
+
         $item->update([
             'paid' => false,
             'payment_date' => null,
         ]);
 
-        return $item->fresh();
+        return $item->fresh(['payments.attachments']);
+    }
+
+    public function createPayment(BudgetItem $item, array $data, ?User $user = null): BudgetItemPayment
+    {
+        $payment = $item->payments()->create([
+            'event_id' => $item->event_id,
+            'created_by' => $user?->id,
+            'amount' => $data['amount'],
+            'payment_date' => $data['payment_date'] ?? now()->toDateString(),
+            'method' => $data['method'] ?? null,
+            'reference' => $data['reference'] ?? null,
+            'notes' => $data['notes'] ?? null,
+        ]);
+
+        $this->syncPaymentState($item);
+
+        return $payment->fresh(['attachments']);
+    }
+
+    public function updatePayment(BudgetItemPayment $payment, array $data): BudgetItemPayment
+    {
+        $payment->update($data);
+        $this->syncPaymentState($payment->budgetItem);
+
+        return $payment->fresh(['attachments']);
+    }
+
+    public function deletePayment(BudgetItemPayment $payment): bool
+    {
+        $item = $payment->budgetItem;
+
+        $payment->attachments->each(fn (BudgetPaymentAttachment $attachment) => $this->deleteAttachment($attachment));
+        $deleted = $payment->delete();
+        $this->syncPaymentState($item);
+
+        return $deleted;
+    }
+
+    public function attachPaymentFile(BudgetItemPayment $payment, UploadedFile $file, ?User $user = null): BudgetPaymentAttachment
+    {
+        $item = $payment->budgetItem;
+        $upload = $this->s3Service->uploadBudgetPaymentAttachment(
+            (string) $payment->event_id,
+            (string) $payment->budget_item_id,
+            (string) $payment->id,
+            $file
+        );
+
+        return $payment->attachments()->create([
+            'budget_item_id' => $payment->budget_item_id,
+            'event_id' => $payment->event_id,
+            'uploaded_by' => $user?->id,
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType() ?: 'application/octet-stream',
+            'size' => $file->getSize() ?: 0,
+            's3_path' => $upload['path'],
+        ]);
+    }
+
+    public function deleteAttachment(BudgetPaymentAttachment $attachment): bool
+    {
+        $this->s3Service->delete($attachment->s3_path);
+
+        return $attachment->delete();
+    }
+
+    public function getAttachmentSignedUrl(BudgetPaymentAttachment $attachment, int $minutes = 15): ?string
+    {
+        return $this->s3Service->getSignedUrl($attachment->s3_path, $minutes);
+    }
+
+    protected function syncPaymentState(BudgetItem $item): void
+    {
+        $item->refresh();
+        $totalPaid = (float) $item->payments()->sum('amount');
+        $actualCost = (float) ($item->actual_cost ?? 0);
+        $isPaid = $totalPaid > 0 && ($actualCost <= 0 || $totalPaid >= $actualCost);
+
+        $item->update([
+            'paid' => $isPaid,
+            'payment_date' => $isPaid
+                ? $item->payments()->latest('payment_date')->value('payment_date')
+                : null,
+        ]);
     }
 
     /**
@@ -287,6 +397,7 @@ class BudgetService
     public function generatePdf(Event $event): \Barryvdh\DomPDF\PDF
     {
         $items = $event->budgetItems()
+            ->with('payments.attachments')
             ->orderBy('category')
             ->orderBy('name')
             ->get();
@@ -309,7 +420,7 @@ class BudgetService
             ->orderBy('name')
             ->get();
 
-        $csv = "Catégorie,Nom,Estimé,Réel,Payé,Date paiement,Notes\n";
+        $csv = "Catégorie,Nom,Estimé,Réel,Montant payé,Reste à payer,Statut paiement,Justificatifs,Date paiement,Notes\n";
 
         foreach ($items as $item) {
             $csv .= implode(',', [
@@ -317,7 +428,14 @@ class BudgetService
                 '"' . str_replace('"', '""', $item->name) . '"',
                 $item->estimated_cost ?? '',
                 $item->actual_cost ?? '',
-                $item->paid ? 'Oui' : 'Non',
+                $item->total_paid,
+                $item->remaining_amount,
+                match ($item->payment_status) {
+                    'paid' => 'Payé',
+                    'partially_paid' => 'Partiel',
+                    default => 'Non payé',
+                },
+                $item->attachments_count,
                 $item->payment_date?->format('d/m/Y') ?? '',
                 '"' . str_replace('"', '""', $item->notes ?? '') . '"',
             ]) . "\n";

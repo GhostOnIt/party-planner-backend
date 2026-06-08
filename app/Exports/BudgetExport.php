@@ -20,7 +20,7 @@ class BudgetExport implements FromCollection, WithHeadings, WithMapping, WithSty
 
     public function collection(): Collection
     {
-        return $this->event->budgetItems()->orderBy('category')->get();
+        return $this->event->budgetItems()->with('payments.attachments')->orderBy('category')->get();
     }
 
     public function headings(): array
@@ -30,7 +30,10 @@ class BudgetExport implements FromCollection, WithHeadings, WithMapping, WithSty
             'Nom',
             'Coût estimé (FCFA)',
             'Coût réel (FCFA)',
-            'Payé',
+            'Montant payé (FCFA)',
+            'Reste à payer (FCFA)',
+            'Statut paiement',
+            'Justificatifs',
             'Date de paiement',
             'Notes',
         ];
@@ -43,7 +46,10 @@ class BudgetExport implements FromCollection, WithHeadings, WithMapping, WithSty
             $item->name,
             number_format($item->estimated_cost, 0, ',', ' '),
             number_format($item->actual_cost ?? 0, 0, ',', ' '),
-            $item->paid ? 'Oui' : 'Non',
+            number_format($item->total_paid, 0, ',', ' '),
+            number_format($item->remaining_amount, 0, ',', ' '),
+            $this->getPaymentStatusLabel($item->payment_status),
+            $item->attachments_count,
             $item->payment_date?->format('d/m/Y') ?? '',
             $item->notes ?? '',
         ];
@@ -78,6 +84,15 @@ class BudgetExport implements FromCollection, WithHeadings, WithMapping, WithSty
             'transportation' => 'Transport',
             'other' => 'Autre',
             default => $category,
+        };
+    }
+
+    protected function getPaymentStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'paid' => 'Payé',
+            'partially_paid' => 'Partiel',
+            default => 'Non payé',
         };
     }
 }

@@ -39,7 +39,9 @@ return new class extends Migration
 
         // 4. Ajouter la génération automatique d'UUID pour la colonne id (si pas déjà présente)
         // Note: PostgreSQL nécessite une modification explicite de la colonne pour ajouter le default
-        DB::statement('ALTER TABLE activity_logs ALTER COLUMN id SET DEFAULT gen_random_uuid()');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE activity_logs ALTER COLUMN id SET DEFAULT gen_random_uuid()');
+        }
 
         // 5. Ajouter la nouvelle FK et les nouvelles colonnes
         Schema::table('activity_logs', function (Blueprint $table) {

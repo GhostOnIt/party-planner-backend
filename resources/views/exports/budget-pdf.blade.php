@@ -63,7 +63,10 @@
                 <th>Nom</th>
                 <th class="text-right">Estimé</th>
                 <th class="text-right">Réel</th>
-                <th>Payé</th>
+                <th class="text-right">Payé</th>
+                <th class="text-right">Reste</th>
+                <th>Statut</th>
+                <th>Justif.</th>
             </tr>
         </thead>
         <tbody>
@@ -82,13 +85,23 @@
                 <td>{{ $item->name }}</td>
                 <td class="text-right">{{ number_format($item->estimated_cost, 0, ',', ' ') }}</td>
                 <td class="text-right">{{ number_format($item->actual_cost ?? 0, 0, ',', ' ') }}</td>
-                <td>{{ $item->paid ? '✓' : '-' }}</td>
+                <td class="text-right">{{ number_format($item->total_paid, 0, ',', ' ') }}</td>
+                <td class="text-right">{{ number_format($item->remaining_amount, 0, ',', ' ') }}</td>
+                <td>{{ match($item->payment_status) {
+                    'paid' => 'Payé',
+                    'partially_paid' => 'Partiel',
+                    default => 'Non payé'
+                } }}</td>
+                <td>{{ $item->attachments_count }}</td>
             </tr>
             @endforeach
             <tr class="total-row">
                 <td colspan="2">TOTAL</td>
                 <td class="text-right">{{ number_format($stats['total_estimated'], 0, ',', ' ') }}</td>
                 <td class="text-right">{{ number_format($stats['total_actual'], 0, ',', ' ') }}</td>
+                <td class="text-right">{{ number_format($stats['total_paid'], 0, ',', ' ') }}</td>
+                <td class="text-right">{{ number_format($stats['total_unpaid'], 0, ',', ' ') }}</td>
+                <td></td>
                 <td></td>
             </tr>
         </tbody>
