@@ -237,6 +237,8 @@ Route::middleware(['auth:sanctum', 'log.activity'])->group(function () {
         Route::get('/{photo}/download', [PhotoController::class, 'download']);
         Route::put('/{photo}', [PhotoController::class, 'update']);
         Route::delete('/{photo}', [PhotoController::class, 'destroy']);
+        Route::post('/{photo}/approve', [PhotoController::class, 'approve']);
+        Route::post('/{photo}/reject', [PhotoController::class, 'reject']);
         Route::post('/{photo}/toggle-featured', [PhotoController::class, 'toggleFeatured']);
         Route::post('/{photo}/set-featured', [PhotoController::class, 'setFeatured']);
     });

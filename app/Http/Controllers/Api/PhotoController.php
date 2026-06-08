@@ -26,7 +26,8 @@ class PhotoController extends Controller
     {
         $this->authorize('viewAny', [Photo::class, $event]);
 
-        $query = $event->photos()->with('uploadedBy');
+        $query = $this->photoService
+            ->applyVisibility($event->photos()->with(['uploadedBy', 'moderatedBy']), $request->user(), $event);
 
         // Search by uploader name or email
         if ($request->filled('search')) {
@@ -45,6 +46,10 @@ class PhotoController extends Controller
         // Filter by featured
         if ($request->filled('featured')) {
             $query->where('is_featured', $request->boolean('featured'));
+        }
+
+        if ($request->filled('moderation_status') && $request->user()->can('moderate', [Photo::class, $event])) {
+            $query->where('moderation_status', $request->input('moderation_status'));
         }
 
         $photos = $query
@@ -89,7 +94,7 @@ class PhotoController extends Controller
     {
         $this->authorize('view', $photo);
 
-        $photo->load('uploadedBy');
+        $photo->load(['uploadedBy', 'moderatedBy']);
 
         return response()->json($photo);
     }
@@ -169,6 +174,12 @@ class PhotoController extends Controller
     {
         $this->authorize('setFeatured', $photo);
 
+        if (!$photo->isApproved()) {
+            return response()->json([
+                'message' => 'Cette photo doit etre validee avant de pouvoir etre mise en avant.',
+            ], 422);
+        }
+
         $photo = $this->photoService->toggleFeatured($photo);
 
         return response()->json($photo);
@@ -181,6 +192,12 @@ class PhotoController extends Controller
     {
         $this->authorize('setFeatured', $photo);
 
+        if (!$photo->isApproved()) {
+            return response()->json([
+                'message' => 'Cette photo doit etre validee avant de pouvoir etre mise en avant.',
+            ], 422);
+        }
+
         $photo = $this->photoService->setAsFeatured($photo);
 
         return response()->json($photo);
@@ -192,8 +209,7 @@ class PhotoController extends Controller
     public function bulkDelete(Request $request, Event $event): JsonResponse
     {
         // For bulk operations, check if user can delete any photos for this event
-        $this->authorize('viewAny', [Photo::class, $event]); // Basic access check
-        // Note: Individual photo permissions are checked in the service
+        $this->authorize('delete', Photo::make(['event_id' => $event->id]));
 
         $request->validate([
             'photos' => ['required', 'array'],
@@ -213,7 +229,7 @@ class PhotoController extends Controller
      */
     public function bulkUpdateType(Request $request, Event $event): JsonResponse
     {
-        $this->authorize('viewAny', [Photo::class, $event]); // Basic access check
+        $this->authorize('setFeatured', Photo::make(['event_id' => $event->id]));
 
         $request->validate([
             'photos' => ['required', 'array'],
@@ -234,7 +250,7 @@ class PhotoController extends Controller
      */
     public function bulkDownload(Request $request, Event $event)
     {
-        $this->authorize('download', [Photo::class, $event]);
+        $this->authorize('viewAny', [Photo::class, $event]);
 
         $validated = $request->validate([
             'photos' => ['required', 'array', 'min:1'],
@@ -244,8 +260,10 @@ class PhotoController extends Controller
         $photoIds = $validated['photos'];
 
         // Validate that all photos exist and belong to this event
-        $existingPhotos = Photo::whereIn('id', $photoIds)
+        $existingPhotos = $this->photoService
+            ->applyVisibility(Photo::whereIn('id', $photoIds), $request->user(), $event)
             ->where('event_id', $event->id)
+            ->where('moderation_status', 'approved')
             ->pluck('id')
             ->toArray();
 
@@ -286,7 +304,7 @@ class PhotoController extends Controller
             ], 403);
         }
 
-        $query = $event->photos();
+        $query = $event->photos()->where('moderation_status', 'approved');
 
         // Filter by type
         if ($request->filled('type')) {
@@ -367,7 +385,7 @@ class PhotoController extends Controller
      */
     public function download(Event $event, Photo $photo)
     {
-        $this->authorize('download', [Photo::class, $event]);
+        $this->authorize('download', $photo);
 
         $path = \App\Helpers\StorageHelper::urlToPath($photo->url);
         $disk = \App\Helpers\StorageHelper::diskForUrl($photo->url);
@@ -379,6 +397,32 @@ class PhotoController extends Controller
         }
 
         return $disk->download($path, $photo->original_name ?? 'photo.jpg');
+    }
+
+    public function approve(Event $event, Photo $photo): JsonResponse
+    {
+        $this->authorize('moderate', [Photo::class, $event]);
+
+        if ($photo->event_id !== $event->id) {
+            return response()->json(['message' => 'Photo introuvable pour cet evenement.'], 404);
+        }
+
+        return response()->json($this->photoService->approve($photo, request()->user()));
+    }
+
+    public function reject(Request $request, Event $event, Photo $photo): JsonResponse
+    {
+        $this->authorize('moderate', [Photo::class, $event]);
+
+        if ($photo->event_id !== $event->id) {
+            return response()->json(['message' => 'Photo introuvable pour cet evenement.'], 404);
+        }
+
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        return response()->json($this->photoService->reject($photo, $request->user(), $validated['reason'] ?? null));
     }
 
     /**
@@ -415,14 +459,20 @@ class PhotoController extends Controller
         }
 
         // Check if all photos exist
-        $existingPhotos = \App\Models\Photo::whereIn('id', $photoIds)->pluck('id')->toArray();
+        $existingPhotos = \App\Models\Photo::whereIn('id', $photoIds)
+            ->where('moderation_status', 'approved')
+            ->pluck('id')
+            ->toArray();
         if (count($existingPhotos) !== count($photoIds)) {
             return response()->json([
-                'message' => 'Certaines photos n\'existent pas.',
-                'errors' => ['photos' => ['Certaines photos n\'existent pas.']],
+                'message' => 'Certaines photos n\'existent pas ou ne sont pas encore validees.',
+                'errors' => ['photos' => ['Certaines photos n\'existent pas ou ne sont pas encore validees.']],
             ], 422);
         }
-        $photosCount = $event->photos()->whereIn('id', $photoIds)->count();
+        $photosCount = $event->photos()
+            ->whereIn('id', $photoIds)
+            ->where('moderation_status', 'approved')
+            ->count();
         if ($photosCount !== count($photoIds)) {
             return response()->json([
                 'message' => 'Certaines photos n\'appartiennent pas à cet événement.',

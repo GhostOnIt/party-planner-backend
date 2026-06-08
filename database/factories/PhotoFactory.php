@@ -30,6 +30,7 @@ class PhotoFactory extends Factory
             'thumbnail_url' => "https://picsum.photos/300/200?random=" . fake()->unique()->numberBetween(1, 10000),
             'description' => fake()->optional(0.3)->sentence(),
             'is_featured' => fake()->boolean(10),
+            'moderation_status' => 'approved',
         ];
     }
 
@@ -60,6 +61,23 @@ class PhotoFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_featured' => true,
+            'moderation_status' => 'approved',
+        ]);
+    }
+
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'moderation_status' => 'pending',
+            'is_featured' => false,
+        ]);
+    }
+
+    public function rejected(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'moderation_status' => 'rejected',
+            'is_featured' => false,
         ]);
     }
 }

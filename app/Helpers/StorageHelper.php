@@ -61,7 +61,8 @@ class StorageHelper
                 if ($bucket && str_starts_with($path, '/' . $bucket . '/')) {
                     return ltrim(substr($path, strlen($bucket) + 2), '/');
                 }
-                return ltrim($path, '/');
+                $key = ltrim($path, '/');
+                return str_starts_with($key, 'events/') ? $key : null;
             }
         }
 

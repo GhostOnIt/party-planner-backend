@@ -30,6 +30,7 @@ class PhotoService
             'thumbnail_url' => $url, // Will be updated by job
             'description' => $description,
             'is_featured' => false,
+            'moderation_status' => 'pending',
         ]);
 
         // Dispatch job for async processing (thumbnail generation, compression)
@@ -325,6 +326,50 @@ class PhotoService
         return $photo->fresh();
     }
 
+    public function approve(Photo $photo, User $moderator): Photo
+    {
+        $photo->update([
+            'moderation_status' => 'approved',
+            'moderated_by_user_id' => $moderator->id,
+            'moderated_at' => now(),
+            'moderation_reason' => null,
+        ]);
+
+        return $photo->fresh(['uploadedBy', 'moderatedBy']);
+    }
+
+    public function reject(Photo $photo, User $moderator, ?string $reason = null): Photo
+    {
+        $photo->update([
+            'moderation_status' => 'rejected',
+            'is_featured' => false,
+            'moderated_by_user_id' => $moderator->id,
+            'moderated_at' => now(),
+            'moderation_reason' => $reason,
+        ]);
+
+        if ($photo->event->cover_photo_id === $photo->id) {
+            $photo->event->update(['cover_photo_id' => null]);
+        }
+
+        return $photo->fresh(['uploadedBy', 'moderatedBy']);
+    }
+
+    public function applyVisibility($query, ?User $user, Event $event)
+    {
+        if ($user && app(PermissionService::class)->userCan($user, $event, 'photos.moderate')) {
+            return $query;
+        }
+
+        return $query->where(function ($visible) use ($user) {
+            $visible->where('moderation_status', 'approved');
+
+            if ($user) {
+                $visible->orWhere('uploaded_by_user_id', $user->id);
+            }
+        });
+    }
+
     /**
      * Get statistics for an event's gallery.
      */
@@ -337,6 +382,9 @@ class PhotoService
             'moodboard' => $photos->where('type', 'moodboard')->count(),
             'event_photos' => $photos->where('type', 'event_photo')->count(),
             'featured' => $photos->where('is_featured', true)->count(),
+            'pending' => $photos->where('moderation_status', 'pending')->count(),
+            'approved' => $photos->where('moderation_status', 'approved')->count(),
+            'rejected' => $photos->where('moderation_status', 'rejected')->count(),
         ];
     }
 
@@ -450,6 +498,7 @@ class PhotoService
                     'thumbnail_url' => $url, // Will be updated by job
                     'description' => $guestName ? "Uploadé par {$guestName}" : 'Uploadé par un invité',
                     'is_featured' => false,
+                    'moderation_status' => 'pending',
                 ]);
 
                 // Dispatch job for async processing
@@ -467,7 +516,10 @@ class PhotoService
      */
     public function downloadMultiple(Event $event, array $photoIds): string
     {
-        $photos = $event->photos()->whereIn('id', $photoIds)->get();
+        $photos = $event->photos()
+            ->whereIn('id', $photoIds)
+            ->where('moderation_status', 'approved')
+            ->get();
 
         if ($photos->isEmpty()) {
             throw new \Illuminate\Http\Exceptions\HttpResponseException(

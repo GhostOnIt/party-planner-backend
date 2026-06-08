@@ -198,6 +198,13 @@ class PermissionSeeder extends Seeder
                 'module' => 'photos',
                 'action' => 'set_featured',
             ],
+            [
+                'name' => 'photos.moderate',
+                'display_name' => 'Moderer les photos',
+                'description' => 'Permet de valider ou rejeter les photos avant publication',
+                'module' => 'photos',
+                'action' => 'moderate',
+            ],
 
             // Collaborators
             [

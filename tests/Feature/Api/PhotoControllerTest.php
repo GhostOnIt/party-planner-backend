@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Enums\PhotoType;
 use App\Models\Collaborator;
 use App\Models\Event;
+use App\Models\Guest;
 use App\Models\Photo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -347,5 +348,84 @@ class PhotoControllerTest extends TestCase
                 'type' => PhotoType::EVENT_PHOTO->value,
             ]);
         }
+    }
+
+    public function test_public_gallery_only_lists_approved_photos(): void
+    {
+        $guest = Guest::factory()->checkedIn()->create(['event_id' => $this->event->id]);
+
+        $approved = Photo::factory()->create([
+            'event_id' => $this->event->id,
+            'moderation_status' => 'approved',
+        ]);
+        $pending = Photo::factory()->pending()->create(['event_id' => $this->event->id]);
+
+        $response = $this->getJson("/api/events/{$this->event->id}/photos/public/{$guest->photo_upload_token}");
+
+        $response->assertOk()
+            ->assertJsonFragment(['id' => $approved->id])
+            ->assertJsonMissing(['id' => $pending->id]);
+    }
+
+    public function test_collaborator_without_moderation_cannot_see_other_pending_photos(): void
+    {
+        $collaborator = User::factory()->create();
+        Sanctum::actingAs($collaborator);
+
+        Collaborator::factory()->viewer()->create([
+            'event_id' => $this->event->id,
+            'user_id' => $collaborator->id,
+        ]);
+
+        $approved = Photo::factory()->create([
+            'event_id' => $this->event->id,
+            'moderation_status' => 'approved',
+        ]);
+        $pending = Photo::factory()->pending()->create([
+            'event_id' => $this->event->id,
+            'uploaded_by_user_id' => $this->user->id,
+        ]);
+
+        $response = $this->getJson("/api/events/{$this->event->id}/photos");
+
+        $response->assertOk()
+            ->assertJsonFragment(['id' => $approved->id])
+            ->assertJsonMissing(['id' => $pending->id]);
+    }
+
+    public function test_owner_can_approve_pending_photo(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $photo = Photo::factory()->pending()->create(['event_id' => $this->event->id]);
+
+        $response = $this->postJson("/api/events/{$this->event->id}/photos/{$photo->id}/approve");
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'id' => $photo->id,
+                'moderation_status' => 'approved',
+            ]);
+
+        $this->assertDatabaseHas('photos', [
+            'id' => $photo->id,
+            'moderation_status' => 'approved',
+            'moderated_by_user_id' => $this->user->id,
+        ]);
+    }
+
+    public function test_pending_photo_cannot_be_featured(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $photo = Photo::factory()->pending()->create(['event_id' => $this->event->id]);
+
+        $response = $this->postJson("/api/events/{$this->event->id}/photos/{$photo->id}/set-featured");
+
+        $response->assertUnprocessable();
+        $this->assertDatabaseHas('photos', [
+            'id' => $photo->id,
+            'is_featured' => false,
+        ]);
     }
 }

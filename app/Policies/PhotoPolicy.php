@@ -28,20 +28,24 @@ class PhotoPolicy
 
     /**
      * Determine whether the user can view any photos for the event.
-     * Photos are public, so everyone can view them.
      */
     public function viewAny(User $user, Event $event): bool
     {
-        return true; // Photos are public
+        return $this->permissionService->userCan($user, $event, 'photos.view');
     }
 
     /**
      * Determine whether the user can view the photo.
-     * Photos are public, so everyone can view them.
      */
     public function view(User $user, Photo $photo): bool
     {
-        return true; // Photos are public
+        if (!$this->permissionService->userCan($user, $photo->event, 'photos.view')) {
+            return false;
+        }
+
+        return $photo->isApproved()
+            || $this->moderate($user, $photo->event)
+            || $photo->uploaded_by_user_id === $user->id;
     }
 
     /**
@@ -50,6 +54,15 @@ class PhotoPolicy
     public function upload(User $user, Event $event): bool
     {
         return $this->permissionService->userCan($user, $event, 'photos.upload');
+    }
+
+    /**
+     * Determine whether the user can update photo metadata.
+     */
+    public function update(User $user, Photo $photo): bool
+    {
+        return $this->permissionService->userCan($user, $photo->event, 'photos.upload')
+            || $this->moderate($user, $photo->event);
     }
 
     /**
@@ -69,11 +82,18 @@ class PhotoPolicy
     }
 
     /**
-     * Determine whether the user can download photos.
-     * Downloads are always allowed as photos are public.
+     * Determine whether the user can moderate photos for the event.
      */
-    public function download(User $user, Event $event): bool
+    public function moderate(User $user, Event $event): bool
     {
-        return true; // Photos are public, downloads are always allowed
+        return $this->permissionService->userCan($user, $event, 'photos.moderate');
+    }
+
+    /**
+     * Determine whether the user can download a photo.
+     */
+    public function download(User $user, Photo $photo): bool
+    {
+        return $this->view($user, $photo);
     }
 }

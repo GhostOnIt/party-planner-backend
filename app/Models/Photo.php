@@ -24,6 +24,10 @@ class Photo extends Model
         'thumbnail_url',
         'description',
         'is_featured',
+        'moderation_status',
+        'moderated_by_user_id',
+        'moderated_at',
+        'moderation_reason',
     ];
 
     /**
@@ -35,6 +39,7 @@ class Photo extends Model
     {
         return [
             'is_featured' => 'boolean',
+            'moderated_at' => 'datetime',
         ];
     }
 
@@ -52,6 +57,21 @@ class Photo extends Model
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');
+    }
+
+    public function moderatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'moderated_by_user_id');
+    }
+
+    public function isPendingModeration(): bool
+    {
+        return $this->moderation_status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->moderation_status === 'approved';
     }
 
     /**

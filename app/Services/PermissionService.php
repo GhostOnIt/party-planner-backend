@@ -221,7 +221,7 @@ class PermissionService
             // Budget
             'budget.view', 'budget.create', 'budget.edit', 'budget.delete', 'budget.export',
             // Photos
-            'photos.view', 'photos.upload', 'photos.delete', 'photos.set_featured',
+            'photos.view', 'photos.upload', 'photos.delete', 'photos.set_featured', 'photos.moderate',
             // Collaborators
             'collaborators.view', 'collaborators.invite', 'collaborators.edit_roles', 'collaborators.remove',
         ];
