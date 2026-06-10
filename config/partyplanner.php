@@ -117,6 +117,22 @@ return [
             'callback_url' => env('AIRTEL_CALLBACK_URL'),
             'environment' => env('AIRTEL_ENVIRONMENT', 'sandbox'),
         ],
+        'pawapay' => [
+            'enabled' => env('PAWAPAY_ENABLED', false),
+            'name' => 'pawaPay',
+            'environment' => env('PAWAPAY_ENVIRONMENT', 'sandbox'),
+            'base_url' => env('PAWAPAY_BASE_URL', 'https://api.sandbox.pawapay.io'),
+            'api_token' => env('PAWAPAY_API_TOKEN'),
+            'currency' => env('PAWAPAY_CURRENCY', env('CURRENCY_CODE', 'XAF')),
+            'timeout' => env('PAWAPAY_HTTP_TIMEOUT', 30),
+            'default_country' => env('PAWAPAY_DEFAULT_COUNTRY', 'COG'),
+            'default_provider' => env('PAWAPAY_DEFAULT_PROVIDER', 'AIRTEL_COG'),
+            'callbacks' => [
+                'deposits' => env('PAWAPAY_DEPOSITS_CALLBACK_URL', env('APP_URL') . '/api/webhooks/pawapay/deposits'),
+                'payouts' => env('PAWAPAY_PAYOUTS_CALLBACK_URL', env('APP_URL') . '/api/webhooks/pawapay/payouts'),
+                'refunds' => env('PAWAPAY_REFUNDS_CALLBACK_URL', env('APP_URL') . '/api/webhooks/pawapay/refunds'),
+            ],
+        ],
     ],
 
     /*

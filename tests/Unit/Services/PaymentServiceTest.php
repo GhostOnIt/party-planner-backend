@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class PaymentServiceTest extends TestCase
@@ -128,6 +129,8 @@ class PaymentServiceTest extends TestCase
 
     public function test_process_mtn_callback_marks_payment_completed_on_success(): void
     {
+        Bus::fake();
+
         $payment = Payment::create([
             'subscription_id' => $this->subscription->id,
             'amount' => 5000,
@@ -186,6 +189,8 @@ class PaymentServiceTest extends TestCase
 
     public function test_process_airtel_callback_marks_payment_completed(): void
     {
+        Bus::fake();
+
         $payment = Payment::create([
             'subscription_id' => $this->subscription->id,
             'amount' => 5000,
@@ -205,6 +210,85 @@ class PaymentServiceTest extends TestCase
         ]);
 
         $this->assertSame('completed', $payment->fresh()->status);
+    }
+
+    public function test_initiate_pawapay_deposit_creates_pending_payment(): void
+    {
+        config([
+            'partyplanner.payments.pawapay.enabled' => true,
+            'partyplanner.payments.pawapay.api_token' => 'sandbox-token',
+            'partyplanner.payments.pawapay.base_url' => 'https://api.sandbox.pawapay.io',
+            'partyplanner.payments.pawapay.currency' => 'XAF',
+            'partyplanner.payments.pawapay.default_country' => 'COG',
+            'partyplanner.payments.pawapay.default_provider' => 'AIRTEL_COG',
+        ]);
+
+        Http::fake([
+            'api.sandbox.pawapay.io/v2/deposits' => Http::response([
+                'depositId' => 'deposit-1',
+                'status' => 'ACCEPTED',
+                'nextStep' => 'FINAL_STATUS',
+            ], 200),
+        ]);
+
+        $result = $this->service->initiatePawaPayDeposit(
+            $this->subscription,
+            '242053456789',
+            'AIRTEL_COG',
+            'COG',
+            'XAF'
+        );
+
+        $this->assertTrue($result['success']);
+        $this->assertSame('pending', $result['payment']->status);
+        $this->assertSame('pawapay', $result['payment']->payment_method);
+        $this->assertNotEmpty($result['reference']);
+    }
+
+    public function test_process_pawapay_callback_marks_payment_completed(): void
+    {
+        Bus::fake();
+
+        $payment = Payment::create([
+            'subscription_id' => $this->subscription->id,
+            'amount' => 5000,
+            'currency' => 'XAF',
+            'payment_method' => 'pawapay',
+            'status' => 'pending',
+            'transaction_reference' => 'DEP-123',
+            'metadata' => [],
+        ]);
+
+        $this->service->processPawaPayDepositCallback([
+            'depositId' => 'DEP-123',
+            'status' => 'COMPLETED',
+            'providerTransactionId' => 'PWP-999',
+        ]);
+
+        $this->assertSame('completed', $payment->fresh()->status);
+        $this->assertSame('DEP-123', $payment->fresh()->transaction_reference);
+        $this->assertSame('PWP-999', $payment->fresh()->metadata['pawapay']['provider_transaction_id']);
+    }
+
+    public function test_process_pawapay_callback_marks_payment_failed(): void
+    {
+        $payment = Payment::create([
+            'subscription_id' => $this->subscription->id,
+            'amount' => 5000,
+            'currency' => 'XAF',
+            'payment_method' => 'pawapay',
+            'status' => 'pending',
+            'transaction_reference' => 'DEP-FAIL',
+            'metadata' => [],
+        ]);
+
+        $this->service->processPawaPayDepositCallback([
+            'depositId' => 'DEP-FAIL',
+            'status' => 'FAILED',
+            'failureCode' => 'PAYMENT_NOT_APPROVED',
+        ]);
+
+        $this->assertSame('failed', $payment->fresh()->status);
     }
 
     /*

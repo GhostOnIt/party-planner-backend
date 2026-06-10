@@ -347,6 +347,41 @@ class PaymentService
     }
 
     /**
+     * Initiate a pawaPay deposit.
+     */
+    public function initiatePawaPayDeposit(
+        Subscription $subscription,
+        string $phoneNumber,
+        ?string $provider = null,
+        ?string $country = null,
+        ?string $currency = null,
+        ?string $idempotencyKey = null
+    ): array {
+        $payment = $this->createPayment($subscription, 'pawapay', $idempotencyKey);
+        $config = config('partyplanner.payments.pawapay');
+
+        $country = strtoupper($country ?: ($config['default_country'] ?? 'COG'));
+        $provider = strtoupper($provider ?: ($config['default_provider'] ?? 'AIRTEL_COG'));
+        $currency = strtoupper($currency ?: ($config['currency'] ?? config('partyplanner.currency.code', 'XAF')));
+
+        $result = app(PawaPayService::class)->initiateDeposit(
+            $subscription,
+            $payment,
+            $phoneNumber,
+            $provider,
+            $country,
+            $currency
+        );
+
+        if (!($result['success'] ?? false)) {
+            $payment->markInitiationFailed();
+            $result['payment'] = $payment->fresh();
+        }
+
+        return $result;
+    }
+
+    /**
      * Handle MTN callback.
      */
     public function handleMtnCallback(array $data): bool
@@ -362,6 +397,16 @@ class PaymentService
     public function handleAirtelCallback(array $data): bool
     {
         ProcessPaymentCallbackJob::dispatch('airtel', $data);
+
+        return true;
+    }
+
+    /**
+     * Handle pawaPay deposit callback asynchronously.
+     */
+    public function handlePawaPayDepositCallback(array $data): bool
+    {
+        ProcessPaymentCallbackJob::dispatch('pawapay', $data);
 
         return true;
     }
@@ -436,6 +481,57 @@ class PaymentService
     }
 
     /**
+     * Process pawaPay deposit callback synchronously.
+     */
+    public function processPawaPayDepositCallback(array $data): void
+    {
+        $depositId = $data['depositId'] ?? null;
+
+        if (!$depositId) {
+            Log::warning('pawaPay deposit callback missing depositId', $data);
+            return;
+        }
+
+        $payment = Payment::where('payment_method', 'pawapay')
+            ->where('transaction_reference', $depositId)
+            ->first();
+
+        if (!$payment) {
+            Log::warning('pawaPay callback: payment not found', ['deposit_id' => $depositId]);
+            return;
+        }
+
+        $normalizedStatus = app(PawaPayService::class)->normalizeStatus($data['status'] ?? null);
+        $metadata = $payment->metadata ?? [];
+        $metadata['pawapay']['last_callback'] = $data;
+        $metadata['pawapay']['last_callback_at'] = now()->toIso8601String();
+        if (!empty($data['providerTransactionId'])) {
+            $metadata['pawapay']['provider_transaction_id'] = $data['providerTransactionId'];
+        }
+        $payment->update(['metadata' => $metadata]);
+
+        if ($normalizedStatus === 'completed') {
+            if (!$payment->isCompleted()) {
+                $payment->markAsCompleted($depositId);
+                SendPaymentConfirmationJob::dispatch($payment->fresh());
+            }
+
+            Log::info('pawaPay payment completed', ['payment_id' => $payment->id]);
+            return;
+        }
+
+        if ($normalizedStatus === 'failed') {
+            $reasonCode = $data['failureCode'] ?? $data['rejectionReason'] ?? null;
+            $payment->markAsFailed($reasonCode, $this->getFailureReasonMessage($reasonCode));
+
+            Log::info('pawaPay payment failed', [
+                'payment_id' => $payment->id,
+                'reason' => $reasonCode,
+            ]);
+        }
+    }
+
+    /**
      * Check payment status.
      */
     public function checkStatus(Payment $payment): array
@@ -486,6 +582,8 @@ class PaymentService
                 return $this->checkMtnStatus($payment->transaction_reference);
             } elseif ($payment->payment_method === 'airtel_money') {
                 return $this->checkAirtelStatus($payment->transaction_reference);
+            } elseif ($payment->payment_method === 'pawapay') {
+                return $this->checkPawaPayStatus($payment->transaction_reference);
             }
         } catch (\Exception $e) {
             Log::error('Status check failed', [
@@ -495,6 +593,25 @@ class PaymentService
         }
 
         return null;
+    }
+
+    /**
+     * Check pawaPay deposit status.
+     */
+    protected function checkPawaPayStatus(string $reference): ?array
+    {
+        $status = app(PawaPayService::class)->getDepositStatus($reference);
+
+        if (!$status) {
+            return null;
+        }
+
+        return [
+            'status' => strtoupper((string) ($status['status'] ?? '')),
+            'provider_reference' => $status['providerTransactionId'] ?? null,
+            'reason' => $status['failureCode'] ?? $status['rejectionReason'] ?? null,
+            'raw' => $status,
+        ];
     }
 
     /**
@@ -592,7 +709,7 @@ class PaymentService
         $status = strtoupper((string) ($providerStatus['status'] ?? ''));
         $providerReference = $providerStatus['provider_reference'] ?? null;
 
-        if (in_array($status, ['SUCCESSFUL', 'TS'], true)) {
+        if (in_array($status, ['SUCCESSFUL', 'TS', 'COMPLETED'], true)) {
             $freshPayment->markAsCompleted($providerReference);
             SendPaymentConfirmationJob::dispatch($freshPayment->fresh());
 

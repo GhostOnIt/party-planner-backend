@@ -29,6 +29,7 @@ class ProcessPaymentCallbackJob implements ShouldQueue
         match ($this->provider) {
             'mtn' => $paymentService->processMtnCallback($this->data),
             'airtel' => $paymentService->processAirtelCallback($this->data),
+            'pawapay' => $paymentService->processPawaPayDepositCallback($this->data),
             default => Log::warning("ProcessPaymentCallbackJob: Unknown provider {$this->provider}"),
         };
     }

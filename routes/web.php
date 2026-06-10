@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Webhooks\MobileMoneyWebhookController;
+use App\Http\Controllers\Webhooks\PawaPayWebhookController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Http\Controllers\Webhooks\TwilioWebhookController;
 use Illuminate\Support\Facades\Mail;
@@ -89,6 +90,16 @@ Route::post('/webhooks/mtn', [MobileMoneyWebhookController::class, 'handleMtn'])
 Route::post('/webhooks/airtel', [MobileMoneyWebhookController::class, 'handleAirtel'])->name('webhooks.airtel');
 // MTN Congo partner registration (same handler as /webhooks/mtn); must match MTN_CALLBACK_URL e.g. https://api.example.com/momo/callback
 Route::match(['post', 'put'], '/momo/callback', [MobileMoneyWebhookController::class, 'handleMtn'])->name('webhooks.momo.callback');
+
+// pawaPay callbacks. Both route groups are accepted so the Dashboard can use
+// https://api.party-planner.cg/api/webhooks/... while local tests can use /webhooks/...
+foreach (['webhooks/pawapay', 'api/webhooks/pawapay'] as $pawapayPrefix) {
+    Route::prefix($pawapayPrefix)->name('webhooks.pawapay.')->group(function () {
+        Route::post('/deposits', [PawaPayWebhookController::class, 'handleDeposit'])->name('deposits');
+        Route::post('/payouts', [PawaPayWebhookController::class, 'handlePayout'])->name('payouts');
+        Route::post('/refunds', [PawaPayWebhookController::class, 'handleRefund'])->name('refunds');
+    });
+}
 
 // Stripe webhooks
 Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');

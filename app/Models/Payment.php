@@ -117,6 +117,7 @@ class Payment extends Model
         return match ($this->payment_method) {
             'mtn_mobile_money' => 'MTN Mobile Money',
             'airtel_money' => 'Airtel Money',
+            'pawapay' => 'pawaPay',
             default => $this->payment_method,
         };
     }

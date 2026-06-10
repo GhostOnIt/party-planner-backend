@@ -45,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Disable CSRF verification for webhook routes
         $middleware->validateCsrfTokens(except: [
             'webhooks/*',
+            'api/webhooks/*',
             'momo/callback',
             'payments/mtn/callback',
             'payments/airtel/callback',

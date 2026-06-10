@@ -299,6 +299,60 @@ class PaymentController extends Controller
     }
 
     /**
+     * Initiate a pawaPay deposit.
+     */
+    public function initiatePawaPay(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'event_id' => 'nullable|exists:events,id',
+            'subscription_id' => 'nullable|exists:subscriptions,id',
+            'phone_number' => 'required|string',
+            'provider' => 'nullable|string',
+            'country' => 'nullable|string|size:3',
+            'currency' => 'nullable|string|size:3',
+            'plan' => 'sometimes|string|in:starter,pro',
+            'plan_type' => 'sometimes|string|in:starter,pro',
+            'idempotency_key' => 'nullable|string|uuid',
+        ]);
+
+        $subscription = $this->resolveSubscriptionForPayment($request, $validated);
+        if ($subscription instanceof JsonResponse) {
+            return $subscription;
+        }
+
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
+        $idempotentResponse = $this->respondIfIdempotentPayment($subscription, $idempotencyKey);
+        if ($idempotentResponse) {
+            return $idempotentResponse;
+        }
+
+        $result = $this->paymentService->initiatePawaPayDeposit(
+            $subscription,
+            $validated['phone_number'],
+            $validated['provider'] ?? null,
+            $validated['country'] ?? null,
+            $validated['currency'] ?? null,
+            $idempotencyKey
+        );
+
+        if (!($result['success'] ?? false)) {
+            return response()->json([
+                'message' => $result['message'] ?? 'Erreur lors de l\'initiation du paiement pawaPay.',
+                'payment' => $result['payment'] ?? null,
+                'provider_error' => $result['body'] ?? null,
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Paiement pawaPay initié.',
+            'payment' => $result['payment'],
+            'reference' => $result['reference'] ?? null,
+            'provider' => 'pawapay',
+            'provider_response' => $result['provider_response'] ?? null,
+        ]);
+    }
+
+    /**
      * Check payment status.
      */
     public function status(Request $request, Payment $payment): JsonResponse
@@ -411,7 +465,12 @@ class PaymentController extends Controller
             return null;
         }
 
-        $provider = $existing->payment_method === 'mtn_mobile_money' ? 'mtn' : 'airtel';
+        $provider = match ($existing->payment_method) {
+            'mtn_mobile_money' => 'mtn',
+            'airtel_money' => 'airtel',
+            'pawapay' => 'pawapay',
+            default => $existing->payment_method,
+        };
 
         return response()->json([
             'message' => 'Paiement existant (idempotent).',
@@ -491,6 +550,52 @@ class PaymentController extends Controller
 
         // Otherwise, add +2420 prefix (assuming local number without leading 0)
         return '+2420' . $phone;
+    }
+
+    private function resolveSubscriptionForPayment(Request $request, array $validated): Subscription|JsonResponse
+    {
+        $user = $request->user();
+
+        if (isset($validated['subscription_id'])) {
+            $subscription = Subscription::findOrFail($validated['subscription_id']);
+
+            if ($subscription->user_id !== $user->id) {
+                return response()->json(['message' => "Vous n'avez pas accès à cet abonnement."], 403);
+            }
+
+            if ($subscription->event_id !== null) {
+                return response()->json(['message' => "Cet abonnement est lié à un événement. Utilisez event_id à la place."], 422);
+            }
+
+            return $subscription;
+        }
+
+        if (!isset($validated['event_id'])) {
+            return response()->json(['message' => 'Vous devez fournir soit event_id soit subscription_id.'], 422);
+        }
+
+        $event = Event::findOrFail($validated['event_id']);
+
+        if ($event->user_id !== $user->id) {
+            $isCollaborator = $event->collaborators()
+                ->where('user_id', $user->id)
+                ->whereNotNull('accepted_at')
+                ->exists();
+
+            if (!$isCollaborator) {
+                return response()->json(['message' => "Vous n'avez pas accès à cet événement."], 403);
+            }
+        }
+
+        $planType = $validated['plan'] ?? $validated['plan_type'] ?? 'starter';
+        $subscription = $event->subscription;
+
+        if (!$subscription) {
+            $guestCount = $event->expected_guests ?? 50;
+            $subscription = $this->subscriptionService->create($event, $event->user, $planType, $guestCount);
+        }
+
+        return $subscription;
     }
 
 }
