@@ -93,8 +93,11 @@ Route::match(['post', 'put'], '/momo/callback', [MobileMoneyWebhookController::c
 
 // pawaPay callbacks. Both route groups are accepted so the Dashboard can use
 // https://api.party-planner.cg/api/webhooks/... while local tests can use /webhooks/...
-foreach (['webhooks/pawapay', 'api/webhooks/pawapay'] as $pawapayPrefix) {
-    Route::prefix($pawapayPrefix)->name('webhooks.pawapay.')->group(function () {
+foreach ([
+    'webhooks/pawapay' => 'webhooks.pawapay.',
+    'api/webhooks/pawapay' => 'api.webhooks.pawapay.',
+] as $pawapayPrefix => $pawapayName) {
+    Route::prefix($pawapayPrefix)->name($pawapayName)->group(function () {
         Route::post('/deposits', [PawaPayWebhookController::class, 'handleDeposit'])->name('deposits');
         Route::post('/payouts', [PawaPayWebhookController::class, 'handlePayout'])->name('payouts');
         Route::post('/refunds', [PawaPayWebhookController::class, 'handleRefund'])->name('refunds');
