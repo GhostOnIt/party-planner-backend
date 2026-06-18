@@ -9,6 +9,9 @@ use Illuminate\Support\Str;
 
 class PlanService
 {
+    public const PUBLIC_CATALOG_SLUGS = ['starter', 'pro', 'business'];
+    public const TRIAL_ACTIVATION_WINDOW_DAYS = 10;
+
     /**
      * Get all plans.
      */
@@ -54,6 +57,16 @@ class PlanService
         }
 
         return $plans;
+    }
+
+    /**
+     * Get active commercial plans shown in the public pricing catalog.
+     */
+    public function getPublicCatalog(?\App\Models\User $user = null): Collection
+    {
+        return $this->getActive($user)
+            ->filter(fn (Plan $plan) => !$plan->is_trial && in_array($plan->slug, self::PUBLIC_CATALOG_SLUGS, true))
+            ->values();
     }
 
     /**
@@ -125,6 +138,10 @@ class PlanService
         // If no user provided, return the first trial (highest priority)
         if (!$user) {
             return $trialPlans->first();
+        }
+
+        if ($user->created_at && $user->created_at->lt(now()->subDays(self::TRIAL_ACTIVATION_WINDOW_DAYS))) {
+            return null;
         }
 
         // If user already has an active account-level subscription, do not show trial banner.
@@ -301,4 +318,3 @@ class PlanService
         })->toArray();
     }
 }
-

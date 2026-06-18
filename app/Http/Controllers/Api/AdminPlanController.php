@@ -87,6 +87,7 @@ class AdminPlanController extends Controller
             'price' => ['required', 'integer', 'min:0'],
             'duration_days' => ['required', 'integer', 'min:1'],
             'is_trial' => ['boolean'],
+            'is_one_time_use' => ['boolean'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
             'limits' => ['nullable', 'array'],
@@ -156,6 +157,7 @@ class AdminPlanController extends Controller
             'price' => ['sometimes', 'integer', 'min:0'],
             'duration_days' => ['sometimes', 'integer', 'min:1'],
             'is_trial' => ['boolean'],
+            'is_one_time_use' => ['boolean'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
             'limits' => ['nullable', 'array'],
@@ -233,7 +235,7 @@ class AdminPlanController extends Controller
     {
         $user = $request->user();
         $plansArray = $this->eventReadCacheService->rememberPublicPlans($user, function () use ($user) {
-            $plans = $this->planService->getActive($user);
+            $plans = $this->planService->getPublicCatalog($user);
 
             // Get subscription statistics per plan (only for paid plans, excluding trials)
             $subscriptionStats = \App\Models\Subscription::whereNotNull('plan_id')
