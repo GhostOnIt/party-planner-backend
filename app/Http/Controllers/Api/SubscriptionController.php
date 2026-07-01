@@ -292,6 +292,7 @@ class SubscriptionController extends Controller
 
         $user = $request->user();
         $plan = Plan::findOrFail($validated['plan_id']);
+        $allowRepeatedAdminCheckout = $user->isAdmin();
 
         if ($plan->hasFeature('sales.contact_required')) {
             return response()->json([
@@ -333,7 +334,7 @@ class SubscriptionController extends Controller
             ->first();
         
         // If user has an active subscription to the same plan, check its status
-        if ($existingSubscription && $existingSubscription->plan_id === $plan->id) {
+        if ($existingSubscription && $existingSubscription->plan_id === $plan->id && !$allowRepeatedAdminCheckout) {
             // If subscription is paid and active, return error
             if ($existingSubscription->isActive() && $existingSubscription->isPaid()) {
                 return response()->json([
@@ -381,7 +382,7 @@ class SubscriptionController extends Controller
         }
 
         // If user has an active subscription to a different plan
-        if ($existingSubscription && $existingSubscription->plan_id !== $plan->id) {
+        if ($existingSubscription && $existingSubscription->plan_id !== $plan->id && !$allowRepeatedAdminCheckout) {
             $existingPlan = $existingSubscription->plan;
 
             $currentIsActive = ($existingSubscription->payment_status === 'paid' || $existingSubscription->status === 'trial')
