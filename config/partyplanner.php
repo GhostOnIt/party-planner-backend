@@ -148,7 +148,11 @@ return [
                     'currency' => env('PAWAPAY_COD_CURRENCY', 'CDF'),
                     'calling_code' => '243',
                     'national_phone_regex' => '/^0?[89]\d{8}$/',
-                    'providers' => [],
+                    'providers' => [
+                        'AIRTEL_COD' => ['name' => 'Airtel Money', 'prefixes' => ['97']],
+                        'ORANGE_COD' => ['name' => 'Orange Money', 'prefixes' => ['89']],
+                        'VODACOM_MPESA_COD' => ['name' => 'Vodacom M-Pesa', 'prefixes' => ['81']],
+                    ],
                 ],
                 'CMR' => [
                     'iso2' => 'CM',
@@ -156,7 +160,9 @@ return [
                     'currency' => 'XAF',
                     'calling_code' => '237',
                     'national_phone_regex' => '/^6\d{8}$/',
-                    'providers' => [],
+                    'providers' => [
+                        'MTN_MOMO_CMR' => ['name' => 'MTN Mobile Money', 'prefixes' => ['65']],
+                    ],
                 ],
                 'GAB' => [
                     'iso2' => 'GA',
