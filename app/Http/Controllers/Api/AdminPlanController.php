@@ -45,7 +45,7 @@ class AdminPlanController extends Controller
             });
         }
 
-        $plans = $query->ordered()->get();
+        $plans = $query->with('marketPrices')->ordered()->get();
 
         // Add statistics to each plan
         $plans = $plans->map(function ($plan) {
@@ -63,7 +63,7 @@ class AdminPlanController extends Controller
             
             $plan->total_subscriptions_count = $plan->subscriptions()->count();
             
-            return $plan;
+            return $this->planPayload($plan);
         });
 
         return response()->json([
@@ -96,6 +96,8 @@ class AdminPlanController extends Controller
             'limits.collaborators.max_per_event' => ['nullable', 'integer'],
             'limits.photos.max_per_event' => ['nullable', 'integer'],
             'features' => ['nullable', 'array'],
+            'market_prices' => ['nullable', 'array'],
+            'market_prices.*.price' => ['nullable', 'integer', 'min:0'],
         ]);
 
         // Generate slug if not provided
@@ -111,12 +113,16 @@ class AdminPlanController extends Controller
             $counter++;
         }
 
+        $marketPrices = $validated['market_prices'] ?? [];
+        unset($validated['market_prices']);
+
         $plan = Plan::create($validated);
+        $this->planService->syncMarketPrices($plan, $marketPrices);
         $this->eventReadCacheService->invalidatePublicPlans();
 
         return response()->json([
             'message' => 'Plan créé avec succès.',
-            'data' => $plan,
+            'data' => $this->planPayload($plan->fresh('marketPrices')),
         ], 201);
     }
 
@@ -125,7 +131,7 @@ class AdminPlanController extends Controller
      */
     public function show(Plan $plan): JsonResponse
     {
-        $plan->load('subscriptions');
+        $plan->load(['subscriptions', 'marketPrices']);
         
         $plan->active_subscriptions_count = $plan->subscriptions()
             ->where(function ($q) {
@@ -140,7 +146,7 @@ class AdminPlanController extends Controller
             ->count();
 
         return response()->json([
-            'data' => $plan,
+            'data' => $this->planPayload($plan),
         ]);
     }
 
@@ -166,14 +172,22 @@ class AdminPlanController extends Controller
             'limits.collaborators.max_per_event' => ['nullable', 'integer'],
             'limits.photos.max_per_event' => ['nullable', 'integer'],
             'features' => ['nullable', 'array'],
+            'market_prices' => ['nullable', 'array'],
+            'market_prices.*.price' => ['nullable', 'integer', 'min:0'],
         ]);
 
+        $marketPrices = $validated['market_prices'] ?? null;
+        unset($validated['market_prices']);
+
         $plan->update($validated);
+        if (is_array($marketPrices)) {
+            $this->planService->syncMarketPrices($plan, $marketPrices);
+        }
         $this->eventReadCacheService->invalidatePublicPlans();
 
         return response()->json([
             'message' => 'Plan mis à jour avec succès.',
-            'data' => $plan->fresh(),
+            'data' => $this->planPayload($plan->fresh('marketPrices')),
         ]);
     }
 
@@ -234,8 +248,9 @@ class AdminPlanController extends Controller
     public function publicIndex(Request $request): JsonResponse
     {
         $user = $request->user();
-        $plansArray = $this->eventReadCacheService->rememberPublicPlans($user, function () use ($user) {
-            $plans = $this->planService->getPublicCatalog($user);
+        $country = $this->planService->normalizeMarketCountry($request->query('country'));
+        $plansArray = $this->eventReadCacheService->rememberPublicPlans($user, function () use ($user, $country) {
+            $plans = $this->planService->getPublicCatalog($user)->load('marketPrices');
 
             // Get subscription statistics per plan (only for paid plans, excluding trials)
             $subscriptionStats = \App\Models\Subscription::whereNotNull('plan_id')
@@ -265,14 +280,19 @@ class AdminPlanController extends Controller
                 }
             }
 
-            return $plans->map(function ($plan) use ($popularPlanId) {
+            return $plans->map(function ($plan) use ($popularPlanId, $country) {
+                $marketPrice = $this->planService->resolveMarketPrice($plan, $country);
                 return [
                     'id' => $plan->id,
                     'name' => $plan->name,
                     'slug' => $plan->slug,
                     'description' => $plan->description,
-                    'price' => $plan->price,
-                    'formatted_price' => $plan->formatted_price,
+                    'price' => $marketPrice['price'],
+                    'base_price' => $plan->price,
+                    'currency' => $marketPrice['currency'],
+                    'country' => $marketPrice['country'],
+                    'formatted_price' => $marketPrice['formatted_price'],
+                    'market_prices' => $this->planService->marketPricesPayload($plan),
                     'duration_days' => $plan->duration_days,
                     'duration_label' => $plan->duration_label,
                     'is_trial' => $plan->is_trial,
@@ -283,7 +303,7 @@ class AdminPlanController extends Controller
                     'features' => $plan->features,
                 ];
             })->values()->toArray(); // Convert Collection to array and reindex
-        });
+        }, $country);
 
         return response()->json([
             'data' => $plansArray,
@@ -320,5 +340,44 @@ class AdminPlanController extends Controller
             ],
             'available' => true,
         ]);
+    }
+
+    private function planPayload(Plan $plan, ?string $country = null): array
+    {
+        $marketPrice = $country
+            ? $this->planService->resolveMarketPrice($plan, $country)
+            : [
+                'country' => null,
+                'currency' => 'XAF',
+                'price' => (int) $plan->price,
+                'formatted_price' => $this->planService->formatPrice((int) $plan->price, 'XAF'),
+            ];
+
+        return [
+            'id' => $plan->id,
+            'name' => $plan->name,
+            'title' => $plan->title,
+            'slug' => $plan->slug,
+            'description' => $plan->description,
+            'price' => $marketPrice['price'],
+            'base_price' => $plan->price,
+            'currency' => $marketPrice['currency'],
+            'country' => $marketPrice['country'],
+            'formatted_price' => $marketPrice['formatted_price'],
+            'duration_days' => $plan->duration_days,
+            'duration_label' => $plan->duration_label,
+            'is_trial' => $plan->is_trial,
+            'is_one_time_use' => $plan->is_one_time_use,
+            'is_active' => $plan->is_active,
+            'is_popular' => $plan->is_popular ?? false,
+            'sort_order' => $plan->sort_order,
+            'limits' => $plan->limits,
+            'features' => $plan->features,
+            'market_prices' => $this->planService->marketPricesPayload($plan),
+            'active_subscriptions_count' => $plan->active_subscriptions_count ?? null,
+            'total_subscriptions_count' => $plan->total_subscriptions_count ?? null,
+            'created_at' => $plan->created_at,
+            'updated_at' => $plan->updated_at,
+        ];
     }
 }

@@ -31,6 +31,15 @@ class Plan extends Model
         'sort_order',
     ];
 
+    public const MARKET_CURRENCIES = [
+        'COG' => 'XAF',
+        'COD' => 'CDF',
+        'CMR' => 'XAF',
+        'GAB' => 'XAF',
+        'SEN' => 'XOF',
+        'CIV' => 'XOF',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -56,6 +65,11 @@ class Plan extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function marketPrices(): HasMany
+    {
+        return $this->hasMany(PlanMarketPrice::class);
     }
 
     /**
@@ -193,4 +207,3 @@ class Plan extends Model
         return $months . ' mois';
     }
 }
-

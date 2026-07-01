@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\Plan;
 use App\Services\EntitlementService;
 use App\Services\EventReadCacheService;
+use App\Services\PlanService;
 use App\Services\QuotaService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +20,8 @@ class SubscriptionController extends Controller
         protected SubscriptionService $subscriptionService,
         protected QuotaService $quotaService,
         protected EntitlementService $entitlementService,
-        protected EventReadCacheService $eventReadCacheService
+        protected EventReadCacheService $eventReadCacheService,
+        protected PlanService $planService
     ) {}
 
     /**
@@ -288,10 +290,12 @@ class SubscriptionController extends Controller
     {
         $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
+            'country' => 'nullable|string',
         ]);
 
         $user = $request->user();
-        $plan = Plan::findOrFail($validated['plan_id']);
+        $plan = Plan::with('marketPrices')->findOrFail($validated['plan_id']);
+        $marketPrice = $this->planService->resolveMarketPrice($plan, $validated['country'] ?? null);
         $allowRepeatedAdminCheckout = $user->isAdmin();
 
         if ($plan->hasFeature('sales.contact_required')) {
@@ -345,28 +349,30 @@ class SubscriptionController extends Controller
             
             // If subscription exists but is pending payment, update it (keep history)
             if ($existingSubscription->isPending() || !$existingSubscription->isPaid()) {
-                $isComplimentary = $plan->is_trial || $plan->price === 0;
+                $isComplimentary = $plan->is_trial || $marketPrice['price'] === 0;
 
                 // Update the existing subscription instead of creating a new one
                 $existingSubscription->update([
                     'plan_id' => $plan->id,
                     'plan_type' => $plan->slug,
-                    'base_price' => $plan->price,
+                    'country' => $marketPrice['country'],
+                    'currency' => $marketPrice['currency'],
+                    'base_price' => $marketPrice['price'],
                     'guest_count' => $plan->getGuestsLimit(),
-                    'total_price' => $plan->price,
+                    'total_price' => $marketPrice['price'],
                     'payment_status' => $isComplimentary ? 'paid' : 'pending',
                     'status' => $plan->is_trial ? 'trial' : ($isComplimentary ? 'active' : 'pending'),
                     'starts_at' => now(),
                     'expires_at' => now()->addDays($plan->duration_days),
                 ]);
 
-                $requiresPayment = !$plan->is_trial && $plan->price > 0;
+                $requiresPayment = !$plan->is_trial && $marketPrice['price'] > 0;
                 $this->eventReadCacheService->invalidateUser($user);
 
                 return response()->json([
                     'message' => $plan->is_trial
                         ? 'Essai gratuit activé avec succès.'
-                        : ($plan->price === 0
+                        : ($marketPrice['price'] === 0
                             ? 'Abonnement gratuit activé avec succès.'
                             : 'Abonnement mis à jour. Procédez au paiement.'),
                     'subscription' => $existingSubscription->fresh()->load('plan'),
@@ -392,9 +398,10 @@ class SubscriptionController extends Controller
             // Compare by price first, then by sort_order (lower sort_order = better plan)
             $isUpgrade = false;
             if ($existingPlan) {
-                if ($plan->price > $existingPlan->price) {
+                $existingPrice = (float) $existingSubscription->total_price;
+                if ($marketPrice['price'] > $existingPrice) {
                     $isUpgrade = true;
-                } elseif ($plan->price === $existingPlan->price) {
+                } elseif ((float) $marketPrice['price'] === $existingPrice) {
                     $isUpgrade = ($plan->sort_order ?? 999) < ($existingPlan->sort_order ?? 999);
                 }
             }
@@ -413,15 +420,15 @@ class SubscriptionController extends Controller
         }
 
         // Create new subscription
-        $subscription = $this->subscriptionService->createSubscriptionWithPlan($user, $plan);
+        $subscription = $this->subscriptionService->createSubscriptionWithPlan($user, $plan, null, $marketPrice);
         $this->eventReadCacheService->invalidateUser($user);
 
-        $requiresPayment = !$plan->is_trial && $plan->price > 0;
+        $requiresPayment = !$plan->is_trial && $marketPrice['price'] > 0;
 
         return response()->json([
             'message' => $plan->is_trial
                 ? 'Essai gratuit activé avec succès.'
-                : ($plan->price === 0
+                : ($marketPrice['price'] === 0
                     ? 'Abonnement gratuit activé avec succès.'
                     : 'Abonnement créé. Procédez au paiement.'),
             'subscription' => $subscription->load('plan'),

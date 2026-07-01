@@ -92,12 +92,13 @@ class EventReadCacheService
         return Cache::remember($this->entitlementsKey($user->id), self::USER_TTL, $callback);
     }
 
-    public function rememberPublicPlans(?User $user, callable $callback): array
+    public function rememberPublicPlans(?User $user, callable $callback, string $country = 'COG'): array
     {
         $userKey = $user?->id ?? 'guest';
+        $country = strtoupper($country);
         $version = Cache::get('plans:public:version', 1);
 
-        return Cache::remember("plans:public:v{$version}:{$userKey}", self::PLANS_TTL, $callback);
+        return Cache::remember("plans:public:v{$version}:{$userKey}:{$country}", self::PLANS_TTL, $callback);
     }
 
     public function invalidateEvent(Event|string $event): void

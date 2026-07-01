@@ -3,12 +3,98 @@
 namespace App\Services;
 
 use App\Models\Plan;
+use App\Models\PlanMarketPrice;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PlanService
 {
+    public function normalizeMarketCountry(?string $country): string
+    {
+        $value = strtoupper((string) $country);
+
+        return match ($value) {
+            'CG' => 'COG',
+            'CD' => 'COD',
+            'CM' => 'CMR',
+            'GA' => 'GAB',
+            'SN' => 'SEN',
+            'CI' => 'CIV',
+            default => array_key_exists($value, Plan::MARKET_CURRENCIES) ? $value : 'COG',
+        };
+    }
+
+    public function marketCurrency(string $country): string
+    {
+        return Plan::MARKET_CURRENCIES[$this->normalizeMarketCountry($country)] ?? 'XAF';
+    }
+
+    public function resolveMarketPrice(Plan $plan, ?string $country): array
+    {
+        $country = $this->normalizeMarketCountry($country);
+        $marketPrice = $plan->relationLoaded('marketPrices')
+            ? $plan->marketPrices->firstWhere('country', $country)
+            : $plan->marketPrices()->where('country', $country)->first();
+
+        $currency = $marketPrice?->currency ?: $this->marketCurrency($country);
+        $price = $marketPrice?->price ?? $plan->price;
+
+        return [
+            'country' => $country,
+            'currency' => $currency,
+            'price' => (int) $price,
+            'formatted_price' => $this->formatPrice((int) $price, $currency),
+        ];
+    }
+
+    public function marketPricesPayload(Plan $plan): array
+    {
+        $prices = $plan->relationLoaded('marketPrices')
+            ? $plan->marketPrices
+            : $plan->marketPrices()->get();
+
+        $payload = [];
+        foreach (Plan::MARKET_CURRENCIES as $country => $currency) {
+            $marketPrice = $prices->firstWhere('country', $country);
+            $price = (int) ($marketPrice?->price ?? $plan->price);
+            $payload[$country] = [
+                'country' => $country,
+                'currency' => $marketPrice?->currency ?: $currency,
+                'price' => $price,
+                'formatted_price' => $this->formatPrice($price, $marketPrice?->currency ?: $currency),
+            ];
+        }
+
+        return $payload;
+    }
+
+    public function syncMarketPrices(Plan $plan, array $marketPrices): void
+    {
+        foreach (Plan::MARKET_CURRENCIES as $country => $currency) {
+            $price = $marketPrices[$country]['price'] ?? $marketPrices[$country] ?? $plan->price;
+            PlanMarketPrice::updateOrCreate(
+                [
+                    'plan_id' => $plan->id,
+                    'country' => $country,
+                ],
+                [
+                    'currency' => $currency,
+                    'price' => max(0, (int) $price),
+                ]
+            );
+        }
+    }
+
+    public function formatPrice(int $price, string $currency): string
+    {
+        if ($price === 0) {
+            return 'Gratuit';
+        }
+
+        return number_format($price, 0, ',', ' ') . ' ' . $currency;
+    }
+
     public const PUBLIC_CATALOG_SLUGS = ['starter', 'pro', 'business'];
     public const TRIAL_ACTIVATION_WINDOW_DAYS = 10;
 

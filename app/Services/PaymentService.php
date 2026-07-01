@@ -371,7 +371,7 @@ class PaymentService
                 ? $defaultProvider
                 : (string) array_key_first($marketProviders);
         }
-        $currency = strtoupper($currency ?: ($marketCurrency ?? $config['currency'] ?? config('partyplanner.currency.code', 'XAF')));
+        $currency = strtoupper((string) ($subscription->currency ?: ($marketCurrency ?? $config['currency'] ?? config('partyplanner.currency.code', 'XAF'))));
 
         $payment->update([
             'currency' => $currency,
@@ -762,13 +762,15 @@ class PaymentService
             'subscription_id' => $subscription->id,
             'idempotency_key' => $idempotencyKey,
             'amount' => $subscription->total_price,
-            'currency' => config('partyplanner.currency.code', 'XAF'),
+            'currency' => $subscription->currency ?: config('partyplanner.currency.code', 'XAF'),
             'payment_method' => $method,
             'status' => 'pending',
             'metadata' => [
                 'subscription_id' => $subscription->id,
                 'event_id' => $subscription->event_id,
                 'plan_type' => $subscription->plan_type,
+                'country' => $subscription->country,
+                'currency' => $subscription->currency,
             ],
         ]);
     }

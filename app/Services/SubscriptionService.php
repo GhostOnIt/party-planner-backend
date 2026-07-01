@@ -385,7 +385,7 @@ class SubscriptionService
     /**
      * Create a subscription with a dynamic Plan.
      */
-    public function createSubscriptionWithPlan(User $user, Plan $plan, ?Event $event = null): Subscription
+    public function createSubscriptionWithPlan(User $user, Plan $plan, ?Event $event = null, ?array $marketPrice = null): Subscription
     {
         $isAccountLevel = $event === null;
 
@@ -397,17 +397,22 @@ class SubscriptionService
                 ->update(['status' => 'cancelled']);
         }
 
-        $isComplimentary = $plan->is_trial || $plan->price === 0;
+        $price = (int) ($marketPrice['price'] ?? $plan->price);
+        $country = $marketPrice['country'] ?? null;
+        $currency = $marketPrice['currency'] ?? 'XAF';
+        $isComplimentary = $plan->is_trial || $price === 0;
 
         return Subscription::create([
             'user_id' => $user->id,
             'event_id' => $event?->id,
             'plan_id' => $plan->id,
             'plan_type' => $plan->slug,
-            'base_price' => $plan->price,
+            'country' => $country,
+            'currency' => $currency,
+            'base_price' => $price,
             'guest_count' => $plan->getGuestsLimit(),
             'guest_price_per_unit' => 0,
-            'total_price' => $plan->price,
+            'total_price' => $price,
             'payment_status' => $isComplimentary ? 'paid' : 'pending',
             'creations_used' => 0,
             'status' => $plan->is_trial ? 'trial' : ($isComplimentary ? 'active' : 'pending'),
