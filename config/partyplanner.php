@@ -121,6 +121,7 @@ return [
             'enabled' => env('PAWAPAY_ENABLED', false),
             'name' => 'pawaPay',
             'environment' => env('PAWAPAY_ENVIRONMENT', 'sandbox'),
+            'simulate' => env('PAWAPAY_SIMULATE', false),
             'base_url' => env('PAWAPAY_BASE_URL', 'https://api.sandbox.pawapay.io'),
             'api_token' => env('PAWAPAY_API_TOKEN'),
             'currency' => env('PAWAPAY_CURRENCY', env('CURRENCY_CODE', 'XAF')),

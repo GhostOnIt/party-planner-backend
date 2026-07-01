@@ -30,7 +30,7 @@ class PawaPayService
             ];
         }
 
-        if (empty($config['api_token'])) {
+        if (empty($config['api_token']) && !($config['simulate'] ?? false)) {
             return [
                 'success' => false,
                 'message' => 'Le token API pawaPay n\'est pas configuré.',
@@ -120,6 +120,10 @@ class PawaPayService
             'currency' => $currency,
             'amount' => $amount,
         ]);
+
+        if ($config['simulate'] ?? false) {
+            return $this->simulateDeposit($payment, $depositId, $payload, $country, $provider, $currency, $amount, $msisdn);
+        }
 
         /** @var Response $response */
         $response = $this->client()->post('/v2/deposits', $payload);
@@ -349,6 +353,82 @@ class PawaPayService
         }
 
         return 'pawaPay a refusé la demande de paiement (code ' . $httpStatus . ').';
+    }
+
+    private function simulateDeposit(
+        Payment $payment,
+        string $depositId,
+        array $payload,
+        string $country,
+        string $provider,
+        string $currency,
+        string $amount,
+        string $msisdn
+    ): array {
+        $lastDigit = substr($msisdn, -1);
+        $status = match ($lastDigit) {
+            '0' => 'COMPLETED',
+            '1' => 'FAILED',
+            default => 'ACCEPTED',
+        };
+
+        $body = [
+            'depositId' => $depositId,
+            'status' => $status === 'COMPLETED' ? 'ACCEPTED' : $status,
+            'nextStep' => 'FINAL_STATUS',
+            'simulated' => true,
+        ];
+
+        $metadata = array_merge($payment->metadata ?? [], [
+            'country' => $country,
+            'currency' => $currency,
+            'charged_amount' => $amount,
+            'original_amount' => (string) $payment->amount,
+            'provider' => $provider,
+            'phone_number' => $msisdn,
+            'simulated' => true,
+            'pawapay' => [
+                'deposit_id' => $depositId,
+                'provider' => $provider,
+                'country' => $country,
+                'currency' => $currency,
+                'charged_amount' => $amount,
+                'original_amount' => (string) $payment->amount,
+                'phone_number' => $msisdn,
+                'initiation_status' => 'ACCEPTED',
+                'initiation_payload' => $payload,
+                'initiation_response' => $body,
+                'initiated_at' => now()->toIso8601String(),
+            ],
+        ]);
+
+        $payment->update([
+            'transaction_reference' => $depositId,
+            'currency' => $currency,
+            'metadata' => $metadata,
+        ]);
+
+        if ($status === 'COMPLETED') {
+            $metadata['pawapay']['provider_transaction_id'] = 'SIM-PWP-' . Str::upper(Str::random(10));
+            $payment->update(['metadata' => $metadata]);
+            $payment->markAsCompleted();
+        } elseif ($status === 'FAILED') {
+            $payment->markAsFailed('INSUFFICIENT_BALANCE', 'Le paiement a échoué : INSUFFICIENT_BALANCE.');
+        }
+
+        Log::info('Simulated pawaPay deposit processed', [
+            'payment_id' => $payment->id,
+            'deposit_id' => $depositId,
+            'status' => $status,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => '[SIMULATION] Paiement pawaPay initié.',
+            'payment' => $payment->fresh(),
+            'reference' => $depositId,
+            'provider_response' => $body,
+        ];
     }
 
     private function client(): \Illuminate\Http\Client\PendingRequest
