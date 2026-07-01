@@ -74,7 +74,13 @@ class PawaPayService
 
         $currency = strtoupper($currency ?: ($market['currency'] ?? $config['currency'] ?? $payment->currency));
         $amountSource = $payment->amount;
-        if (($config['test_amount'] ?? null) !== null && $config['test_amount'] !== '') {
+        $testAmount = $config['test_amount'] ?? null;
+        $usesSandboxAmount = ($config['environment'] ?? 'sandbox') === 'sandbox'
+            && $testAmount !== null
+            && $testAmount !== ''
+            && (float) $testAmount > 2;
+
+        if ($usesSandboxAmount) {
             $amountSource = $config['test_amount'];
             $currency = strtoupper((string) ($config['test_currency'] ?? $currency));
         }
