@@ -170,9 +170,9 @@ return [
                     'name' => 'Sénégal',
                     'currency' => 'XOF',
                     'calling_code' => '221',
-                    'national_phone_regex' => '/^(7[05678]\d{7})$/',
+                    'national_phone_regex' => '/^(7[015678]\d{7})$/',
                     'providers' => [
-                        'ORANGE_SEN' => ['name' => 'Orange Money', 'prefixes' => ['77', '78']],
+                        'ORANGE_SEN' => ['name' => 'Orange Money', 'prefixes' => ['71', '77', '78']],
                         'FREE_SEN' => ['name' => 'Free Money', 'prefixes' => ['76']],
                         'WAVE_SEN' => ['name' => 'Wave', 'prefixes' => ['70', '75']],
                     ],
