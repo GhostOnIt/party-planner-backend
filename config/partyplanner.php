@@ -164,7 +164,9 @@ return [
                     'currency' => 'XAF',
                     'calling_code' => '241',
                     'national_phone_regex' => '/^0?[67]\d{7}$/',
-                    'providers' => [],
+                    'providers' => [
+                        'AIRTEL_GAB' => ['name' => 'Airtel Money', 'prefixes' => ['06', '07']],
+                    ],
                 ],
                 'SEN' => [
                     'iso2' => 'SN',

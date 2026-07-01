@@ -72,7 +72,8 @@ class PawaPayService
             ];
         }
 
-        $currency = strtoupper($currency ?: ($market['currency'] ?? $config['currency'] ?? $payment->currency));
+        $marketCurrency = strtoupper((string) ($market['currency'] ?? ''));
+        $currency = strtoupper($currency ?: ($marketCurrency ?: ($config['currency'] ?? $payment->currency)));
         $amountSource = $payment->amount;
         $testAmount = $config['test_amount'] ?? null;
         $usesTestAmount = $testAmount !== null
@@ -81,7 +82,10 @@ class PawaPayService
 
         if ($usesTestAmount) {
             $amountSource = $config['test_amount'];
-            $currency = strtoupper((string) ($config['test_currency'] ?? $currency));
+            $testCurrency = strtoupper((string) ($config['test_currency'] ?? ''));
+            $currency = $testCurrency !== '' && $testCurrency === $marketCurrency
+                ? $testCurrency
+                : ($marketCurrency ?: $currency);
         }
 
         $amount = $this->formatAmount($amountSource, $currency);
