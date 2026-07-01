@@ -920,8 +920,10 @@ class PaymentService
         return match ($normalized) {
             'LOW_BALANCE_OR_PAYEE_LIMIT_REACHED_OR_NOT_ALLOWED' =>
                 'Paiement refusé : solde insuffisant, limite atteinte ou transaction non autorisée. Vérifiez votre compte Mobile Money puis réessayez.',
-            'LOW_BALANCE', 'INSUFFICIENT_FUNDS' =>
+            'LOW_BALANCE', 'INSUFFICIENT_FUNDS', 'INSUFFICIENT_BALANCE' =>
                 'Paiement refusé : solde insuffisant. Rechargez votre compte puis réessayez.',
+            'AMOUNT_OUT_OF_BOUNDS' =>
+                'Paiement refusé : le montant est en dehors des limites acceptées par l’opérateur.',
             'TIMEOUT' =>
                 'Le paiement a expiré. Veuillez relancer une nouvelle tentative.',
             'REJECTED' =>
