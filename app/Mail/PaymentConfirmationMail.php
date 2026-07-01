@@ -28,6 +28,8 @@ class PaymentConfirmationMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
+        $this->payment->loadMissing('subscription.user', 'subscription.event', 'subscription.plan');
+
         return new Content(
             markdown: 'emails.payment-confirmation',
             with: [
@@ -35,6 +37,9 @@ class PaymentConfirmationMail extends Mailable implements ShouldQueue
                 'subscription' => $this->payment->subscription,
                 'event' => $this->payment->subscription->event,
                 'user' => $this->payment->subscription->user,
+                'actionUrl' => $this->payment->subscription->event
+                    ? config('app.frontend_url', config('app.url')) . '/events/' . $this->payment->subscription->event->id
+                    : config('app.frontend_url', config('app.url')) . '/subscriptions',
             ],
         );
     }

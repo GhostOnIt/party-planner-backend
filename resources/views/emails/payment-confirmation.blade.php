@@ -14,13 +14,13 @@ Nous avons bien reçu votre paiement. Merci pour votre confiance !
 
 ## Détails de l'abonnement
 
-- **Événement :** {{ $event->title }}
+- **Service :** {{ $event ? $event->title : 'Abonnement du compte' }}
 - **Plan :** {{ $subscription->plan_label }}
 - **Invités inclus :** {{ $subscription->guest_count }}
 - **Valide jusqu'au :** {{ $subscription->expires_at?->format('d/m/Y') ?? 'Illimité' }}
 
-<x-mail::button :url="route('events.show', $event->id)">
-Accéder à votre événement
+<x-mail::button :url="$actionUrl">
+{{ $event ? 'Accéder à votre événement' : 'Voir mon abonnement' }}
 </x-mail::button>
 
 Vous pouvez consulter votre historique de paiements dans votre espace personnel.

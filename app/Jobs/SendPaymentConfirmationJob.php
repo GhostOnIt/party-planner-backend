@@ -30,9 +30,13 @@ class SendPaymentConfirmationJob implements ShouldQueue
             return;
         }
 
-        $this->payment->load('subscription.user', 'subscription.event');
+        $this->payment->load('subscription.user', 'subscription.event', 'subscription.plan');
 
         $user = $this->payment->subscription->user;
+        $subscription = $this->payment->subscription;
+        $serviceLabel = $subscription->event
+            ? 'l’événement "' . $subscription->event->title . '"'
+            : 'votre abonnement ' . $subscription->plan_label;
 
         // Send email
         if ($user->email) {
@@ -43,10 +47,10 @@ class SendPaymentConfirmationJob implements ShouldQueue
         // Create in-app notification
         Notification::create([
             'user_id' => $user->id,
-            'event_id' => $this->payment->subscription->event_id,
+            'event_id' => $subscription->event_id,
             'type' => 'budget_alert',
             'title' => 'Paiement confirmé',
-            'message' => "Votre paiement de {$this->payment->formatted_amount} pour \"{$this->payment->subscription->event->title}\" a été confirmé.",
+            'message' => "Votre paiement de {$this->payment->formatted_amount} pour {$serviceLabel} a été confirmé.",
             'sent_via' => 'email',
         ]);
     }
