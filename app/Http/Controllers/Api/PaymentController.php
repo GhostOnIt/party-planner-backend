@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Services\PawaPayService;
 use App\Services\PaymentService;
 use App\Services\SubscriptionService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -103,6 +104,8 @@ class PaymentController extends Controller
      */
     public function initiate(Request $request): JsonResponse
     {
+        $this->normalizeLegacyPaymentInput($request);
+
         $validated = $request->validate([
             'event_id' => 'nullable|exists:events,id',
             'subscription_id' => 'nullable|exists:subscriptions,id',
@@ -127,12 +130,6 @@ class PaymentController extends Controller
                 ], 403);
             }
 
-            // Verify it's an account-level subscription
-            if ($subscription->event_id !== null) {
-                return response()->json([
-                    'message' => 'Cet abonnement est lié à un événement. Utilisez event_id à la place.',
-                ], 422);
-            }
         }
         // Handle event-level subscription (with event_id)
         elseif (isset($validated['event_id'])) {
@@ -223,6 +220,8 @@ class PaymentController extends Controller
      */
     private function initiateMobileMoneyPayment(Request $request, string $providerLabel, callable $providerCall): JsonResponse
     {
+        $this->normalizeLegacyPaymentInput($request);
+
         $validated = $request->validate([
             'event_id' => 'nullable|exists:events,id',
             'subscription_id' => 'nullable|exists:subscriptions,id',
@@ -243,9 +242,6 @@ class PaymentController extends Controller
                 return response()->json(['message' => "Vous n'avez pas accès à cet abonnement."], 403);
             }
 
-            if ($subscription->event_id !== null) {
-                return response()->json(['message' => "Cet abonnement est lié à un événement. Utilisez event_id à la place."], 422);
-            }
         } elseif (isset($validated['event_id'])) {
             $event = Event::findOrFail($validated['event_id']);
 
@@ -303,6 +299,8 @@ class PaymentController extends Controller
      */
     public function initiatePawaPay(Request $request): JsonResponse
     {
+        $this->normalizeLegacyPaymentInput($request);
+
         $validated = $request->validate([
             'event_id' => 'nullable|exists:events,id',
             'subscription_id' => 'nullable|exists:subscriptions,id',
@@ -349,6 +347,24 @@ class PaymentController extends Controller
             'reference' => $result['reference'] ?? null,
             'provider' => 'pawapay',
             'provider_response' => $result['provider_response'] ?? null,
+        ]);
+    }
+
+    /**
+     * Public market/payment configuration for frontend checkout selection.
+     */
+    public function markets(PawaPayService $pawaPayService): JsonResponse
+    {
+        $config = $pawaPayService->publicMarketConfiguration();
+        $activeConfiguration = null;
+
+        if ($config['enabled'] && config('partyplanner.payments.pawapay.api_token')) {
+            $activeConfiguration = $pawaPayService->activeConfiguration();
+        }
+
+        return response()->json([
+            'pawapay' => $config,
+            'active_configuration' => $activeConfiguration,
         ]);
     }
 
@@ -418,16 +434,38 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        $this->normalizeLegacyPaymentInput($request);
+
         $validated = $request->validate([
-            'phone_number' => 'required|string',
+            'phone_number' => 'nullable|string',
         ]);
 
         $subscription = $payment->subscription;
-        $phone = $this->normalizePhone($validated['phone_number']);
+        $phoneNumber = $validated['phone_number']
+            ?? $payment->metadata['phone_number']
+            ?? $payment->metadata['pawapay']['phone_number']
+            ?? null;
 
-        $result = $payment->payment_method === 'mtn_mobile_money'
-            ? $this->paymentService->initiateMtnPayment($subscription, $phone, null)
-            : $this->paymentService->initiateAirtelPayment($subscription, $phone, null);
+        if (!$phoneNumber) {
+            return response()->json([
+                'message' => 'Un numéro de téléphone est requis pour relancer ce paiement.',
+            ], 422);
+        }
+
+        $phone = $this->normalizePhone($phoneNumber);
+
+        $result = match ($payment->payment_method) {
+            'mtn_mobile_money' => $this->paymentService->initiateMtnPayment($subscription, $phone, null),
+            'pawapay' => $this->paymentService->initiatePawaPayDeposit(
+                $subscription,
+                $phone,
+                $payment->metadata['provider'] ?? $payment->metadata['pawapay']['provider'] ?? null,
+                $payment->metadata['country'] ?? $payment->metadata['pawapay']['country'] ?? null,
+                $payment->currency,
+                null
+            ),
+            default => $this->paymentService->initiateAirtelPayment($subscription, $phone, null),
+        };
 
         if (!$result['success']) {
             return response()->json([
@@ -513,6 +551,13 @@ class PaymentController extends Controller
         return null;
     }
 
+    private function normalizeLegacyPaymentInput(Request $request): void
+    {
+        if (!$request->filled('phone_number') && $request->filled('phone')) {
+            $request->merge(['phone_number' => $request->input('phone')]);
+        }
+    }
+
     /**
      * Normalize phone number to standard format.
      * Format Congo: +242OXXXXXXXX (avec le 0 du préfixe local)
@@ -561,10 +606,6 @@ class PaymentController extends Controller
 
             if ($subscription->user_id !== $user->id) {
                 return response()->json(['message' => "Vous n'avez pas accès à cet abonnement."], 403);
-            }
-
-            if ($subscription->event_id !== null) {
-                return response()->json(['message' => "Cet abonnement est lié à un événement. Utilisez event_id à la place."], 422);
             }
 
             return $subscription;

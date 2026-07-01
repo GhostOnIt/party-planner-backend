@@ -397,6 +397,7 @@ Route::get('/roles/available', [CustomRoleController::class, 'availableRoles']);
     */
     Route::prefix('payments')->group(function () {
         Route::get('/', [PaymentController::class, 'index']);
+        Route::get('/markets', [PaymentController::class, 'markets']);
         Route::post('/initiate', [PaymentController::class, 'initiate']);
         Route::post('/mtn/initiate', [PaymentController::class, 'initiateMtn']);
         Route::post('/airtel/initiate', [PaymentController::class, 'initiateAirtel']);

@@ -360,11 +360,22 @@ class PaymentService
         $payment = $this->createPayment($subscription, 'pawapay', $idempotencyKey);
         $config = config('partyplanner.payments.pawapay');
 
-        $country = strtoupper($country ?: ($config['default_country'] ?? 'COG'));
+        $pawaPayService = app(PawaPayService::class);
+        $country = $pawaPayService->normalizeCountry($country ?: ($config['default_country'] ?? 'COG'));
+        $marketCurrency = config("partyplanner.payments.pawapay.countries.{$country}.currency");
         $provider = strtoupper($provider ?: ($config['default_provider'] ?? 'AIRTEL_COG'));
-        $currency = strtoupper($currency ?: ($config['currency'] ?? config('partyplanner.currency.code', 'XAF')));
+        $currency = strtoupper($currency ?: ($marketCurrency ?? $config['currency'] ?? config('partyplanner.currency.code', 'XAF')));
 
-        $result = app(PawaPayService::class)->initiateDeposit(
+        $payment->update([
+            'currency' => $currency,
+            'metadata' => array_merge($payment->metadata ?? [], [
+                'country' => $country,
+                'currency' => $currency,
+                'provider' => $provider,
+            ]),
+        ]);
+
+        $result = $pawaPayService->initiateDeposit(
             $subscription,
             $payment,
             $phoneNumber,
@@ -521,7 +532,10 @@ class PaymentService
         }
 
         if ($normalizedStatus === 'failed') {
-            $reasonCode = $data['failureCode'] ?? $data['rejectionReason'] ?? null;
+            $failureReason = $data['failureReason'] ?? [];
+            $reasonCode = $data['failureCode']
+                ?? $data['rejectionReason']
+                ?? (is_array($failureReason) ? ($failureReason['failureCode'] ?? $failureReason['code'] ?? null) : null);
             $payment->markAsFailed($reasonCode, $this->getFailureReasonMessage($reasonCode));
 
             Log::info('pawaPay payment failed', [
