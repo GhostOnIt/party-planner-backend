@@ -17,7 +17,7 @@ class PawaPayService
         Subscription $subscription,
         Payment $payment,
         string $phoneNumber,
-        string $provider,
+        ?string $provider,
         string $country,
         ?string $currency = null
     ): array {
@@ -48,13 +48,20 @@ class PawaPayService
             ];
         }
 
-        $provider = strtoupper($provider ?: ($config['default_provider'] ?? 'AIRTEL_COG'));
+        $provider = strtoupper((string) ($provider ?: ''));
         $providerConfig = $market['providers'][$provider] ?? null;
 
         if (!empty($market['providers']) && !$providerConfig) {
             return [
                 'success' => false,
                 'message' => 'Opérateur pawaPay indisponible pour ce pays.',
+            ];
+        }
+
+        if ($provider === '') {
+            return [
+                'success' => false,
+                'message' => 'Aucun opérateur pawaPay n\'est configuré pour ' . ($market['name'] ?? $country) . '.',
             ];
         }
 

@@ -363,7 +363,14 @@ class PaymentService
         $pawaPayService = app(PawaPayService::class);
         $country = $pawaPayService->normalizeCountry($country ?: ($config['default_country'] ?? 'COG'));
         $marketCurrency = config("partyplanner.payments.pawapay.countries.{$country}.currency");
-        $provider = strtoupper($provider ?: ($config['default_provider'] ?? 'AIRTEL_COG'));
+        $marketProviders = config("partyplanner.payments.pawapay.countries.{$country}.providers", []);
+        $provider = strtoupper((string) ($provider ?: ''));
+        if ($provider === '' && is_array($marketProviders) && count($marketProviders) > 0) {
+            $defaultProvider = strtoupper((string) ($config['default_provider'] ?? ''));
+            $provider = array_key_exists($defaultProvider, $marketProviders)
+                ? $defaultProvider
+                : (string) array_key_first($marketProviders);
+        }
         $currency = strtoupper($currency ?: ($marketCurrency ?? $config['currency'] ?? config('partyplanner.currency.code', 'XAF')));
 
         $payment->update([
@@ -371,7 +378,7 @@ class PaymentService
             'metadata' => array_merge($payment->metadata ?? [], [
                 'country' => $country,
                 'currency' => $currency,
-                'provider' => $provider,
+                'provider' => $provider ?: null,
             ]),
         ]);
 
