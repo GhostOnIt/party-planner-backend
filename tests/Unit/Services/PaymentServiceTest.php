@@ -17,12 +17,13 @@ class PaymentServiceTest extends TestCase
     use RefreshDatabase;
 
     protected PaymentService $service;
+
     protected Subscription $subscription;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new PaymentService();
+        $this->service = new PaymentService;
 
         $user = User::factory()->create();
         $plan = Plan::create([
@@ -109,6 +110,16 @@ class PaymentServiceTest extends TestCase
 
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('06', $result['message']);
+    }
+
+    public function test_it_normalizes_congo_phone_numbers_without_dropping_the_national_zero(): void
+    {
+        $method = new \ReflectionMethod($this->service, 'formatPhoneNumber');
+
+        $this->assertSame('242066740021', $method->invoke($this->service, '066740021', true));
+        $this->assertSame('242066740021', $method->invoke($this->service, '+242066740021', true));
+        $this->assertSame('242066740021', $method->invoke($this->service, '00242066740021', true));
+        $this->assertSame('242066740021', $method->invoke($this->service, '24266740021', true));
     }
 
     /*

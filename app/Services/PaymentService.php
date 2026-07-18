@@ -23,7 +23,7 @@ class PaymentService
         $payment = $this->createPayment($subscription, 'mtn_mobile_money', $idempotencyKey);
 
         // Validate phone number format for MTN (starts with 06 in Congo)
-        if (!$this->isValidMtnNumber($phoneNumber)) {
+        if (! $this->isValidMtnNumber($phoneNumber)) {
             $payment->markInitiationFailed();
 
             return [
@@ -35,7 +35,7 @@ class PaymentService
 
         $config = config('partyplanner.payments.mtn_mobile_money');
 
-        if (!$config['enabled']) {
+        if (! $config['enabled']) {
             $payment->markInitiationFailed();
 
             return [
@@ -51,29 +51,30 @@ class PaymentService
         }
 
         try {
-            $baseUrl  = MomoApi::getBaseUrl($config['environment']);
-            $timeout  = (int) ($config['http']['timeout'] ?? 30);
+            $baseUrl = MomoApi::getBaseUrl($config['environment']);
+            $timeout = (int) ($config['http']['timeout'] ?? 30);
             $verifySsl = $config['http']['verify_ssl'] ?? true;
 
             // Step 1 — Get Bearer token
             /** @var \Illuminate\Http\Client\Response $tokenResponse */
             $tokenResponse = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
-                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->when(! $verifySsl && ! app()->isProduction(), fn ($h) => $h->withoutVerifying())
                 ->withBasicAuth($config['api_user'], $config['api_key'])
                 ->withHeaders(['Ocp-Apim-Subscription-Key' => $config['subscription_key']])
                 ->post('/collection/token/');
 
-            if (!$tokenResponse->successful()) {
+            if (! $tokenResponse->successful()) {
                 Log::error('MTN token request failed', [
                     'subscription_id' => $subscription->id,
-                    'status'          => $tokenResponse->status(),
-                    'body'            => $tokenResponse->body(),
+                    'status' => $tokenResponse->status(),
+                    'body' => $tokenResponse->body(),
                 ]);
                 $payment->markInitiationFailed();
+
                 return [
                     'success' => false,
-                    'message' => 'Authentification MTN échouée (code ' . $tokenResponse->status() . ').',
+                    'message' => 'Authentification MTN échouée (code '.$tokenResponse->status().').',
                     'payment' => $payment->fresh(),
                 ];
             }
@@ -87,16 +88,16 @@ class PaymentService
                 : ($config['currency'] ?? config('partyplanner.currency.code', 'XAF'));
 
             // MTN collection expects integer-friendly amounts for XAF; avoid sending "9900.00".
-            $amount     = strtoupper(trim($currency)) === 'XAF'
+            $amount = strtoupper(trim($currency)) === 'XAF'
                 ? (string) ((int) round((float) $payment->amount))
                 : rtrim(rtrim(number_format((float) $payment->amount, 2, '.', ''), '0'), '.');
             $externalId = Str::uuid()->toString();
 
             $description = 'Paiement Party Planner';
             if ($subscription->event) {
-                $description .= ' - ' . $subscription->event->title;
+                $description .= ' - '.$subscription->event->title;
             } else {
-                $planName    = $subscription->plan?->name ?? $subscription->plan_type ?? 'Plan';
+                $planName = $subscription->plan?->name ?? $subscription->plan_type ?? 'Plan';
                 $description .= " - Abonnement {$planName}";
             }
 
@@ -104,12 +105,12 @@ class PaymentService
             // Use asJson() so Content-Type is set once (avoid duplicate headers vs manual Content-Type + WAF/proxy 500s).
             $headers = [
                 'Ocp-Apim-Subscription-Key' => $config['subscription_key'],
-                'X-Reference-Id'            => $externalId,
-                'X-Target-Environment'      => $config['environment'],
-                'Authorization'             => self::BEARER_PREFIX . $accessToken,
+                'X-Reference-Id' => $externalId,
+                'X-Target-Environment' => $config['environment'],
+                'Authorization' => self::BEARER_PREFIX.$accessToken,
             ];
 
-            if (!empty($config['callback_url'])) {
+            if (! empty($config['callback_url'])) {
                 $headers['X-Callback-Url'] = $config['callback_url'];
             }
 
@@ -120,82 +121,82 @@ class PaymentService
             }
             $payerMessage = Str::substr($payerMessage, 0, 140);
 
-            $payeeNote = 'Subscription ' . $subscription->id;
+            $payeeNote = 'Subscription '.$subscription->id;
 
             $requestToPayPayload = [
-                'amount'       => $amount,
-                'currency'     => $currency,
-                'externalId'   => $externalId,
-                'payer'        => ['partyIdType' => 'MSISDN', 'partyId' => $formattedPhone],
+                'amount' => $amount,
+                'currency' => $currency,
+                'externalId' => $externalId,
+                'payer' => ['partyIdType' => 'MSISDN', 'partyId' => $formattedPhone],
                 'payerMessage' => $payerMessage,
-                'payeeNote'    => $payeeNote,
+                'payeeNote' => $payeeNote,
             ];
 
             Log::info('MTN requesttopay outgoing request', [
                 'subscription_id' => $subscription->id,
-                'payment_id'      => $payment->id,
-                'environment'     => $config['environment'],
-                'method'          => 'POST',
-                'endpoint'        => $baseUrl . '/collection/v1_0/requesttopay',
-                'headers'         => [
-                    'Ocp-Apim-Subscription-Key' => !empty($headers['Ocp-Apim-Subscription-Key']) ? '***' : null,
+                'payment_id' => $payment->id,
+                'environment' => $config['environment'],
+                'method' => 'POST',
+                'endpoint' => $baseUrl.'/collection/v1_0/requesttopay',
+                'headers' => [
+                    'Ocp-Apim-Subscription-Key' => ! empty($headers['Ocp-Apim-Subscription-Key']) ? '***' : null,
                     'X-Reference-Id' => $headers['X-Reference-Id'] ?? null,
                     'X-Target-Environment' => $headers['X-Target-Environment'] ?? null,
-                    'Authorization' => !empty($headers['Authorization']) ? 'Bearer ***' : null,
+                    'Authorization' => ! empty($headers['Authorization']) ? 'Bearer ***' : null,
                     'X-Callback-Url' => $headers['X-Callback-Url'] ?? null,
                 ],
-                'payload'         => $requestToPayPayload,
-                'content_type'    => 'application/json (set by Http::asJson())',
+                'payload' => $requestToPayPayload,
+                'content_type' => 'application/json (set by Http::asJson())',
             ]);
 
             /** @var \Illuminate\Http\Client\Response $payResponse */
             $payResponse = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
-                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->when(! $verifySsl && ! app()->isProduction(), fn ($h) => $h->withoutVerifying())
                 ->asJson()
                 ->withHeaders($headers)
                 ->post('/collection/v1_0/requesttopay', $requestToPayPayload);
 
             Log::info('MTN requesttopay response', [
                 'subscription_id' => $subscription->id,
-                'status'          => $payResponse->status(),
-                'body'            => $payResponse->body(),
-                'x_reference_id'  => $externalId,
-                'phone'           => $formattedPhone,
-                'amount'          => $amount,
-                'currency'        => $currency,
-                'environment'     => $config['environment'],
+                'status' => $payResponse->status(),
+                'body' => $payResponse->body(),
+                'x_reference_id' => $externalId,
+                'phone' => $formattedPhone,
+                'amount' => $amount,
+                'currency' => $currency,
+                'environment' => $config['environment'],
             ]);
 
             if ($payResponse->status() === 202) {
                 $payment->update([
                     'transaction_reference' => $externalId,
                     'metadata' => array_merge($payment->metadata ?? [], [
-                        'phone_number'    => $phoneNumber,
-                        'external_id'     => $externalId,
+                        'phone_number' => $phoneNumber,
+                        'external_id' => $externalId,
                         'momo_payment_id' => $externalId,
-                        'initiated_at'    => now()->toIso8601String(),
+                        'initiated_at' => now()->toIso8601String(),
                     ]),
                 ]);
 
                 return [
-                    'success'   => true,
-                    'message'   => 'Paiement initié. Veuillez confirmer sur votre téléphone.',
-                    'payment'   => $payment->fresh(),
+                    'success' => true,
+                    'message' => 'Paiement initié. Veuillez confirmer sur votre téléphone.',
+                    'payment' => $payment->fresh(),
                     'reference' => $externalId,
                 ];
             }
 
             // Non-202 — WAF/firewall HTML vs real MTN JSON error
-            $rawBody    = $payResponse->body();
+            $rawBody = $payResponse->body();
             $isWafBlock = str_contains($rawBody, 'Request Rejected') || str_starts_with(ltrim($rawBody), '<');
 
             if ($isWafBlock) {
                 Log::error('MTN requesttopay blocked by WAF/firewall', [
                     'subscription_id' => $subscription->id,
-                    'status'          => $payResponse->status(),
-                    'raw_body'        => $rawBody,
-                    'callback_url'    => $config['callback_url'] ?? null,
+                    'status' => $payResponse->status(),
+                    'raw_body' => $rawBody,
+                    'callback_url' => $config['callback_url'] ?? null,
                 ]);
 
                 $payment->markInitiationFailed();
@@ -210,17 +211,17 @@ class PaymentService
             $errorJson = $payResponse->json() ?? [];
             Log::error('MTN requesttopay rejected', [
                 'subscription_id' => $subscription->id,
-                'status'          => $payResponse->status(),
-                'raw_body'        => $rawBody,
-                'error_code'      => $errorJson['code'] ?? null,
-                'error_message'   => $errorJson['message'] ?? null,
+                'status' => $payResponse->status(),
+                'raw_body' => $rawBody,
+                'error_code' => $errorJson['code'] ?? null,
+                'error_message' => $errorJson['message'] ?? null,
             ]);
 
             $payment->markAsFailed();
 
             $userMessage = $payResponse->status() >= 500
                 ? 'Erreur côté MTN. Réessayez plus tard ou contactez le support.'
-                : 'Paiement MTN refusé (code ' . $payResponse->status() . '). Vérifiez le numéro et réessayez.';
+                : 'Paiement MTN refusé (code '.$payResponse->status().'). Vérifiez le numéro et réessayez.';
 
             return [
                 'success' => false,
@@ -231,10 +232,10 @@ class PaymentService
         } catch (\Exception $e) {
             Log::error('MTN payment exception', [
                 'subscription_id' => $subscription->id,
-                'error_class'     => get_class($e),
-                'error'           => $e->getMessage(),
+                'error_class' => get_class($e),
+                'error' => $e->getMessage(),
                 'mtn_environment' => $config['environment'],
-                'mtn_base_url'    => MomoApi::getBaseUrl($config['environment']),
+                'mtn_base_url' => MomoApi::getBaseUrl($config['environment']),
             ]);
 
             $payment->markAsFailed();
@@ -255,7 +256,7 @@ class PaymentService
         $payment = $this->createPayment($subscription, 'airtel_money', $idempotencyKey);
 
         // Validate phone number format for Airtel (starts with 04 or 05 in Congo)
-        if (!$this->isValidAirtelNumber($phoneNumber)) {
+        if (! $this->isValidAirtelNumber($phoneNumber)) {
             $payment->markInitiationFailed();
 
             return [
@@ -267,7 +268,7 @@ class PaymentService
 
         $config = config('partyplanner.payments.airtel_money');
 
-        if (!$config['enabled']) {
+        if (! $config['enabled']) {
             $payment->markInitiationFailed();
 
             return [
@@ -278,13 +279,13 @@ class PaymentService
         }
 
         try {
-            $externalId = 'PP-' . Str::upper(Str::random(12));
+            $externalId = 'PP-'.Str::upper(Str::random(12));
 
             /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::withHeaders([
-                'Authorization' => self::BEARER_PREFIX . $this->getAirtelAccessToken(),
+                'Authorization' => self::BEARER_PREFIX.$this->getAirtelAccessToken(),
                 'Content-Type' => 'application/json',
-            ])->post($config['api_url'] . '/merchant/v1/payments/', [
+            ])->post($config['api_url'].'/merchant/v1/payments/', [
                 'reference' => $externalId,
                 'subscriber' => [
                     'country' => 'CM',
@@ -391,7 +392,7 @@ class PaymentService
             $currency
         );
 
-        if (!($result['success'] ?? false)) {
+        if (! ($result['success'] ?? false)) {
             $payment->markInitiationFailed();
             $result['payment'] = $payment->fresh();
         }
@@ -436,15 +437,17 @@ class PaymentService
     {
         $externalId = $data['externalId'] ?? $data['referenceId'] ?? null;
 
-        if (!$externalId) {
+        if (! $externalId) {
             Log::warning('MTN callback missing external ID', $data);
+
             return;
         }
 
         $payment = Payment::where('transaction_reference', $externalId)->first();
 
-        if (!$payment) {
+        if (! $payment) {
             Log::warning('MTN callback: payment not found', ['external_id' => $externalId]);
+
             return;
         }
 
@@ -472,15 +475,17 @@ class PaymentService
     {
         $reference = $data['transaction']['id'] ?? null;
 
-        if (!$reference) {
+        if (! $reference) {
             Log::warning('Airtel callback missing reference', $data);
+
             return;
         }
 
         $payment = Payment::where('transaction_reference', $reference)->first();
 
-        if (!$payment) {
+        if (! $payment) {
             Log::warning('Airtel callback: payment not found', ['reference' => $reference]);
+
             return;
         }
 
@@ -505,8 +510,9 @@ class PaymentService
     {
         $depositId = $data['depositId'] ?? null;
 
-        if (!$depositId) {
+        if (! $depositId) {
             Log::warning('pawaPay deposit callback missing depositId', $data);
+
             return;
         }
 
@@ -514,8 +520,9 @@ class PaymentService
             ->where('transaction_reference', $depositId)
             ->first();
 
-        if (!$payment) {
+        if (! $payment) {
             Log::warning('pawaPay callback: payment not found', ['deposit_id' => $depositId]);
+
             return;
         }
 
@@ -523,18 +530,19 @@ class PaymentService
         $metadata = $payment->metadata ?? [];
         $metadata['pawapay']['last_callback'] = $data;
         $metadata['pawapay']['last_callback_at'] = now()->toIso8601String();
-        if (!empty($data['providerTransactionId'])) {
+        if (! empty($data['providerTransactionId'])) {
             $metadata['pawapay']['provider_transaction_id'] = $data['providerTransactionId'];
         }
         $payment->update(['metadata' => $metadata]);
 
         if ($normalizedStatus === 'completed') {
-            if (!$payment->isCompleted()) {
+            if (! $payment->isCompleted()) {
                 $payment->markAsCompleted($depositId);
                 SendPaymentConfirmationJob::dispatch($payment->fresh());
             }
 
             Log::info('pawaPay payment completed', ['payment_id' => $payment->id]);
+
             return;
         }
 
@@ -566,6 +574,7 @@ class PaymentService
 
         if ($payment->isFailed()) {
             $reasonCode = $payment->metadata['provider_reason'] ?? null;
+
             return [
                 'status' => 'failed',
                 'message' => $this->getFailureReasonMessage($reasonCode),
@@ -594,7 +603,7 @@ class PaymentService
      */
     protected function checkProviderStatus(Payment $payment): ?array
     {
-        if (!$payment->transaction_reference) {
+        if (! $payment->transaction_reference) {
             return null;
         }
 
@@ -623,7 +632,7 @@ class PaymentService
     {
         $status = app(PawaPayService::class)->getDepositStatus($reference);
 
-        if (!$status) {
+        if (! $status) {
             return null;
         }
 
@@ -641,20 +650,20 @@ class PaymentService
     protected function checkMtnStatus(string $reference): ?array
     {
         try {
-            $config    = config('partyplanner.payments.mtn_mobile_money');
-            $baseUrl   = MomoApi::getBaseUrl($config['environment']);
-            $timeout   = (int) ($config['http']['timeout'] ?? 30);
+            $config = config('partyplanner.payments.mtn_mobile_money');
+            $baseUrl = MomoApi::getBaseUrl($config['environment']);
+            $timeout = (int) ($config['http']['timeout'] ?? 30);
             $verifySsl = $config['http']['verify_ssl'] ?? true;
 
             /** @var \Illuminate\Http\Client\Response $tokenResponse */
             $tokenResponse = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
-                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->when(! $verifySsl && ! app()->isProduction(), fn ($h) => $h->withoutVerifying())
                 ->withBasicAuth($config['api_user'], $config['api_key'])
                 ->withHeaders(['Ocp-Apim-Subscription-Key' => $config['subscription_key']])
                 ->post('/collection/token/');
 
-            if (!$tokenResponse->successful()) {
+            if (! $tokenResponse->successful()) {
                 return null;
             }
 
@@ -663,13 +672,13 @@ class PaymentService
             /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::baseUrl($baseUrl)
                 ->timeout($timeout)
-                ->when(!$verifySsl && !app()->isProduction(), fn ($h) => $h->withoutVerifying())
+                ->when(! $verifySsl && ! app()->isProduction(), fn ($h) => $h->withoutVerifying())
                 ->withHeaders([
                     'Ocp-Apim-Subscription-Key' => $config['subscription_key'],
-                    'X-Target-Environment'      => $config['environment'],
-                    'Authorization'             => self::BEARER_PREFIX . $accessToken,
+                    'X-Target-Environment' => $config['environment'],
+                    'Authorization' => self::BEARER_PREFIX.$accessToken,
                 ])
-                ->get('/collection/v1_0/requesttopay/' . $reference);
+                ->get('/collection/v1_0/requesttopay/'.$reference);
 
             if ($response->successful()) {
                 return [
@@ -683,8 +692,9 @@ class PaymentService
         } catch (\Exception $e) {
             Log::warning('MTN status check failed', [
                 'reference' => $reference,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -698,8 +708,8 @@ class PaymentService
 
         /** @var \Illuminate\Http\Client\Response $response */
         $response = Http::withHeaders([
-            'Authorization' => self::BEARER_PREFIX . $this->getAirtelAccessToken(),
-        ])->get($config['api_url'] . "/standard/v1/payments/{$reference}");
+            'Authorization' => self::BEARER_PREFIX.$this->getAirtelAccessToken(),
+        ])->get($config['api_url']."/standard/v1/payments/{$reference}");
 
         if ($response->successful()) {
             return [
@@ -716,14 +726,14 @@ class PaymentService
      */
     protected function synchronizePaymentWithProviderStatus(Payment $payment, ?array $providerStatus): void
     {
-        if (!$providerStatus) {
+        if (! $providerStatus) {
             return;
         }
 
         // Re-fetch from DB to avoid acting on a stale in-memory state (webhook may have
         // already updated the record while the provider HTTP call was in flight).
         $freshPayment = $payment->fresh();
-        if (!$freshPayment || !$freshPayment->isPending()) {
+        if (! $freshPayment || ! $freshPayment->isPending()) {
             return;
         }
 
@@ -785,7 +795,7 @@ class PaymentService
         /** @var \Illuminate\Http\Client\Response $response */
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-        ])->post($config['api_url'] . '/auth/oauth2/token', [
+        ])->post($config['api_url'].'/auth/oauth2/token', [
             'client_id' => $config['client_id'],
             'client_secret' => $config['client_secret'],
             'grant_type' => 'client_credentials',
@@ -811,8 +821,9 @@ class PaymentService
         }
 
         $phone = $this->formatPhoneNumber($phone);
-        // Congo: +24206XXXXXXXX (9 digits after country code, starting with 06)
-        return preg_match('/^2420?6\d{7}$/', $phone);
+
+        // Congo: +24206XXXXXXX (the national leading zero is retained).
+        return preg_match('/^24206\d{7}$/', $phone);
     }
 
     /**
@@ -821,8 +832,9 @@ class PaymentService
     protected function isValidAirtelNumber(string $phone): bool
     {
         $phone = $this->formatPhoneNumber($phone);
-        // Congo: +24204XXXXXXXX or +24205XXXXXXXX (9 digits after country code, starting with 04 or 05)
-        return preg_match('/^2420?[45]\d{7}$/', $phone);
+
+        // Congo: +24204XXXXXXX or +24205XXXXXXX (the national leading zero is retained).
+        return preg_match('/^2420[45]\d{7}$/', $phone);
     }
 
     /**
@@ -834,6 +846,11 @@ class PaymentService
         // Remove spaces, dashes, and other characters
         $phone = preg_replace('/[^0-9]/', '', $phone);
 
+        // Normalize an international access prefix (00242...) to 242...
+        if (str_starts_with($phone, '00')) {
+            $phone = substr($phone, 2);
+        }
+
         // In sandbox mode, return test numbers as-is (they start with 467)
         if ($forMtn) {
             $config = config('partyplanner.payments.mtn_mobile_money');
@@ -842,19 +859,25 @@ class PaymentService
             }
         }
 
-        // If starts with 242, keep as is
+        // If the country code is present without Congo's national zero, restore it.
         if (str_starts_with($phone, '242')) {
+            $nationalNumber = substr($phone, 3);
+
+            if (strlen($nationalNumber) === 8 && preg_match('/^[456]/', $nationalNumber)) {
+                return '2420'.$nationalNumber;
+            }
+
             return $phone;
         }
 
-        // If starts with 0 and has 9 digits, add country code 242
+        // Congo keeps the leading zero after +242 (for example +242066740021).
         if (strlen($phone) === 9 && str_starts_with($phone, '0')) {
-            return '242' . substr($phone, 1);
+            return '242'.$phone;
         }
 
         // If has 8 digits and starts with 6, 4, or 5, add 2420
         if (strlen($phone) === 8 && preg_match('/^[456]/', $phone)) {
-            return '2420' . $phone;
+            return '2420'.$phone;
         }
 
         return $phone;
@@ -865,7 +888,7 @@ class PaymentService
      */
     protected function simulateMtnPayment(Payment $payment, string $phoneNumber): array
     {
-        $externalId = 'SIM-' . Str::uuid()->toString();
+        $externalId = 'SIM-'.Str::uuid()->toString();
 
         $payment->update([
             'transaction_reference' => $externalId,
@@ -881,7 +904,7 @@ class PaymentService
         // In real scenario, you'd wait for callback
         if (str_ends_with($phoneNumber, '0')) {
             // Numbers ending in 0 = success (like test number 46733123450)
-            $payment->markAsCompleted('SIM-TXN-' . Str::random(10));
+            $payment->markAsCompleted('SIM-TXN-'.Str::random(10));
             Log::info('Simulated MTN payment completed', ['payment_id' => $payment->id]);
         } elseif (str_ends_with($phoneNumber, '1')) {
             // Numbers ending in 1 = failed
@@ -920,20 +943,13 @@ class PaymentService
         $normalized = strtoupper((string) $reasonCode);
 
         return match ($normalized) {
-            'LOW_BALANCE_OR_PAYEE_LIMIT_REACHED_OR_NOT_ALLOWED' =>
-                'Paiement refusé : solde insuffisant, limite atteinte ou transaction non autorisée. Vérifiez votre compte Mobile Money puis réessayez.',
-            'LOW_BALANCE', 'INSUFFICIENT_FUNDS', 'INSUFFICIENT_BALANCE' =>
-                'Paiement refusé : solde insuffisant. Rechargez votre compte puis réessayez.',
-            'AMOUNT_OUT_OF_BOUNDS' =>
-                'Paiement refusé : le montant est en dehors des limites acceptées par l’opérateur.',
-            'TIMEOUT' =>
-                'Le paiement a expiré. Veuillez relancer une nouvelle tentative.',
-            'REJECTED' =>
-                'Le paiement a été rejeté par le fournisseur. Vérifiez vos informations puis réessayez.',
-            '' =>
-                'Le paiement a échoué.',
-            default =>
-                'Le paiement a échoué : ' . $normalized . '.',
+            'LOW_BALANCE_OR_PAYEE_LIMIT_REACHED_OR_NOT_ALLOWED' => 'Paiement refusé : solde insuffisant, limite atteinte ou transaction non autorisée. Vérifiez votre compte Mobile Money puis réessayez.',
+            'LOW_BALANCE', 'INSUFFICIENT_FUNDS', 'INSUFFICIENT_BALANCE' => 'Paiement refusé : solde insuffisant. Rechargez votre compte puis réessayez.',
+            'AMOUNT_OUT_OF_BOUNDS' => 'Paiement refusé : le montant est en dehors des limites acceptées par l’opérateur.',
+            'TIMEOUT' => 'Le paiement a expiré. Veuillez relancer une nouvelle tentative.',
+            'REJECTED' => 'Le paiement a été rejeté par le fournisseur. Vérifiez vos informations puis réessayez.',
+            '' => 'Le paiement a échoué.',
+            default => 'Le paiement a échoué : '.$normalized.'.',
         };
     }
 
