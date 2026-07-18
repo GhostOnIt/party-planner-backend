@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Events\EventCreated;
 use App\Listeners\CreateSystemRolesForEvent;
+use App\Mail\Transports\BrevoTransport;
 use App\Models\BudgetItem;
 use App\Models\Collaborator;
 use App\Models\Event;
@@ -22,6 +23,7 @@ use App\Policies\PaymentPolicy;
 use App\Policies\QuoteRequestPolicy;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
@@ -41,6 +43,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Mail::extend('brevo', function (array $config): BrevoTransport {
+            return new BrevoTransport(
+                http: $this->app->make(\Illuminate\Http\Client\Factory::class),
+                apiKey: (string) ($config['api_key'] ?? ''),
+                endpoint: (string) ($config['endpoint'] ?? 'https://api.brevo.com/v3/smtp/email'),
+                timeout: (int) ($config['timeout'] ?? 15),
+            );
+        });
+
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
         // Register policies
@@ -76,6 +87,7 @@ class AppServiceProvider extends ServiceProvider
             if (! $user) {
                 abort(401);
             }
+
             return $user->eventTypes()->findOrFail($value);
         });
         Route::bind('category', function (string $value) {
@@ -83,6 +95,7 @@ class AppServiceProvider extends ServiceProvider
             if (! $user) {
                 abort(401);
             }
+
             return $user->budgetCategories()->findOrFail($value);
         });
     }
