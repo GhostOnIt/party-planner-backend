@@ -54,7 +54,7 @@ class FirebaseService
                 $notification = $notification->withImageUrl($imageUrl);
             }
 
-            $message = CloudMessage::withTarget('token', $deviceToken)
+            $message = CloudMessage::new()->withToken($deviceToken)
                 ->withNotification($notification)
                 ->withData($data)
                 ->withAndroidConfig($this->getAndroidConfig())
@@ -232,7 +232,7 @@ class FirebaseService
                 $notification = $notification->withImageUrl($imageUrl);
             }
 
-            $message = CloudMessage::withTarget('topic', $topic)
+            $message = CloudMessage::new()->withTopic($topic)
                 ->withNotification($notification)
                 ->withData($data)
                 ->withAndroidConfig($this->getAndroidConfig())
@@ -300,7 +300,7 @@ class FirebaseService
 
         try {
             // Send a dry run message to validate the token
-            $message = CloudMessage::withTarget('token', $token)
+            $message = CloudMessage::new()->withToken($token)
                 ->withNotification(Notification::create('Test', 'Test'));
 
             $this->messaging->send($message, true); // true = dry run
