@@ -25,8 +25,8 @@ class OtpService
         // Invalidate any existing OTPs for this identifier and type
         $this->invalidateExisting($identifier, $type);
 
-        // Generate a 6-digit code
-        $code = $this->generateCode();
+        $code = $this->fixedStagingLoginCode($identifier, $type, $channel)
+            ?? $this->generateCode();
 
         // Create the OTP record
         $otp = Otp::create([
@@ -306,7 +306,27 @@ class OtpService
     }
 
     /**
-     * Generate a 4-digit OTP code.
+     * Opt-in shortcut for allowlisted staging email logins only.
+     */
+    protected function fixedStagingLoginCode(string $identifier, string $type, string $channel): ?string
+    {
+        if (!app()->environment('staging')
+            || !config('staging.fixed_login_otp_enabled', false)
+            || $type !== Otp::TYPE_LOGIN
+            || $channel !== Otp::CHANNEL_EMAIL) {
+            return null;
+        }
+
+        $allowedEmails = array_map(
+            static fn (string $email): string => strtolower(trim($email)),
+            config('staging.otp_allowed_emails', [])
+        );
+
+        return in_array(strtolower(trim($identifier)), $allowedEmails, true) ? '1111' : null;
+    }
+
+    /**
+     * Generate a random 4-digit OTP code.
      */
     protected function generateCode(): string
     {
