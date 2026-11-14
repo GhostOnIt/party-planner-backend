@@ -34,6 +34,28 @@ class StorageHelper
         return $disk->url($path);
     }
 
+    /** Generate fresh read URLs at serialization time; never persist signatures. */
+    public static function photoReadUrl(?string $url): ?string
+    {
+        if (!$url || !app()->environment('staging') || !config('staging.signed_photo_urls', false)) {
+            return $url;
+        }
+
+        $endpointHost = strtolower((string) parse_url((string) config('filesystems.disks.s3.endpoint'), PHP_URL_HOST));
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        $bucket = strtolower((string) config('filesystems.disks.s3.bucket'));
+        if (!$endpointHost || !in_array($host, [$endpointHost, $bucket . '.' . $endpointHost], true)) {
+            return $url;
+        }
+
+        $path = self::urlToPath($url);
+        if (!$path || !preg_match('#^events/[^/]+/photos/#', $path)) {
+            return $url;
+        }
+
+        return self::disk()->temporaryUrl($path, now()->addHour());
+    }
+
     /**
      * Convert a stored URL back to the S3 key.
      * Handles CDN URLs, S3 URLs and legacy /storage/ paths (extracts key for delete ops).

@@ -35,6 +35,17 @@ RUN composer install \
 # ============================================
 FROM php:8.4-cli-alpine AS runtime
 
+# Staging: allow the advertised 20 x 10 MiB batch plus multipart overhead.
+# One extra PHP file slot lets Laravel reject oversized file counts explicitly.
+RUN printf '%s\n' \
+    'upload_max_filesize=10M' \
+    'post_max_size=210M' \
+    'max_file_uploads=21' \
+    'memory_limit=512M' \
+    'max_execution_time=180' \
+    'max_input_time=180' \
+    > /usr/local/etc/php/conf.d/staging-uploads.ini
+
 # Installer uniquement les dépendances runtime nécessaires
 RUN apk add --no-cache \
     # Bibliothèques runtime

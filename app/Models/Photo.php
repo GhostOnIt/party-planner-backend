@@ -6,10 +6,21 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Helpers\StorageHelper;
 
 class Photo extends Model
 {
     use HasFactory, HasUuids;
+
+    public function getUrlAttribute(?string $value): ?string
+    {
+        return StorageHelper::photoReadUrl($value);
+    }
+
+    public function getThumbnailUrlAttribute(?string $value): ?string
+    {
+        return StorageHelper::photoReadUrl($value);
+    }
 
     /**
      * The attributes that are mass assignable.
